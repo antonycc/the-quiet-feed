@@ -1,0 +1,145 @@
+name: set origins
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain-source:
+        type: choice
+        description: 'Source of domain to set origins for e.g. branch-based or the holding page'
+        required: false
+        options:
+          - 'branch'
+          - 'holding'
+        default: 'branch'
+      hosted-zone-id:
+        type: string
+        description: 'AWS Route 53 Hosted Zone ID for the apex domain'
+        required: false
+        default: 'Z0315522208PWZSSBI9AL'
+      cloudfront-distribution-id:
+        type: string
+        description: 'CloudFront Distribution ID to update aliases on'
+        required: false
+      environment-name:
+        type: choice
+        description: 'Environment name to use instead of computing from branch, e.g. ci or prod'
+        required: false
+        options:
+          - ''
+          - 'ci'
+          - 'prod'
+        default: ''
+      deployment-name:
+        type: string
+        description: 'Deployment name to use instead of computing from branch, e.g. ci-lambdas6 or prod-ea373de'
+        required: false
+        default: ''
+
+permissions:
+  id-token: write
+  contents: read
+  pages: write
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '22'
+  ACTIONS_ROLE_ARN: 'arn:aws:iam::887764105431:role/submit-github-actions-role'
+  DEPLOY_ROLE_ARN:  'arn:aws:iam::887764105431:role/submit-deployment-role'
+  AWS_REGION: 'eu-west-2'
+  AWS_ACCOUNT_ID: '887764105431'
+  GITHUB_ACTOR: ${{ github.actor }}
+  COMMIT_HASH: ${{ github.sha }}
+
+jobs:
+
+  names:
+    runs-on: ubuntu-24.04
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'ci' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Compute deployment name and environment
+        id: deployment-config
+        uses: ./.github/actions/get-names
+        with:
+          environment-name: ${{ github.event.inputs.environment-name || '' }}
+          deployment-name: ${{ github.event.inputs.deployment-name || '' }}
+    outputs:
+      environment-name: ${{ steps.deployment-config.outputs.environment-name }}
+      deployment-name: ${{ steps.deployment-config.outputs.deployment-name }}
+      base-domain: ${{ steps.deployment-config.outputs.base-domain }}
+      base-url:      ${{ steps.deployment-config.outputs.base-url }}
+      apex-domain: ${{ steps.deployment-config.outputs.apex-domain }}
+      apex-url: ${{ steps.deployment-config.outputs.apex-url }}
+      holding-domain: ${{ steps.deployment-config.outputs.holding-domain }}
+      holding-url: ${{ steps.deployment-config.outputs.holding-url }}
+
+  set-origins:
+    name: 'set origins'
+    needs:
+      - names
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.names.outputs.environment-name }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS role via GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ env.ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Assume AWS deployment role
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ env.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: true
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Look up the CloudFront distribution ID if not provided based on the ORIGIN_DOMAIN matching the tag named "OriginFor"
+        id: lookup-cf
+        env:
+          ORIGIN_DOMAIN: ${{ inputs.domain-source == 'holding' && needs.names.outputs.holding-domain || needs.names.outputs.base-domain }}
+          INPUT_CLOUDFRONT_DISTRIBUTION_ID: ${{ github.event.inputs.cloudfront-distribution-id || '' }}
+        run: |
+          CLOUDFRONT_DISTRIBUTION_ID="${INPUT_CLOUDFRONT_DISTRIBUTION_ID}"
+          if [ -z "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
+            echo "CloudFront Distribution ID not provided, looking up based on the ORIGIN_DOMAIN ${ORIGIN_DOMAIN?} matching the tag named OriginFor"
+            CLOUDFRONT_DISTRIBUTION_ARN=$(aws resourcegroupstaggingapi get-resources \
+              --resource-type-filters cloudfront:distribution \
+              --region us-east-1 \
+              --tag-filters Key=OriginFor,Values="${ORIGIN_DOMAIN}" \
+              --query 'ResourceTagMappingList[0].ResourceARN' \
+              --output text)
+            if [ -z "$CLOUDFRONT_DISTRIBUTION_ARN" ] || [ "$CLOUDFRONT_DISTRIBUTION_ARN" = "None" ]; then
+              echo "Error: No CloudFront distribution found with tag OriginFor=${ORIGIN_DOMAIN}" >&2
+              exit 1
+            fi
+            CLOUDFRONT_DISTRIBUTION_ID="${CLOUDFRONT_DISTRIBUTION_ARN##*/}"
+            echo "Found CloudFront Distribution ID: ${CLOUDFRONT_DISTRIBUTION_ID?}"
+          else
+            echo "Using provided CloudFront Distribution ID: ${CLOUDFRONT_DISTRIBUTION_ID?}"
+          fi
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Alias apex domain to holding or base domain
+        uses: ./.github/actions/set-origins
+        with:
+          origin-domain: ${{ inputs.domain-source == 'holding' && needs.names.outputs.holding-domain || needs.names.outputs.base-domain }}
+          apex-domain: ${{ needs.names.outputs.apex-domain }}
+          aws-account-id: ${{ env.AWS_ACCOUNT_ID }}
+          hosted-zone-id: ${{ github.event.inputs.hosted-zone-id }}
+          cloudfront-distribution-id: ${{ steps.lookup-cf.outputs.CLOUDFRONT_DISTRIBUTION_ID }}

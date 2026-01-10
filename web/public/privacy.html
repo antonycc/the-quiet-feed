@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy – DIY Accounting Submit</title>
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <link rel="stylesheet" href="./submit.css" />
+    <style>
+      main {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+      .muted {
+        color: #666;
+        font-size: 0.95em;
+      }
+      section {
+        margin: 1.25rem 0;
+      }
+      li {
+        margin: 0.5rem 0;
+      }
+      code {
+        background: #f5f5f5;
+        padding: 0 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="./index.html">Home</a>
+            <a href="./account/bundles.html">Bundles</a>
+            <a href="./hmrc/receipt/receipts.html">Receipts</a>
+            <a href="./guide/index.html">User Guide</a>
+            <a href="./about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="./auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1 style="text-align: center">Privacy Policy</h1>
+      <p class="muted" style="text-align: center">Last updated: December 13, 2024</p>
+    </header>
+
+    <main>
+      <section>
+        <p>
+          DIY Accounting Submit is a lightweight web application that helps you submit UK VAT returns. We aim to collect the minimum data
+          necessary to operate the service and monitor performance.
+        </p>
+      </section>
+
+      <section>
+        <h2>What we collect</h2>
+        <h3>Real User Monitoring (RUM)</h3>
+        <p>
+          We use Amazon CloudWatch RUM to collect performance and error data from your browser. This helps us improve the application's
+          speed, reliability, and user experience. RUM only starts after you click "Accept" in the consent banner.
+        </p>
+
+        <h4>Data Collected by RUM</h4>
+        <ul>
+          <li><strong>Performance Metrics</strong>: Page load times, render times, interaction delays (Core Web Vitals: LCP, INP, CLS)</li>
+          <li><strong>JavaScript Errors</strong>: Unhandled exceptions and error messages</li>
+          <li><strong>HTTP Requests</strong>: API request URLs (without query parameters), status codes, durations</li>
+          <li><strong>Navigation Events</strong>: Pages visited, route changes</li>
+          <li><strong>Device Information</strong>: Browser type/version, operating system, screen resolution, viewport size</li>
+          <li>
+            <strong>Session Information</strong>: Anonymous session ID, hashed user ID (if logged in - we hash your identifier in the
+            browser before sending)
+          </li>
+        </ul>
+
+        <h4>Data NOT Collected by RUM</h4>
+        <ul>
+          <li>Form input data (e.g., VAT numbers, financial figures)</li>
+          <li>Passwords or authentication tokens</li>
+          <li>Full URLs with query parameters or personal identifiers</li>
+          <li>IP addresses (AWS receives them for request routing but we do not store or process them)</li>
+        </ul>
+
+        <h4>Other Data We Collect</h4>
+        <ul>
+          <li>
+            Operational logs from our infrastructure (e.g., CloudFront/WAF request logs, API Gateway access logs), which contain request
+            metadata such as timestamps, paths, response codes, and IP addresses as seen by our edge or origin services. These are collected
+            automatically by AWS for security and operational reasons.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>How and when we collect it</h2>
+        <ul>
+          <li>RUM only starts after you click “Accept” in the consent banner. Until then, no RUM data is sent.</li>
+          <li>
+            Infrastructure logs are collected automatically by AWS services when you use the site, for security and operational reasons.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>What we use it for</h2>
+        <ul>
+          <li>To monitor and improve site performance and reliability.</li>
+          <li>To detect errors and troubleshoot issues.</li>
+          <li>To protect the service and our users from abuse and attacks.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Data retention</h2>
+        <h3>Application Data</h3>
+        <ul>
+          <li>
+            <strong>User bundles (entitlements)</strong>: Retained while your account is active. Deleted within 30 days of account closure
+            or deletion request.
+          </li>
+          <li>
+            <strong>HMRC submission receipts</strong>: Retained for 7 years in line with UK tax record-keeping requirements. This includes
+            submission metadata, timestamps, and HMRC receipt confirmations.
+          </li>
+          <li>
+            <strong>Authentication data</strong>: OAuth access tokens from HMRC expire per HMRC policy (typically 4 hours). Refresh tokens
+            are deleted on logout or authorization revocation. Cognito user profile data is retained while your account is active; deleted
+            within 30 days of account closure.
+          </li>
+        </ul>
+
+        <h3>Monitoring and Infrastructure Data</h3>
+        <ul>
+          <li>
+            <strong>CloudWatch RUM</strong>: Raw RUM events are stored by AWS for 30 days. Aggregated metrics are retained longer for trend
+            analysis, but contain no personally identifiable information.
+          </li>
+          <li>
+            <strong>Infrastructure logs</strong> (e.g., CloudFront, API Gateway, Lambda logs): Retained for 30-90 days for security and
+            operational purposes unless required for security investigations or compliance.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Cookies and storage</h2>
+        <ul>
+          <li>RUM may use cookies/local storage to establish session information when you have consented.</li>
+          <li>We store access tokens and minimal user info in your browser storage to enable login and API access.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Your choices</h2>
+        <ul>
+          <li>
+            You can decline analytics in the consent banner. You can later change your choice by clearing site data in your browser and
+            revisiting.
+          </li>
+          <li>If you revoke consent, RUM will not be initialized on future visits unless you consent again.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Your data rights (UK GDPR)</h2>
+        <p>Under UK GDPR, you have the following rights regarding your personal data:</p>
+        <ul>
+          <li><strong>Right of access</strong>: Request a copy of the personal data we hold about you</li>
+          <li><strong>Right to rectification</strong>: Request correction of inaccurate data</li>
+          <li><strong>Right to erasure ("right to be forgotten")</strong>: Request deletion of your account and personal data</li>
+          <li>
+            <strong>Right to data portability</strong>: Request to export your data in a structured, machine-readable format (JSON or CSV)
+            to transfer to another service
+          </li>
+          <li><strong>Right to object</strong>: Object to processing of your personal data</li>
+          <li><strong>Right to restrict processing</strong>: Request temporary restriction of data processing</li>
+        </ul>
+
+        <h3>How to Exercise Your Rights</h3>
+        <p>To exercise any of these rights, contact us at <strong>admin@diyaccounting.co.uk</strong> with:</p>
+        <ul>
+          <li>Your name and email address associated with your account</li>
+          <li>The specific right you wish to exercise</li>
+          <li>Any additional details to help us process your request</li>
+        </ul>
+        <p>
+          We will respond to your request within <strong>30 days</strong>. For data deletion, we will delete your bundles and authentication
+          data within 30 days. HMRC submission receipts will be retained for 7 years per UK tax record-keeping requirements, but will be
+          anonymized where possible.
+        </p>
+      </section>
+
+      <section>
+        <h2>Data processors</h2>
+        <p>
+          We use Amazon Web Services (AWS) to host and operate the website, API, and monitoring services. RUM data is processed by AWS in
+          the EU West (London) region. AWS is GDPR-compliant and acts as a data processor on our behalf.
+        </p>
+        <p>AWS services we use include:</p>
+        <ul>
+          <li><strong>Amazon CloudWatch RUM</strong>: Real user monitoring and performance analytics</li>
+          <li><strong>Amazon CloudFront</strong>: Content delivery and edge caching</li>
+          <li><strong>AWS Lambda</strong>: Serverless API functions</li>
+          <li><strong>Amazon DynamoDB</strong>: Data storage for receipts and user bundles</li>
+          <li><strong>Amazon Cognito</strong>: User authentication</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Security incidents</h2>
+        <p>
+          We implement industry-standard security measures including encryption at rest and in transit (TLS 1.2+, AES-256), access controls,
+          and regular security monitoring.
+        </p>
+        <p>
+          In the event of a data breach affecting your personal data, we will notify you and the Information Commissioner's Office (ICO)
+          within
+          <strong>72 hours</strong> as required by UK GDPR. We will also notify HMRC within 72 hours if the breach affects HMRC-related data
+          or OAuth credentials.
+        </p>
+      </section>
+
+      <section>
+        <h2>Changes to this policy</h2>
+        <p>
+          We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the most recent changes. Material
+          changes will be notified via email or prominent notice in the application. Continued use after changes constitutes acceptance of
+          the updated policy.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          For privacy questions, data requests, or security concerns, contact:<br />
+          <strong>Email:</strong> admin@diyaccounting.co.uk<br />
+          <strong>Company:</strong> DIY Accounting Limited
+        </p>
+        <p>For issue reports, please include your browser, approximate time, and the page you were on.</p>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="#" id="viewSourceLink" style="display: none">view source</a>
+          <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+          <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+          <a href="./privacy.html">privacy</a>
+          <a href="./terms.html">terms</a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+        <div class="footer-right" id="localstorageContainer"></div>
+      </div>
+    </footer>
+
+    <script type="module" src="./submit.js"></script>
+    <script src="./lib/request-cache.js"></script>
+    <script src="./lib/toml-parser.js"></script>
+    <script src="./widgets/hamburger-menu.js"></script>
+    <script src="./widgets/entitlement-status.js"></script>
+    <script src="./widgets/auth-status.js"></script>
+    <script type="module" src="./widgets/view-source-link.js"></script>
+    <script src="./widgets/localstorage-viewer.js"></script>
+  </body>
+</html>

@@ -1,0 +1,343 @@
+<!-- account/receipts.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIY Accounting Submit - Receipts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../submit.css" />
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <!-- HEAD-prefetch to help mitigate API cold starts for this page's calls -->
+    <!--script async src="../../prefetch/prefetch-hmrc-receipt-head.js"></script-->
+    <!--script async src="../../prefetch/prefetch-hmrc-receipt-name-head.js"></script-->
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="../../index.html">Home</a>
+            <a href="../../account/bundles.html">Bundles</a>
+            <a href="../receipt/receipts.html">Receipts</a>
+            <a href="../../guide/index.html">User Guide</a>
+            <a href="../../about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="../../auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1>DIY Accounting Submit</h1>
+      <p class="subtitle">Your submission receipts</p>
+    </header>
+
+    <div id="mainContent">
+      <div class="form-container">
+        <div id="unauthenticatedHint" style="display: none; margin-bottom: 1em; color: #b30000">Please log in to view your receipts.</div>
+        <div style="overflow-x: auto">
+          <table id="receiptsTable" class="data-table" style="width: 100%; display: none">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Receipt</th>
+                <th>Size</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="emptyState" style="display: none; margin-top: 1em; color: #555">No receipts yet.</div>
+
+        <div class="export-controls" id="exportControls" style="display: none">
+          <button class="btn-small" id="exportCsvBtn">Export CSV</button>
+        </div>
+      </div>
+
+      <div id="receiptDisplay" class="receipt-display" style="display: none">
+        <h3>Receipt Details</h3>
+        <div id="receiptContent"></div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="#" id="viewSourceLink" style="display: none">view source</a>
+          <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+          <a id="apiDocsLink" style="display: inline" target="_blank" href="../../docs/index.html"> api </a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+        <div class="footer-right" id="localstorageContainer"></div>
+      </div>
+    </footer>
+
+    <script type="module" src="../../submit.js"></script>
+    <script src="../../lib/request-cache.js"></script>
+    <script src="../../lib/toml-parser.js"></script>
+    <script src="../../widgets/hamburger-menu.js"></script>
+    <script src="../../widgets/entitlement-status.js"></script>
+    <script src="../../widgets/auth-status.js"></script>
+    <script type="module" src="../../widgets/view-source-link.js"></script>
+    <script src="../../widgets/localstorage-viewer.js"></script>
+    <script>
+      function getIdToken() {
+        return localStorage.getItem("cognitoIdToken");
+      }
+
+      async function fetchReceipts() {
+        const idToken = getIdToken();
+        const unauthHint = document.getElementById("unauthenticatedHint");
+        const exportControls = document.getElementById("exportControls");
+        const table = document.getElementById("receiptsTable");
+        const tbody = table.querySelector("tbody");
+        const empty = document.getElementById("emptyState");
+
+        if (!idToken) {
+          unauthHint.style.display = "block";
+          exportControls.style.display = "none";
+          table.style.display = "none";
+          empty.style.display = "none";
+          return;
+        }
+
+        unauthHint.style.display = "none";
+
+        const res = await window.fetchWithIdToken("/api/v1/hmrc/receipt", {});
+        if (!res.ok) {
+          tbody.innerHTML = "";
+          table.style.display = "none";
+          empty.textContent = "Failed to load receipts";
+          empty.style.display = "block";
+          exportControls.style.display = "none";
+          return;
+        }
+        const json = await res.json();
+        const items = Array.isArray(json.receipts) ? json.receipts : [];
+        tbody.innerHTML = "";
+        if (items.length === 0) {
+          table.style.display = "none";
+          empty.textContent = "No receipts yet.";
+          empty.style.display = "block";
+          exportControls.style.display = "none";
+        } else {
+          empty.style.display = "none";
+          table.style.display = "table";
+          exportControls.style.display = "block";
+          for (const it of items) {
+            const tr = document.createElement("tr");
+
+            // Date cell
+            const date = new Date(it.timestamp);
+            const dateCell = document.createElement("td");
+            dateCell.textContent = isNaN(date.getTime()) ? it.timestamp : date.toLocaleString("en-GB");
+
+            // Receipt cell with clickable label and download icon
+            const receiptCell = document.createElement("td");
+            const receiptLabel = document.createElement("a");
+            receiptLabel.className = "receipt-label";
+            receiptLabel.href = "#";
+            receiptLabel.textContent = it.formBundleNumber || it.name || "Unknown";
+            receiptLabel.onclick = (e) => {
+              e.preventDefault();
+              viewReceipt(it.name);
+            };
+
+            const downloadIcon = document.createElement("a");
+            downloadIcon.className = "download-icon";
+            downloadIcon.href = "#";
+            downloadIcon.innerHTML = "⬇";
+            downloadIcon.title = "Download receipt";
+            downloadIcon.onclick = (e) => {
+              e.preventDefault();
+              downloadReceipt(it.name);
+            };
+
+            receiptCell.appendChild(receiptLabel);
+            receiptCell.appendChild(downloadIcon);
+
+            // Size cell
+            const sizeCell = document.createElement("td");
+            sizeCell.textContent = typeof it.size === "number" ? `${it.size} bytes` : "";
+
+            tr.appendChild(dateCell);
+            tr.appendChild(receiptCell);
+            tr.appendChild(sizeCell);
+            tbody.appendChild(tr);
+          }
+        }
+      }
+
+      async function viewReceipt(name) {
+        const idToken = getIdToken();
+        const res = await window.fetchWithIdToken(`/api/v1/hmrc/receipt/${encodeURIComponent(name)}`, {});
+        if (!res.ok) return alert("Failed to fetch receipt");
+        const text = await res.text();
+
+        try {
+          const receiptData = JSON.parse(text);
+          displayReceiptTable(receiptData, name);
+        } catch (e) {
+          // If not JSON, display as text
+          displayReceiptTable({ content: text }, name);
+        }
+      }
+
+      function displayReceiptTable(data, name) {
+        const receiptDisplay = document.getElementById("receiptDisplay");
+        const receiptContent = document.getElementById("receiptContent");
+
+        // Create table
+        const table = document.createElement("table");
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+
+        // Add table header
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        const propHeader = document.createElement("th");
+        propHeader.textContent = "Property";
+        const valueHeader = document.createElement("th");
+        valueHeader.textContent = "Value";
+        headerRow.appendChild(propHeader);
+        headerRow.appendChild(valueHeader);
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Add table body
+        const tbody = document.createElement("tbody");
+
+        // Add receipt name first
+        const nameRow = document.createElement("tr");
+        const nameProp = document.createElement("td");
+        nameProp.textContent = "Receipt Name";
+        nameProp.style.fontWeight = "bold";
+        const nameValue = document.createElement("td");
+        nameValue.textContent = name;
+        nameRow.appendChild(nameProp);
+        nameRow.appendChild(nameValue);
+        tbody.appendChild(nameRow);
+
+        // Add all data properties
+        function addDataToTable(obj, prefix = "") {
+          for (const [key, value] of Object.entries(obj)) {
+            const row = document.createElement("tr");
+            const propCell = document.createElement("td");
+            const valueCell = document.createElement("td");
+
+            const displayKey = prefix ? `${prefix}.${key}` : key;
+            propCell.textContent = displayKey;
+            propCell.style.fontWeight = "bold";
+
+            if (value && typeof value === "object" && !Array.isArray(value)) {
+              valueCell.textContent = "[Object]";
+              row.appendChild(propCell);
+              row.appendChild(valueCell);
+              tbody.appendChild(row);
+              addDataToTable(value, displayKey);
+            } else if (Array.isArray(value)) {
+              valueCell.textContent = `[Array with ${value.length} items]`;
+              row.appendChild(propCell);
+              row.appendChild(valueCell);
+              tbody.appendChild(row);
+              value.forEach((item, index) => {
+                if (item && typeof item === "object") {
+                  addDataToTable(item, `${displayKey}[${index}]`);
+                } else {
+                  const itemRow = document.createElement("tr");
+                  const itemProp = document.createElement("td");
+                  const itemValue = document.createElement("td");
+                  itemProp.textContent = `${displayKey}[${index}]`;
+                  itemProp.style.fontWeight = "bold";
+                  itemValue.textContent = String(item);
+                  itemRow.appendChild(itemProp);
+                  itemRow.appendChild(itemValue);
+                  tbody.appendChild(itemRow);
+                }
+              });
+            } else {
+              valueCell.textContent = String(value);
+              row.appendChild(propCell);
+              row.appendChild(valueCell);
+              tbody.appendChild(row);
+            }
+          }
+        }
+
+        addDataToTable(data);
+        table.appendChild(tbody);
+
+        // Clear and populate content
+        receiptContent.innerHTML = "";
+        receiptContent.appendChild(table);
+
+        // Show the display area
+        receiptDisplay.style.display = "block";
+
+        // Scroll to the receipt display
+        receiptDisplay.scrollIntoView({ behavior: "smooth" });
+      }
+
+      async function downloadReceipt(name) {
+        const idToken = getIdToken();
+        const res = await window.fetchWithIdToken(`/api/v1/hmrc/receipt/${encodeURIComponent(name)}`, {});
+        if (!res.ok) return alert("Failed to download receipt");
+        const blob = new Blob([await res.text()], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      function exportCsv(rows) {
+        const header = ["Date", "Form bundle", "Size"];
+        const lines = [header.join(",")];
+        for (const r of rows) lines.push(r.join(","));
+        const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "receipts.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
+      document.getElementById("exportCsvBtn").addEventListener("click", async () => {
+        const idToken = getIdToken();
+        const res = await window.fetchWithIdToken("/api/v1/hmrc/receipt", {});
+        if (!res.ok) return alert("Failed to export CSV");
+        const json = await res.json();
+        const items = Array.isArray(json.receipts) ? json.receipts : [];
+        const rows = items.map((it) => [it.timestamp, it.formBundleNumber || "", it.size || ""]);
+        exportCsv(rows);
+      });
+
+      // Auto-refresh on page focus
+      window.addEventListener("focus", () => {
+        fetchReceipts();
+      });
+
+      // Initialize page - wait for submit.js module to be ready
+      function initPage() {
+        checkAuthStatus();
+        fetchReceipts();
+      }
+
+      if (window.__submitReady__) {
+        initPage();
+      } else {
+        document.addEventListener("submit-ready", initPage, { once: true });
+      }
+    </script>
+  </body>
+</html>

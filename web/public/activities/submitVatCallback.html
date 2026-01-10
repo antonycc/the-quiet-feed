@@ -1,0 +1,201 @@
+<!-- submitVatCallback.html -->
+<!-- TODO: Move to /hmrc/callback.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIY Accounting Submit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../submit.css" />
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <!-- HEAD-prefetch to help mitigate API cold starts for this page's calls -->
+    <!--script async src="../prefetch/prefetch-hmrc-token-head.js"></script-->
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="../index.html">Home</a>
+            <a href="../account/bundles.html">Bundles</a>
+            <a href="../hmrc/receipt/receipts.html">Receipts</a>
+            <a href="../guide/index.html">User Guide</a>
+            <a href="../about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="../auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1>DIY Accounting Submit</h1>
+      <p class="subtitle">Submit UK VAT returns to HMRC under Making Tax Digital (MTD)</p>
+    </header>
+
+    <div id="mainContent">
+      <div id="statusMessagesContainer"></div>
+
+      <div id="loadingSpinner" class="spinner" style="display: none"></div>
+
+      <div class="navigation-container" style="text-align: center; margin-top: 2em">
+        <button type="button" class="btn" id="navigationBtn" onclick="window.location.href = '../index.html'">Return home</button>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-left">
+        <a href="#" id="viewSourceLink" style="display: none">view source</a>
+        <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+        <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+      </div>
+      <div class="footer-content">
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="../submit.js"></script>
+    <script src="../lib/request-cache.js"></script>
+    <script src="../lib/toml-parser.js"></script>
+    <script src="../widgets/hamburger-menu.js"></script>
+    <script src="../widgets/entitlement-status.js"></script>
+    <script src="../widgets/auth-status.js"></script>
+    <script src="../widgets/status-messages.js"></script>
+    <script src="../widgets/loading-spinner.js"></script>
+    <script>
+      // OAuth callback handling
+
+      async function handleOAuthCallback() {
+        const code = getValidatedAuthorisationCode();
+
+        if (!code) {
+          console.error("No valid authorization code found in URL parameters.");
+          showStatus("No valid authorization code found. Please try again.", "error");
+        } else {
+          try {
+            showLoading();
+            showStatus("Exchanging authorization code for access token...", "info");
+
+            // Exchange code for access token
+            const accessToken = await exchangeToken(code);
+
+            showStatus("Obtained Access Token from HMRC...", "info");
+
+            // Clean up session storage
+            sessionStorage.removeItem("oauth_state");
+            sessionStorage.setItem("hmrcAccessToken", accessToken);
+          } catch (error) {
+            console.error("Submission error:", error);
+            showStatus(`Submission failed: ${error.message}`, "error");
+          } finally {
+            //hideLoading();
+          }
+        }
+
+        // Check currentActivity in localStorage and re-direct if needed
+        checkCurrentActivityAndRedirect();
+      }
+
+      function getValidatedAuthorisationCode() {
+        console.log("OAuth callback handler");
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+        const state = urlParams.get("state");
+        const error = urlParams.get("error");
+
+        if (error) {
+          showStatus(`OAuth error: ${error}`, "error");
+          console.error("OAuth callback handler (error exit)");
+          return null;
+        }
+
+        if (code && state) {
+          const storedState = sessionStorage.getItem("oauth_state");
+
+          if (state !== storedState) {
+            showStatus("Invalid OAuth state. Please try again.", "error");
+            console.error("OAuth callback handler (invalid state exit)");
+            return null;
+          }
+
+          // Clear URL parameters
+          console.log("Page transition initiated: Clearing URL parameters");
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          // Continue with token exchange and submission
+          console.log("OAuth callback handler (normal completion)");
+          return code;
+        } else {
+          console.log("OAuth callback handler (no action taken)");
+          return null;
+        }
+      }
+
+      async function exchangeToken(code) {
+        const url = `/api/v1/hmrc/token`;
+        const body = JSON.stringify({ code });
+        console.log(`Exchanging token. Remote call initiated: POST ${url} ++ Body: ${body}`);
+
+        const requestHeaders = {
+          "Content-Type": "application/json",
+        };
+
+        // Get hmrcAccount from sessionStorage if available
+        const hmrcAccount = sessionStorage.getItem("hmrcAccount");
+        if (hmrcAccount) {
+          requestHeaders["hmrcAccount"] = hmrcAccount;
+        }
+
+        // Include Cognito idToken so backend can associate the HMRC OAuth audit with the authenticated web user
+        const response = await window.fetchWithIdToken(url, {
+          method: "POST",
+          headers: requestHeaders,
+          body,
+        });
+        if (!response.ok) {
+          const message = `Failed to exchange token. Remote call failed: POST ${url} - Status: ${response.status} ${response.statusText}`;
+          console.error(message);
+          throw new Error(message);
+        }
+
+        const responseJson = await response.json();
+        const accessToken = responseJson.accessToken;
+        if (!accessToken) {
+          const message = `Failed to exchange token. Remote call response did not include accessToken: POST ${url} - Status: ${response.status} ${response.statusText} - Body: ${JSON.stringify(responseJson)}`;
+          console.error(message);
+          throw new Error(message);
+        }
+
+        console.log(`Exchanged token. Remote call completed successfully: POST ${url}`, responseJson, accessToken);
+        return accessToken;
+      }
+
+      function checkCurrentActivityAndRedirect() {
+        // Get hmrcAccount from sessionStorage if available
+        const hmrcAccount = sessionStorage.getItem("hmrcAccount");
+        const requestQueryParams = hmrcAccount === "sandbox" ? "?hmrcAccount=sandbox" : "";
+        const currentActivity = sessionStorage.getItem("currentActivity");
+        if (currentActivity) {
+          console.log("Current activity found:", currentActivity);
+          window.location.href = `${currentActivity}${requestQueryParams}`;
+        } else {
+          console.log("No current activity found, staying on current page");
+        }
+      }
+
+      // Wait for submit.js module to be ready before running the callback handler
+      if (window.__submitReady__) {
+        handleOAuthCallback();
+      } else {
+        document.addEventListener("submit-ready", handleOAuthCallback, { once: true });
+      }
+    </script>
+  </body>
+</html>

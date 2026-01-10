@@ -1,0 +1,20 @@
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+
+Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ADDITIONAL TERMS UNDER AGPL-3.0
+
+The AGPL-3.0 license includes all terms of GPL-3.0 with one critical addition:
+
+If you modify this Program and run it on a server so that users can interact with it remotely through a computer network, you must also make the modified source code available to those users under the terms of this license.
+
+For the complete legal text of the GNU Affero General Public License version 3, see: https://www.gnu.org/licenses/agpl-3.0.txt

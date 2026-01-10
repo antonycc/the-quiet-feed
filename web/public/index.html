@@ -1,0 +1,373 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIY Accounting Submit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./submit.css" />
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <!-- HEAD-prefetch scripts to prime API Gateway/Lambda and authorizers to reduce cold-start impact -->
+    <!--script async src="./prefetch/prefetch-catalog-head.js"></script-->
+    <!--script async src="./prefetch/prefetch-bundle-head.js"></script-->
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="index.html">Home</a>
+            <a href="account/bundles.html">Bundles</a>
+            <a href="hmrc/receipt/receipts.html">Receipts</a>
+            <a href="guide/index.html">User Guide</a>
+            <a href="about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1>DIY Accounting Submit</h1>
+      <p class="subtitle">Submit UK VAT returns to HMRC under Making Tax Digital (MTD)</p>
+    </header>
+
+    <div id="mainContent">
+      <div id="statusMessagesContainer"></div>
+
+      <div class="form-container" style="text-align: center">
+        <h2>Select an activity to continue:</h2>
+
+        <div id="dynamicActivities" style="margin: 2em 0"></div>
+
+        <!--div id="activitiesByBundle" style="text-align: left; margin: 1.5em auto; max-width: 640px"></div-->
+
+        <div
+          class="add-service-section"
+          style="margin: 2em 0; padding: 1.5em; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #ddd"
+        >
+          <p style="margin-bottom: 1em; color: #666; font-style: italic">
+            Need more choices? Select additional bundles to expand your available activities.
+          </p>
+          <button
+            type="button"
+            class="btn"
+            onclick="window.location.href = 'account/bundles.html'"
+            style="background-color: #28a745; border-color: #28a745"
+          >
+            Add Bundle
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="#" id="viewSourceLink" style="display: none">view source</a>
+          <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+          <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+          <a href="privacy.html">privacy</a>
+          <a href="terms.html">terms</a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+        <div class="footer-right" id="localstorageContainer"></div>
+      </div>
+    </footer>
+
+    <script type="module" src="./submit.js"></script>
+    <script src="lib/request-cache.js"></script>
+    <script src="lib/toml-parser.js"></script>
+    <script src="widgets/hamburger-menu.js"></script>
+    <script src="widgets/entitlement-status.js"></script>
+    <script src="widgets/auth-status.js"></script>
+    <script type="module" src="widgets/view-source-link.js"></script>
+    <script src="widgets/localstorage-viewer.js"></script>
+    <script>
+      // In-memory user bundles state (list of bundleId strings)
+      let __userBundles = [];
+      let __fetchBundlesController = null;
+
+      async function initializeBundles() {
+        const idToken = localStorage.getItem("cognitoIdToken");
+        const userInfo = localStorage.getItem("userInfo");
+        if (idToken && userInfo) {
+          console.log("User is authenticated");
+
+          // Abort previous fetch if any
+          if (__fetchBundlesController) {
+            __fetchBundlesController.abort();
+          }
+          __fetchBundlesController = new AbortController();
+          const signal = __fetchBundlesController.signal;
+
+          // Fetch user bundles from endpoint (single source of truth)
+          try {
+            const rc = window.requestCache;
+            let bundlesData;
+            if (rc && typeof rc.getJSON === "function") {
+              bundlesData = await rc.getJSON("/api/v1/bundle", {
+                ttlMs: 5000,
+                init: { headers: { Authorization: `Bearer ${idToken}` }, signal },
+              });
+            } else {
+              const response = await window.fetchWithIdToken("/api/v1/bundle", { signal });
+              if (response.ok) {
+                bundlesData = await response.json();
+              }
+            }
+
+            if (bundlesData && bundlesData.bundles && Array.isArray(bundlesData.bundles)) {
+              __userBundles = bundlesData.bundles.map((b) => b.bundleId);
+            } else {
+              __userBundles = [];
+            }
+          } catch (err) {
+            if (err.name === "AbortError") {
+              console.log("Fetch user bundles aborted");
+              return;
+            }
+            console.warn("Failed to fetch bundles:", err);
+            __userBundles = [];
+          } finally {
+            if (__fetchBundlesController?.signal === signal) {
+              __fetchBundlesController = null;
+            }
+          }
+          renderDynamicActivities();
+        } else {
+          console.log("User is not authenticated");
+          __userBundles = [];
+          renderDynamicActivities();
+        }
+      }
+
+      // Activities rendering based on bundles
+      function parseUserBundles() {
+        // Return in-memory state; do not use localStorage for bundles
+        return Array.isArray(__userBundles) ? __userBundles : [];
+      }
+
+      //function hasBundle(bundles, id) {
+      //  return (bundles || []).some((b) => typeof b === "string" && b === id);
+      //}
+
+      // Parse bundle expiry date from bundle string or object
+      function parseBundleExpiry(bundleEntry) {
+        if (!bundleEntry) return null;
+        if (typeof bundleEntry === "object") return bundleEntry.expiry || null;
+        if (typeof bundleEntry !== "string") return null;
+
+        const parts = bundleEntry.split("|");
+        if (parts.length < 2) return null;
+        const expiryMatch = parts[1].match(/EXPIRY=(.+)/);
+        if (expiryMatch && expiryMatch[1]) {
+          return expiryMatch[1]; // ISO date string like "2025-12-31" or full ISO timestamp
+        }
+        return null;
+      }
+
+      // Check if a bundle is expired
+      function isBundleExpired(bundleEntry) {
+        const expiryStr = parseBundleExpiry(bundleEntry);
+        if (!expiryStr) return false; // No expiry means not expired
+        const expiryDate = new Date(expiryStr);
+        if (isNaN(expiryDate.getTime())) return false; // Invalid date
+        return expiryDate < new Date(); // Expired if expiry date is in the past
+      }
+
+      // Get user's active bundles (automatic + granted non-expired)
+      function getActiveBundles(catalog, userBundles) {
+        const active = new Set();
+
+        // Add automatic bundles
+        if (catalog.bundles) {
+          for (const bundle of catalog.bundles) {
+            if (bundle.allocation === "automatic") {
+              active.add(bundle.id);
+            }
+          }
+        }
+
+        // Add granted non-expired bundles
+        for (const bundleEntry of userBundles) {
+          if (!isBundleExpired(bundleEntry)) {
+            const bundleId = typeof bundleEntry === "string" ? bundleEntry.split("|")[0] : bundleEntry.bundleId;
+            active.add(bundleId);
+          }
+        }
+
+        return Array.from(active);
+      }
+
+      // Get user's expired bundles
+      function getExpiredBundles(userBundles) {
+        const expired = new Set();
+        for (const bundleEntry of userBundles) {
+          if (isBundleExpired(bundleEntry)) {
+            const bundleId = typeof bundleEntry === "string" ? bundleEntry.split("|")[0] : bundleEntry.bundleId;
+            expired.add(bundleId);
+          }
+        }
+        return Array.from(expired);
+      }
+
+      // Check if user has access to an activity
+      function canAccessActivity(activity, activeBundles) {
+        if (!activity.bundles || !Array.isArray(activity.bundles)) return false;
+        return activity.bundles.some((bundleId) => activeBundles.includes(bundleId));
+      }
+
+      // function renderActivitiesByBundle() {
+      //   const container = document.getElementById("activitiesByBundle");
+      //   if (!container) return;
+      //
+      //   // Keep the bundle summary section for now, but we could make this dynamic too
+      //   const bundles = parseUserBundles();
+      //   const sections = [];
+      //
+      //   // Default bundle always available
+      //   sections.push(`
+      //     <section style="margin-bottom:1em;">
+      //       <h3 style="margin:0 0 .5em 0;">Default bundle</h3>
+      //       <ul>
+      //         <li>VAT Obligations (Production) – available</li>
+      //         <li>View receipts – available</li>
+      //       </ul>
+      //     </section>
+      //   `);
+      //
+      //   if (hasBundle(bundles, "test") || hasBundle(bundles, "test")) {
+      //     sections.push(`
+      //       <section style="margin-bottom:1em;">
+      //         <h3 style="margin:0 0 .5em 0;">Test API bundle</h3>
+      //         <ul>
+      //           <li>Submit VAT (Sandbox API) – available</li>
+      //           <li>VAT Obligations (Sandbox API) – available</li>
+      //         </ul>
+      //       </section>
+      //     `);
+      //   }
+      //
+      //   container.innerHTML = sections.join("");
+      //   container.style.display = "block"; // Make sure it's visible
+      // }
+
+      // Generate dynamic activity buttons
+      async function renderDynamicActivities() {
+        const dynamicContainer = document.getElementById("dynamicActivities");
+        if (!dynamicContainer) return;
+
+        try {
+          // Fetch catalog
+          const response = await fetch("/submit.catalogue.toml");
+          if (!response.ok) {
+            dynamicContainer.innerHTML = '<p style="color: #b00020;">Unable to load activities. Please try again later.</p>';
+            return;
+          }
+
+          const text = await response.text();
+          const catalog = window.TOML ? window.TOML.parse(text) : await response.json().catch(() => ({}));
+          const userBundles = parseUserBundles();
+          const activeBundles = getActiveBundles(catalog, userBundles);
+          const expiredBundles = getExpiredBundles(userBundles);
+
+          // Categorize activities into accessible, expired, and inaccessible
+          const accessibleActivities = [];
+          const expiredActivities = [];
+
+          for (const activity of catalog.activities || []) {
+            if (!activity.bundles || !Array.isArray(activity.bundles)) continue;
+
+            const hasNonExpiredAccess = activity.bundles.some((bundleId) => activeBundles.includes(bundleId));
+            const hasExpiredAccess = activity.bundles.some((bundleId) => expiredBundles.includes(bundleId));
+
+            if (hasNonExpiredAccess) {
+              accessibleActivities.push(activity);
+            } else if (hasExpiredAccess) {
+              expiredActivities.push(activity);
+            }
+          }
+
+          // If no activities at all, show message
+          if (accessibleActivities.length === 0 && expiredActivities.length === 0) {
+            dynamicContainer.innerHTML =
+              '<p style="color: #666;">No activities available. Request additional bundles to access more features.</p>';
+            return;
+          }
+
+          // Generate buttons for accessible activities
+          const activeButtons = accessibleActivities
+            .map((activity) => {
+              let path;
+              if (activity.paths) {
+                // Get the first path which contains .html (handles query parameters)
+                path = activity.paths.find((p) => p.includes(".html")) || "#";
+              } else {
+                path = activity.path || "#";
+              }
+              return `
+              <div style="margin: 1em 0">
+                <button type="button" class="btn" onclick="window.location.href='${path}'">
+                  ${activity.name}
+                </button>
+              </div>
+            `;
+            })
+            .join("");
+
+          // Generate disabled buttons for expired activities
+          const expiredButtons = expiredActivities
+            .map((activity) => {
+              return `
+              <div style="margin: 1em 0">
+                <button type="button" class="btn" disabled style="background-color: #ccc; border-color: #ccc; color: #666; cursor: not-allowed;">
+                  ${activity.name} (expired)
+                </button>
+              </div>
+            `;
+            })
+            .join("");
+
+          dynamicContainer.innerHTML = activeButtons + expiredButtons;
+        } catch (error) {
+          console.error("Error loading activities:", error);
+          dynamicContainer.innerHTML = '<p style="color: #b00020;">Error loading activities. Please refresh the page.</p>';
+        }
+      }
+
+      // Close menu when clicking outside
+      window.onclick = function (event) {
+        if (!event.target.matches(".hamburger-btn")) {
+          const dropdown = document.getElementById("menuDropdown");
+          if (dropdown.classList.contains("show")) {
+            dropdown.classList.remove("show");
+          }
+        }
+      };
+
+      sessionStorage.removeItem("currentActivity");
+      console.log("Current activity cleared");
+
+      // Initialize page - wait for submit.js module to be ready
+      function initPage() {
+        checkAuthStatus();
+        initializeBundles();
+      }
+
+      if (window.__submitReady__) {
+        initPage();
+      } else {
+        document.addEventListener("submit-ready", initPage, { once: true });
+      }
+    </script>
+  </body>
+</html>

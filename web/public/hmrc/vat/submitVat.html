@@ -1,0 +1,499 @@
+<!-- submitVat.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIY Accounting Submit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../submit.css" />
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <!-- HEAD-prefetch to help mitigate API cold starts for this page's calls -->
+    <!--script async src="../../prefetch/prefetch-hmrc-authurl-head.js"></script-->
+    <!--script async src="../../prefetch/prefetch-hmrc-vat-return-head.js"></script-->
+    <!--script async src="../../prefetch/prefetch-hmrc-receipt-head.js"></script-->
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="../../index.html">Home</a>
+            <a href="../../account/bundles.html">Bundles</a>
+            <a href="../receipt/receipts.html">Receipts</a>
+            <a href="../../guide/index.html">User Guide</a>
+            <a href="../../about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="../../auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1>DIY Accounting Submit</h1>
+      <p class="subtitle">Submit UK VAT returns to HMRC under Making Tax Digital (MTD)</p>
+    </header>
+
+    <div id="mainContent">
+      <div id="sandboxIndicator" class="sandbox-indicator">⚠️ SANDBOX MODE - Using HMRC Test API</div>
+
+      <div id="testDataLink" class="test-data-link">
+        <a
+          href="#"
+          onclick="
+            event.preventDefault();
+            window.testDataGenerator.populateSubmitVatForm();
+          "
+          >add test data</a
+        >
+      </div>
+
+      <div id="statusMessagesContainer"></div>
+
+      <div id="loadingSpinner" class="spinner" style="display: none"></div>
+
+      <!-- VAT Submission Form -->
+      <div id="vatForm" class="form-container">
+        <h2>VAT Return Submission</h2>
+        <form id="vatSubmissionForm">
+          <div class="form-group">
+            <label for="vatNumber">VAT Registration Number (VRN)</label>
+            <input
+              type="text"
+              id="vatNumber"
+              name="vatNumber"
+              required
+              value=""
+              placeholder="e.g., 176540158"
+              maxlength="9"
+              pattern="[0-9]{9}"
+            />
+            <div class="help-text">Enter your 9-digit VAT registration number</div>
+          </div>
+
+          <div class="form-group">
+            <label for="periodKey">Period Key</label>
+            <input type="text" id="periodKey" name="periodKey" required value="" placeholder="e.g., 24A1" maxlength="4" />
+            <div class="help-text">The identifier for the VAT period you're submitting for</div>
+          </div>
+
+          <div class="form-group">
+            <label for="vatDue">Total VAT Due (£)</label>
+            <input type="number" id="vatDue" name="vatDue" required value="" placeholder="e.g., 2400.00" step="0.01" min="0" />
+            <div class="help-text">Enter the total VAT amount due in pounds</div>
+          </div>
+
+          <!-- Developer Test Scenario Section -->
+          <div id="developerSection" class="form-group" style="display: none">
+            <label for="testScenario">Test Scenario (Developer/Sandbox Only)</label>
+            <select id="testScenario" name="testScenario">
+              <option value="">Default</option>
+              <!-- Values aligned with _developers/reference/hmrc-mtd-vat-api-1.0.yaml (POST /organisations/vat/{vrn}/returns) -->
+              <option value="INVALID_VRN">Invalid VRN</option>
+              <option value="INVALID_PERIODKEY">Invalid Period Key</option>
+              <option value="INVALID_PAYLOAD">Invalid Payload</option>
+              <option value="DUPLICATE_SUBMISSION">Duplicate Submission</option>
+              <option value="TAX_PERIOD_NOT_ENDED">Tax Period Not Ended</option>
+              <option value="INSOLVENT_TRADER">Insolvent Trader</option>
+              <option value="SUBMIT_API_HTTP_500">Submit API responds with 500</option>
+              <option value="SUBMIT_HMRC_API_HTTP_500">HMRC API responds with 500</option>
+              <option value="SUBMIT_HMRC_API_HTTP_503">HMRC API responds with 503</option>
+              <option value="SUBMIT_HMRC_API_HTTP_SLOW_10S">HMRC API responds slowly</option>
+            </select>
+            <div class="help-text">Test different HMRC sandbox error scenarios</div>
+            <div style="margin-top: 10px">
+              <input type="checkbox" id="runFraudPreventionHeaderValidation" name="runFraudPreventionHeaderValidation" />
+              <label for="runFraudPreventionHeaderValidation" style="display: inline; font-weight: normal"
+                >Validate Fraud Prevention Headers</label
+              >
+            </div>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">Submit VAT Return</button>
+        </form>
+
+        <div class="developer-controls">
+          <button type="button" id="toggleDeveloperMode" class="developer-button">Show Developer Options</button>
+        </div>
+      </div>
+
+      <!-- Receipt Display -->
+      <div id="receiptDisplay" class="receipt" style="display: none">
+        <h3>✅ VAT Return Submitted Successfully!</h3>
+        <div class="receipt-details">
+          <div class="receipt-item">
+            <span><strong>Processing Date:</strong></span>
+            <span id="processingDate"></span>
+          </div>
+          <div class="receipt-item">
+            <span><strong>Form Bundle Number:</strong></span>
+            <span id="formBundleNumber"></span>
+          </div>
+          <div class="receipt-item">
+            <span><strong>Charge Reference:</strong></span>
+            <span id="chargeRefNumber"></span>
+          </div>
+        </div>
+        <p style="margin-top: 1em; color: #666; font-size: 0.9em">
+          Your VAT return has been successfully submitted to HMRC. Please keep this receipt for your records.
+        </p>
+      </div>
+
+      <!-- Navigation Button -->
+      <div class="navigation-container" style="text-align: center; margin-top: 2em">
+        <button type="button" class="btn" id="homePageFromMainBtn" onclick="window.location.href = '../../index.html'">
+          Return to the home page
+        </button>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-left">
+        <a href="#" id="viewSourceLink" style="display: none">view source</a>
+        <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+        <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+      </div>
+      <div class="footer-content">
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../../lib/env-loader.js"></script>
+    <script src="../../lib/auth-url-builder.js"></script>
+    <script src="../../lib/test-data-generator.js"></script>
+    <script type="module" src="../../submit.js"></script>
+    <script src="../../lib/request-cache.js"></script>
+    <script src="../../lib/toml-parser.js"></script>
+    <script src="../../widgets/hamburger-menu.js"></script>
+    <script src="../../widgets/entitlement-status.js"></script>
+    <script src="../../widgets/auth-status.js"></script>
+    <script src="../../widgets/status-messages.js"></script>
+    <script>
+      (async function () {
+        try {
+          await window.loadEnv();
+        } catch (err) {
+          console.warn("Failed to load environment:", err);
+        }
+      })();
+
+      // Form submission handler
+      async function handleFormSubmission(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const vatNumber = formData.get("vatNumber").trim();
+        const periodKey = formData.get("periodKey").trim();
+        const vatDue = formData.get("vatDue");
+        const testScenario = (document.getElementById("testScenario")?.value || "").trim();
+        const runFraudPreventionHeaderValidation = document.getElementById("runFraudPreventionHeaderValidation")?.checked || false;
+
+        // Basic validation
+        if (!vatNumber || !periodKey || !vatDue) {
+          showStatus("Please fill in all required fields.", "error");
+          return;
+        }
+
+        if (!/^\d{9}$/.test(vatNumber)) {
+          showStatus("VAT number must be exactly 9 digits.", "error");
+          return;
+        }
+
+        if (parseFloat(vatDue) < 0) {
+          showStatus("VAT due cannot be negative.", "error");
+          return;
+        }
+
+        try {
+          showLoading();
+          showStatus("Initiating HMRC authentication...", "info");
+
+          // Store submission data and generate state
+          const state = generateRandomState();
+          submissionData = {
+            vatNumber,
+            periodKey,
+            vatDue,
+            testScenario,
+            runFraudPreventionHeaderValidation,
+          };
+
+          // Add current activity hmrcAccount header if present in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const hmrcAccount = urlParams.get("hmrcAccount");
+          const currentActivity = `${location.pathname}`;
+          const requestData = JSON.stringify(submissionData);
+
+          sessionStorage.setItem("oauth_state", state);
+          sessionStorage.setItem("submission_data", requestData);
+          sessionStorage.setItem("currentActivity", currentActivity);
+          if (hmrcAccount === "sandbox") {
+            sessionStorage.setItem("hmrcAccount", hmrcAccount);
+          } else {
+            sessionStorage.removeItem("hmrcAccount");
+          }
+          console.log("Stored pending request and current activity:", requestData, currentActivity, hmrcAccount);
+
+          // Get OAuth URL
+          let authResponseUrl;
+          if (window.__env && window.authUrlBuilder) {
+            authResponseUrl = window.authUrlBuilder.buildHmrcAuthUrl(state, "write:vat read:vat", hmrcAccount || "live");
+            console.log("Using client-side generated HMRC Auth URL:", authResponseUrl);
+          } else {
+            // Get OAuth URL from API (fallback)
+            const authResponse = await getAuthUrl(state, "hmrc");
+            authResponseUrl = authResponse.authUrl;
+            console.log("Using server-side HMRC Auth URL:", authResponseUrl);
+          }
+
+          sessionStorage.setItem("currentActivity", location.pathname);
+          console.log("Current activity set to:", location.pathname);
+
+          showStatus(`Redirecting to HMRC for authentication at ${authResponseUrl}...`, "info");
+
+          // Redirect to HMRC OAuth
+          console.log(`Page transition initiated: Redirecting to HMRC OAuth URL ${authResponseUrl}`);
+          try {
+            window.__correlation?.prepareRedirect?.();
+          } catch {}
+          window.location.href = authResponseUrl;
+        } catch (error) {
+          console.error("Authentication error:", error);
+          showStatus(`Authentication failed: ${error.message}`, "error");
+          hideLoading();
+        }
+      }
+
+      // OAuth callback handling
+      function handleOAuthCallback() {
+        const accessToken = sessionStorage.getItem("hmrcAccessToken");
+        if (accessToken) {
+          console.log("OAuth callback handler (code present, auto-continue)");
+          continueVatSubmission();
+        } else {
+          console.log("OAuth callback handler (no action taken)");
+        }
+      }
+
+      async function continueVatSubmission() {
+        try {
+          const accessToken = sessionStorage.getItem("hmrcAccessToken");
+          const submissionData = JSON.parse(sessionStorage.getItem("submission_data") || "null");
+
+          if (!submissionData) {
+            console.log("No pending submission data found");
+            // Clear stale OAuth data
+            sessionStorage.removeItem("hmrcAccessToken");
+            sessionStorage.removeItem("oauth_state");
+            sessionStorage.removeItem("hmrcAccount");
+            return;
+          }
+
+          console.log("Retrieved submission data:", submissionData);
+
+          showStatus("Submitting VAT return to HMRC...", "info");
+
+          // Submit VAT return
+          const submitResponse = await submitVatWithCalculatedHeaders(
+            submissionData.vatNumber,
+            submissionData.periodKey,
+            submissionData.vatDue,
+            accessToken,
+          );
+
+          // Display success
+          showStatus("VAT return processed", "success");
+          displayReceipt(submitResponse);
+          // hideStatus(); // Don't hide success status immediately
+
+          // Clean up session storage - keep token for subsequent HMRC operations
+          sessionStorage.removeItem("currentActivity");
+          sessionStorage.removeItem("oauth_state");
+          sessionStorage.removeItem("submission_data");
+          // Keep hmrcAccessToken and hmrcAccount for subsequent operations (view return, obligations)
+          console.log("Continue submission handler (success, session storage cleared)");
+        } catch (error) {
+          console.error("Submission error:", error);
+          showStatus(`Submission failed: ${error.message}`, "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      async function submitVatWithCalculatedHeaders(vatNumber, periodKey, vatDue, accessToken) {
+        const storedData = JSON.parse(sessionStorage.getItem("submission_data") || "null");
+        const testScenario = (document.getElementById("testScenario")?.value || storedData?.testScenario || "").trim();
+        const runFraudPreventionHeaderValidation =
+          document.getElementById("runFraudPreventionHeaderValidation")?.checked || storedData?.runFraudPreventionHeaderValidation || false;
+
+        // Get Gov-Client headers
+        const govClientHeaders = await getGovClientHeaders();
+
+        const requestHeaders = {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          ...govClientHeaders,
+        };
+        if (testScenario) {
+          requestHeaders["Gov-Test-Scenario"] = testScenario;
+        }
+        return await submitVat(vatNumber, periodKey, vatDue, accessToken, requestHeaders, runFraudPreventionHeaderValidation);
+      }
+
+      async function submitVat(vatNumber, periodKey, vatDue, accessToken, headers, runFraudPreventionHeaderValidation) {
+        const url = "/api/v1/hmrc/vat/return";
+        const body = JSON.stringify({
+          vatNumber,
+          periodKey,
+          vatDue,
+          accessToken,
+          runFraudPreventionHeaderValidation,
+        });
+        console.log(`Submitting VAT. Remote call initiated: POST ${url} ++ Body: ${body}`);
+
+        const requestHeaders = {
+          "Content-Type": "application/json",
+          ...headers,
+        };
+
+        // Add hmrcAccount header if present
+        const hmrcAccount = sessionStorage.getItem("hmrcAccount");
+        if (hmrcAccount) {
+          requestHeaders["hmrcAccount"] = hmrcAccount;
+        }
+
+        const response = await window.authorizedFetch(url, {
+          method: "POST",
+          headers: requestHeaders,
+          body,
+        });
+        const responseJson = await response.json();
+        if (!response.ok) {
+          const message = `Failed to submit VAT. Remote call failed: POST ${url} - Status: ${response.status} ${response.statusText} - Body: ${JSON.stringify(responseJson)}`;
+          console.error(message);
+          throw new Error(message);
+        }
+
+        console.log(`Submitted VAT. Remote call completed successfully: POST ${url}`, responseJson, responseJson.receipt);
+        // Return the receipt object when present (production), otherwise return the full body (tests/mocks)
+        return responseJson?.receipt ?? responseJson;
+      }
+
+      function displayReceipt(response) {
+        console.log("Page display transition: Displaying receipt and hiding form", response);
+        // Hide the form
+        vatFormContainer.style.display = "none";
+
+        // Handle both direct receipt object and wrapped response (from module's submitVat)
+        const receipt = response.receipt ?? response;
+
+        // Format and display the processing date
+        const processingDate = new Date(receipt.processingDate);
+        document.getElementById("processingDate").textContent = processingDate.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        document.getElementById("formBundleNumber").textContent = receipt.formBundleNumber;
+        document.getElementById("chargeRefNumber").textContent = receipt.chargeRefNumber ?? "";
+
+        // Show the receipt
+        receiptDisplay.style.display = "block";
+      }
+
+      // Global variables
+      let accessToken = null;
+      let submissionData = null;
+
+      // DOM elements
+      const form = document.getElementById("vatSubmissionForm");
+      //const submitBtn = document.getElementById("submitBtn");
+      //const statusMessagesContainer = document.getElementById("statusMessagesContainer");
+      //const loadingSpinner = document.getElementById("loadingSpinner");
+      const receiptDisplay = document.getElementById("receiptDisplay");
+      const vatFormContainer = document.getElementById("vatForm");
+
+      // Initialize page
+      function initializePage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const vrn = urlParams.get("vrn");
+        const periodKey = urlParams.get("periodKey");
+        const hmrcAccount = urlParams.get("hmrcAccount");
+
+        if (vrn) {
+          document.getElementById("vatNumber").value = vrn;
+        }
+        if (periodKey) {
+          document.getElementById("periodKey").value = periodKey;
+        }
+
+        // Show sandbox indicator if hmrcAccount=sandbox
+        if (hmrcAccount === "sandbox") {
+          const sandboxIndicator = document.getElementById("sandboxIndicator");
+          if (sandboxIndicator) {
+            sandboxIndicator.classList.add("visible");
+          }
+          const testDataLink = document.getElementById("testDataLink");
+          if (testDataLink) {
+            testDataLink.classList.add("visible");
+          }
+        }
+
+        // Toggle developer mode button
+        const toggleBtn = document.getElementById("toggleDeveloperMode");
+        const devSection = document.getElementById("developerSection");
+
+        if (toggleBtn && devSection) {
+          toggleBtn.addEventListener("click", () => {
+            const isVisible = devSection.style.display !== "none";
+            devSection.style.display = isVisible ? "none" : "block";
+            toggleBtn.textContent = isVisible ? "Show Developer Options" : "Hide Developer Options";
+          });
+        }
+      }
+
+      // Event listeners
+      form.addEventListener("submit", handleFormSubmission);
+
+      // Input validation
+      document.getElementById("vatNumber").addEventListener("input", function (e) {
+        // Only allow digits
+        e.target.value = e.target.value.replace(/\D/g, "");
+      });
+
+      document.getElementById("periodKey").addEventListener("input", function (e) {
+        // Convert to uppercase
+        e.target.value = e.target.value.toUpperCase();
+      });
+
+      // Expose page-specific functions to window for testing
+      window.submitVat = submitVat;
+      window.handleOAuthCallback = handleOAuthCallback;
+      window.continueSubmission = continueVatSubmission;
+      window.displayReceipt = displayReceipt;
+      window.handleFormSubmission = handleFormSubmission;
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("JS block started loading: DOMContentLoaded event handler");
+        // Initialize page state (e.g., show sandbox indicator when applicable)
+        initializePage();
+        // Check if we're returning from OAuth
+        handleOAuthCallback();
+        console.log("JS block finished loading: DOMContentLoaded event handler");
+      });
+
+      console.log("JS block finished loading.");
+    </script>
+  </body>
+</html>

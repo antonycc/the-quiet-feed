@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VAT Obligations - DIY Accounting Submit</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../submit.css" />
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <!-- HEAD-prefetch to help mitigate API cold starts for this page's calls -->
+    <!--script async src="../../prefetch/prefetch-hmrc-authurl-head.js"></script-->
+    <!--script async src="../../prefetch/prefetch-hmrc-vat-obligation-head.js"></script-->
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="../../index.html">Home</a>
+            <a href="../../account/bundles.html">Bundles</a>
+            <a href="../receipt/receipts.html">Receipts</a>
+            <a href="../../guide/index.html">User Guide</a>
+            <a href="../../about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="../../auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1>VAT Obligations</h1>
+      <p class="subtitle">Retrieve VAT obligations from HMRC</p>
+    </header>
+
+    <div id="mainContent">
+      <div id="sandboxIndicator" class="sandbox-indicator">⚠️ SANDBOX MODE - Using HMRC Test API</div>
+
+      <div id="testDataLink" class="test-data-link">
+        <a
+          href="#"
+          onclick="
+            event.preventDefault();
+            window.testDataGenerator.populateVatObligationsForm();
+          "
+          >add test data</a
+        >
+      </div>
+
+      <div id="statusMessagesContainer"></div>
+
+      <div id="loadingSpinner" class="spinner" style="display: none"></div>
+
+      <!-- VAT Obligations Form -->
+      <div id="obligationsForm" class="form-container">
+        <button type="button" id="toggleSearchCriteriaBtn" class="secondary-button" style="display: none">
+          Show Obligation Search Criteria
+        </button>
+        <div id="searchCriteriaContainer">
+          <h2>Retrieve VAT Obligations</h2>
+          <form id="vatObligationsForm">
+            <div class="form-group">
+              <label for="vrn">VAT Registration Number (VRN)</label>
+              <input type="text" id="vrn" name="vrn" required value="" placeholder="e.g., 176540158" maxlength="9" pattern="[0-9]{9}" />
+              <div class="help-text">Enter your 9-digit VAT registration number</div>
+            </div>
+
+            <div class="form-group">
+              <label for="fromDate">From Date (optional)</label>
+              <input type="date" id="fromDate" name="fromDate" value="" />
+              <div class="help-text">Start date for obligation period filter, defaults to the start of calendar year.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="toDate">To Date (optional)</label>
+              <input type="date" id="toDate" name="toDate" value="" />
+              <div class="help-text">End date for obligation period filter, defaults to the current date.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="status">Status (optional)</label>
+              <select id="status" name="status">
+                <option value="">All statuses</option>
+                <option value="O">Open</option>
+                <option value="F">Fulfilled</option>
+              </select>
+              <div class="help-text">Filter by obligation status</div>
+            </div>
+
+            <!-- Developer Test Scenario Section -->
+            <div id="developerSection" class="form-group" style="display: none">
+              <label for="testScenario">Test Scenario (Developer/Sandbox Only)</label>
+              <select id="testScenario" name="testScenario">
+                <option value="">Default (One Quarterly Met)</option>
+                <option value="QUARTERLY_NONE_MET">Quarterly - None Met</option>
+                <option value="QUARTERLY_ONE_MET">Quarterly - One Met</option>
+                <option value="QUARTERLY_TWO_MET">Quarterly - Two Met</option>
+                <option value="QUARTERLY_THREE_MET">Quarterly - Three Met</option>
+                <option value="QUARTERLY_FOUR_MET">Quarterly - Four Met</option>
+                <option value="MONTHLY_NONE_MET">Monthly - None Met</option>
+                <option value="MONTHLY_ONE_MET">Monthly - One Met</option>
+                <option value="MONTHLY_TWO_MET">Monthly - Two Met</option>
+                <option value="MONTHLY_THREE_MET">Monthly - Three Met</option>
+                <option value="MONTHLY_OBS_01_OPEN">Monthly - Jan Open</option>
+                <option value="MONTHLY_OBS_02_OPEN">Monthly - Feb Open</option>
+                <option value="MONTHLY_OBS_03_OPEN">Monthly - Mar Open</option>
+                <option value="MONTHLY_OBS_04_OPEN">Monthly - Apr Open</option>
+                <option value="MONTHLY_OBS_05_OPEN">Monthly - May Open</option>
+                <option value="MONTHLY_OBS_06_OPEN">Monthly - Jun Open</option>
+                <option value="MONTHLY_OBS_07_OPEN">Monthly - Jul Open</option>
+                <option value="MONTHLY_OBS_08_OPEN">Monthly - Aug Open</option>
+                <option value="MONTHLY_OBS_09_OPEN">Monthly - Sep Open</option>
+                <option value="MONTHLY_OBS_10_OPEN">Monthly - Oct Open</option>
+                <option value="MONTHLY_OBS_11_OPEN">Monthly - Nov Open</option>
+                <option value="MONTHLY_OBS_12_OPEN">Monthly - Dec Open</option>
+                <option value="MONTHLY_OBS_12_FULFILLED">Monthly - All Fulfilled</option>
+                <option value="QUARTERLY_OBS_01_OPEN">Quarterly - Q1 Open</option>
+                <option value="QUARTERLY_OBS_02_OPEN">Quarterly - Q2 Open</option>
+                <option value="QUARTERLY_OBS_03_OPEN">Quarterly - Q3 Open</option>
+                <option value="QUARTERLY_OBS_04_OPEN">Quarterly - Q4 Open</option>
+                <option value="QUARTERLY_OBS_04_FULFILLED">Quarterly - All Fulfilled</option>
+                <option value="MULTIPLE_OPEN_MONTHLY">Multiple Open Monthly</option>
+                <option value="MULTIPLE_OPEN_QUARTERLY">Multiple Open Quarterly</option>
+                <option value="OBS_SPANS_MULTIPLE_YEARS">Across Multiple Years - Open</option>
+                <option value="INSOLVENT_TRADER">Insolvent Trader</option>
+                <option value="NOT_FOUND">Not Found</option>
+                <option value="SUBMIT_API_HTTP_500">Submit API responds with 500</option>
+                <option value="SUBMIT_HMRC_API_HTTP_500">HMRC API responds with 500</option>
+                <option value="SUBMIT_HMRC_API_HTTP_503">HMRC API responds with 503</option>
+                <option value="SUBMIT_HMRC_API_HTTP_SLOW_10S">HMRC API responds slowly</option>
+              </select>
+              <div class="help-text">Test different HMRC sandbox scenarios</div>
+              <div style="margin-top: 10px">
+                <input type="checkbox" id="runFraudPreventionHeaderValidation" name="runFraudPreventionHeaderValidation" />
+                <label for="runFraudPreventionHeaderValidation" style="display: inline; font-weight: normal"
+                  >Validate Fraud Prevention Headers</label
+                >
+              </div>
+            </div>
+
+            <button type="submit" id="retrieveBtn" class="btn">Retrieve Obligations</button>
+          </form>
+
+          <div class="developer-controls">
+            <button type="button" id="toggleDeveloperMode" class="developer-button">Show Developer Options</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Display -->
+      <div id="obligationsResults" class="results-container" style="display: none">
+        <h3>VAT Obligations</h3>
+        <div id="obligationsTable"></div>
+        <div class="button-group">
+          <button type="button" id="newSearchBtn" class="secondary-button">New Search</button>
+        </div>
+      </div>
+
+      <!-- Navigation Button -->
+      <div class="navigation-container" style="text-align: center; margin-top: 2em">
+        <button type="button" class="btn" id="homePageBtn" onclick="window.location.href = '../../index.html'">Return to Home</button>
+        <button type="button" class="btn" id="receiptsPageBtn" onclick="window.location.href = '../receipt/receipts.html'">
+          My Receipts
+        </button>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-left">
+        <a href="#" id="viewSourceLink" style="display: none">view source</a>
+        <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+        <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+      </div>
+      <div class="footer-content">
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../../lib/env-loader.js"></script>
+    <script src="../../lib/auth-url-builder.js"></script>
+    <script src="../../lib/test-data-generator.js"></script>
+    <script type="module" src="../../submit.js"></script>
+    <script src="../../lib/request-cache.js"></script>
+    <script src="../../lib/toml-parser.js"></script>
+    <script src="../../widgets/hamburger-menu.js"></script>
+    <script src="../../widgets/entitlement-status.js"></script>
+    <script src="../../widgets/auth-status.js"></script>
+    <script src="../../widgets/status-messages.js"></script>
+    <script>
+      (async function () {
+        try {
+          await window.loadEnv();
+        } catch (err) {
+          console.warn("Failed to load environment:", err);
+        }
+      })();
+      // Global variables
+      let obligationsData = null;
+      let searchCriteriaHidden = false;
+
+      // Functions to manage search criteria visibility
+      function hideSearchCriteria() {
+        const container = document.getElementById("searchCriteriaContainer");
+        const toggleBtn = document.getElementById("toggleSearchCriteriaBtn");
+        if (container && toggleBtn) {
+          container.style.display = "none";
+          toggleBtn.style.display = "block";
+          searchCriteriaHidden = true;
+        }
+      }
+
+      function showSearchCriteria() {
+        const container = document.getElementById("searchCriteriaContainer");
+        const toggleBtn = document.getElementById("toggleSearchCriteriaBtn");
+        if (container && toggleBtn) {
+          container.style.display = "block";
+          toggleBtn.style.display = "none";
+          searchCriteriaHidden = false;
+        }
+      }
+
+      // Check if we're in sandbox/test mode to show developer options
+      function initializePage() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hmrcAccount = urlParams.get("hmrcAccount");
+
+        // Show sandbox indicator if hmrcAccount=sandbox
+        if (hmrcAccount === "sandbox") {
+          const sandboxIndicator = document.getElementById("sandboxIndicator");
+          if (sandboxIndicator) {
+            sandboxIndicator.classList.add("visible");
+          }
+          const testDataLink = document.getElementById("testDataLink");
+          if (testDataLink) {
+            testDataLink.classList.add("visible");
+          }
+        }
+
+        // Toggle developer mode button
+        const toggleBtn = document.getElementById("toggleDeveloperMode");
+        const devSection = document.getElementById("developerSection");
+
+        if (toggleBtn && devSection) {
+          toggleBtn.addEventListener("click", () => {
+            const isVisible = devSection.style.display !== "none";
+            devSection.style.display = isVisible ? "none" : "block";
+            toggleBtn.textContent = isVisible ? "Show Developer Options" : "Hide Developer Options";
+          });
+        }
+      }
+
+      // OAuth callback handling
+      function handleOAuthCallback() {
+        const accessToken = sessionStorage.getItem("hmrcAccessToken");
+        if (accessToken) {
+          console.log("OAuth callback handler (accessToken found)");
+          // If we have an access token, retrieve stored parameters and execute the call
+          continueObligationsRetrieval();
+        } else {
+          console.log("OAuth callback handler (no accessToken found)");
+        }
+      }
+
+      async function continueObligationsRetrieval() {
+        try {
+          const accessToken = sessionStorage.getItem("hmrcAccessToken");
+          const pendingRequest = JSON.parse(sessionStorage.getItem("pendingObligationsRequest") || "null");
+
+          if (!pendingRequest) {
+            console.log("No pending obligations request found");
+            // Don't clear token - it might be valid from previous HMRC operation
+            // Let form submission use it directly
+            return;
+          }
+
+          console.log("Retrieved pending request:", pendingRequest);
+          hideSearchCriteria(); // Hide the form when retrieving obligations after auth
+          showLoading();
+          showStatus("Retrieving VAT obligations...", "info");
+
+          // Restore form values
+          if (pendingRequest.vrn) document.getElementById("vrn").value = pendingRequest.vrn;
+          if (pendingRequest.from) document.getElementById("fromDate").value = pendingRequest.from;
+          if (pendingRequest.to) document.getElementById("toDate").value = pendingRequest.to;
+          if (pendingRequest.status) document.getElementById("status").value = pendingRequest.status;
+          if (pendingRequest.testScenario) document.getElementById("testScenario").value = pendingRequest.testScenario;
+          if (pendingRequest.runFraudPreventionHeaderValidation)
+            document.getElementById("runFraudPreventionHeaderValidation").checked = pendingRequest.runFraudPreventionHeaderValidation;
+
+          // Build query parameters
+          const params = new URLSearchParams({ vrn: pendingRequest.vrn });
+          if (pendingRequest.from) params.append("from", pendingRequest.from);
+          if (pendingRequest.to) params.append("to", pendingRequest.to);
+          if (pendingRequest.status) params.append("status", pendingRequest.status);
+          if (pendingRequest.testScenario) params.append("Gov-Test-Scenario", pendingRequest.testScenario);
+          if (pendingRequest.runFraudPreventionHeaderValidation) params.append("runFraudPreventionHeaderValidation", "true");
+
+          // Get Gov-Client headers
+          const govClientHeaders = await getGovClientHeaders();
+
+          const requestHeaders = {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            ...govClientHeaders,
+          };
+
+          // Add hmrcAccount header if present in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const hmrcAccount = urlParams.get("hmrcAccount");
+          if (hmrcAccount) {
+            requestHeaders["hmrcAccount"] = hmrcAccount;
+          }
+
+          const response = await window.authorizedFetch(`/api/v1/hmrc/vat/obligation?${params}`, {
+            method: "GET",
+            headers: {
+              ...requestHeaders,
+              "x-wait-time-ms": "0",
+            },
+            pollPendingMessage: "Still processing...",
+            pollSuccessMessage: "VAT obligations retrieved.",
+            pollErrorMessage: "Failed to retrieve VAT obligations.",
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            // Handle 401 specifically to trigger re-authentication
+            if (response.status === 401) {
+              sessionStorage.removeItem("hmrcAccessToken");
+              showStatus("Access token expired. Please re-authenticate.", "error");
+              showSearchCriteria(); // Show form on error
+              // Could trigger re-auth here if desired
+              return;
+            }
+            throw new Error(result.message || "Failed to retrieve obligations");
+          }
+
+          // Display results
+          displayObligations(result.obligations || []);
+          document.getElementById("obligationsResults").style.display = "block";
+          hideStatus();
+
+          // Clean up session storage
+          sessionStorage.removeItem("currentActivity");
+          sessionStorage.removeItem("pendingObligationsRequest");
+          sessionStorage.removeItem("hmrcAccessToken");
+          sessionStorage.removeItem("oauth_state");
+          sessionStorage.removeItem("hmrcAccount");
+          console.log("Obligations retrieval completed successfully");
+        } catch (error) {
+          console.error("Error retrieving obligations:", error);
+          showStatus(`Failed to retrieve obligations: ${error.message}`, "error");
+          showSearchCriteria(); // Show form on error
+        } finally {
+          hideLoading();
+        }
+      }
+
+      // Handle form submission
+      async function handleFormSubmission(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const vrn = formData.get("vrn").trim();
+        const from = formData.get("fromDate");
+        const to = formData.get("toDate");
+        const status = formData.get("status");
+        const testScenario = formData.get("testScenario");
+        const runFraudPreventionHeaderValidation = document.getElementById("runFraudPreventionHeaderValidation")?.checked || false;
+
+        // Basic validation
+        if (!vrn) {
+          showStatus("Please enter a VAT registration number.", "error");
+          return;
+        }
+
+        if (!/^\d{9}$/.test(vrn)) {
+          showStatus("VAT number must be exactly 9 digits.", "error");
+          return;
+        }
+
+        // Check if we have an access token
+        const accessToken = sessionStorage.getItem("hmrcAccessToken");
+
+        if (!accessToken) {
+          try {
+            showLoading();
+            showStatus("Initiating HMRC authentication...", "info");
+
+            // Store request parameters and generate state
+            const state = generateRandomState();
+            const requestData = {
+              vrn,
+              from,
+              to,
+              status,
+              testScenario,
+              runFraudPreventionHeaderValidation,
+            };
+
+            // Add current activity hmrcAccount header if present in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const hmrcAccount = urlParams.get("hmrcAccount");
+            const currentActivity = `${location.pathname}`;
+
+            sessionStorage.setItem("oauth_state", state);
+            sessionStorage.setItem("pendingObligationsRequest", JSON.stringify(requestData));
+            sessionStorage.setItem("pendingReturnRequest", JSON.stringify(requestData));
+            sessionStorage.setItem("currentActivity", currentActivity);
+            if (hmrcAccount === "sandbox") {
+              sessionStorage.setItem("hmrcAccount", hmrcAccount);
+            } else {
+              sessionStorage.removeItem("hmrcAccount");
+            }
+            console.log("Stored pending request and current activity:", requestData, currentActivity, hmrcAccount);
+
+            // Get OAuth URL with read-only scope
+            let authResponseUrl;
+            if (window.__env && window.authUrlBuilder) {
+              authResponseUrl = window.authUrlBuilder.buildHmrcAuthUrl(state, "read:vat", hmrcAccount || "live");
+              console.log("Using client-side generated HMRC Auth URL:", authResponseUrl);
+            } else {
+              // Get OAuth URL from API (fallback)
+              const authResponse = await getAuthUrl(state, "hmrc", "read:vat");
+              authResponseUrl = authResponse.authUrl;
+              console.log("Using server-side HMRC Auth URL:", authResponseUrl);
+            }
+
+            showStatus(`Redirecting to HMRC for authentication at ${authResponseUrl}...`, "info");
+
+            // Redirect to HMRC OAuth
+            console.log(`Page transition initiated: Redirecting to HMRC OAuth URL ${authResponseUrl}`);
+            try {
+              window.__correlation?.prepareRedirect?.();
+            } catch {}
+            window.location.href = authResponseUrl;
+          } catch (error) {
+            console.error("Authentication error:", error);
+            showStatus(`Authentication failed: ${error.message}`, "error");
+            hideLoading();
+          }
+        } else {
+          // We have an access token, proceed directly
+          try {
+            showLoading();
+            showStatus("Retrieving VAT obligations...", "info");
+
+            // Build query parameters
+            const params = new URLSearchParams({ vrn });
+            if (from) params.append("from", from);
+            if (to) params.append("to", to);
+            if (status) params.append("status", status);
+            if (testScenario) params.append("Gov-Test-Scenario", testScenario);
+            if (runFraudPreventionHeaderValidation) params.append("runFraudPreventionHeaderValidation", "true");
+
+            // Get Gov-Client headers
+            const govClientHeaders = await getGovClientHeaders();
+
+            const requestHeaders = {
+              "Authorization": `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+              ...govClientHeaders,
+            };
+
+            // Add hmrcAccount header if present
+            const hmrcAccount = sessionStorage.getItem("hmrcAccount");
+            if (hmrcAccount) {
+              requestHeaders["hmrcAccount"] = hmrcAccount;
+            }
+
+            const response = await window.authorizedFetch(`/api/v1/hmrc/vat/obligation?${params}`, {
+              method: "GET",
+              headers: {
+                ...requestHeaders,
+                "x-wait-time-ms": "0",
+              },
+              pollPendingMessage: "Still processing...",
+              pollSuccessMessage: "VAT obligations retrieved.",
+              pollErrorMessage: "Failed to retrieve VAT obligations.",
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              // Handle 401 specifically to trigger re-authentication
+              if (response.status === 401) {
+                sessionStorage.removeItem("hmrcAccessToken");
+                showStatus("Access token expired. Please try again.", "error");
+                return;
+              }
+              throw new Error(result.message || "Failed to retrieve obligations");
+            }
+
+            // Display results
+            displayObligations(result.obligations || []);
+            document.getElementById("obligationsResults").style.display = "block";
+            hideStatus();
+          } catch (error) {
+            console.error("Error retrieving obligations:", error);
+            showStatus(`Failed to retrieve obligations: ${error.message}`, "error");
+          } finally {
+            hideLoading();
+          }
+        }
+      }
+
+      // getAuthUrl is provided globally by submit.js (now supports optional scope)
+
+      function displayObligations(obligations) {
+        const tableContainer = document.getElementById("obligationsTable");
+
+        if (!obligations || obligations.length === 0) {
+          tableContainer.innerHTML = '<p class="no-data">No obligations found for the specified criteria.</p>';
+          return;
+        }
+
+        // Get VRN safely
+        const vrn = document.getElementById("vrn").value;
+
+        let tableHtml = `
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Period Key</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Received</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        obligations.forEach((obligation) => {
+          const statusClass = obligation.status === "O" ? "status-open" : "status-fulfilled";
+          const statusText = obligation.status === "O" ? "Open" : "Fulfilled";
+
+          // Escape values to prevent XSS
+          const escapedVrn = escapeHtml(vrn);
+          const escapedPeriodKey = escapeHtml(obligation.periodKey);
+
+          tableHtml += `
+            <tr>
+              <td><strong>${escapeHtml(obligation.periodKey)}</strong></td>
+              <td>${escapeHtml(obligation.start) || "-"}</td>
+              <td>${escapeHtml(obligation.end) || "-"}</td>
+              <td>${escapeHtml(obligation.due) || "-"}</td>
+              <td><span class="${statusClass}">${statusText}</span></td>
+              <td>${escapeHtml(obligation.received) || "-"}</td>
+              <td>
+                ${
+                  obligation.status === "F"
+                    ? `<button class="action-button btn" onclick="viewReturn('${escapedVrn}', '${escapedPeriodKey}')">View Return</button>`
+                    : `<button class="action-button btn" onclick="submitReturn('${escapedVrn}', '${escapedPeriodKey}')">Submit Return</button>`
+                }
+              </td>
+            </tr>
+          `;
+        });
+
+        tableHtml += "</tbody></table>";
+        tableContainer.innerHTML = tableHtml;
+      }
+
+      // Helper function to escape HTML and prevent XSS
+      function escapeHtml(text) {
+        if (!text) return "";
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function viewReturn(vrn, periodKey) {
+        // Navigate to view VAT return page
+        window.location.href = `viewVatReturn.html?vrn=${vrn}&periodKey=${periodKey}`;
+      }
+
+      function submitReturn(vrn, periodKey) {
+        // Navigate to submit VAT return page with pre-filled data
+        window.location.href = `submitVat.html?vrn=${vrn}&periodKey=${periodKey}`;
+      }
+
+      // Toggle search criteria button handler
+      document.getElementById("toggleSearchCriteriaBtn")?.addEventListener("click", () => {
+        showSearchCriteria();
+      });
+
+      // New search button handler
+      document.getElementById("newSearchBtn")?.addEventListener("click", () => {
+        const form = document.getElementById("vatObligationsForm");
+        const resultsContainer = document.getElementById("obligationsResults");
+        form.reset();
+        resultsContainer.style.display = "none";
+        showSearchCriteria(); // Show the form again when doing a new search
+        hideStatus();
+      });
+
+      // Input validation
+      document.getElementById("vrn").addEventListener("input", function (e) {
+        // Only allow digits
+        e.target.value = e.target.value.replace(/\D/g, "");
+      });
+
+      // Event listeners
+      document.getElementById("vatObligationsForm").addEventListener("submit", handleFormSubmission);
+
+      // Initialize page when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("JS block started loading: DOMContentLoaded event handler");
+        initializePage();
+        // Check if we're returning from OAuth
+        handleOAuthCallback();
+        console.log("JS block finished loading: DOMContentLoaded event handler");
+      });
+
+      console.log("JS block finished loading.");
+    </script>
+  </body>
+</html>

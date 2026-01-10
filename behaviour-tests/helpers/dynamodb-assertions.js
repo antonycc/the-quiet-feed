@@ -1,0 +1,340 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2025-2026 DIY Accounting Ltd
+
+// behaviour-tests/helpers/dynamodb-assertions.js
+
+import fs from "node:fs";
+import { expect } from "@playwright/test";
+import { createLogger } from "@app/lib/logger.js";
+
+const logger = createLogger({ source: "behaviour-tests/helpers/dynamodb-assertions.js" });
+
+/**
+ * Read and parse a JSONL file exported from DynamoDB
+ * @param {string} filePath - Path to the .jsonl file
+ * @returns {Array<Object>} Array of parsed JSON objects
+ */
+export function readDynamoDbExport(filePath) {
+  if (!fs.existsSync(filePath)) {
+    logger.warn(`DynamoDB export file not found: ${filePath}`);
+    return [];
+  }
+
+  const content = fs.readFileSync(filePath, "utf-8");
+  const lines = content
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  return lines
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch (error) {
+        logger.error(`Failed to parse line in ${filePath}: ${line}`, error);
+        return null;
+      }
+    })
+    .filter((item) => item !== null);
+}
+
+/**
+ * Find HMRC API request records by URL pattern
+ * @param {string} exportFilePath - Path to hmrc-api-requests.jsonl
+ * @param {string|RegExp} urlPattern - URL pattern to match (string for contains, RegExp for pattern)
+ * @returns {Array<Object>} Matching request records
+ */
+export function findHmrcApiRequestsByUrl(exportFilePath, urlPattern) {
+  const records = readDynamoDbExport(exportFilePath);
+
+  if (typeof urlPattern === "string") {
+    return records.filter((record) => record.url && record.url.includes(urlPattern));
+  } else if (urlPattern instanceof RegExp) {
+    return records.filter((record) => record.url && urlPattern.test(record.url));
+  }
+
+  return [];
+}
+
+/**
+ * Find HMRC API request records by method and URL pattern
+ * @param {string} exportFilePath - Path to hmrc-api-requests.jsonl
+ * @param {string} method - HTTP method (GET, POST, etc.)
+ * @param {string|RegExp} urlPattern - URL pattern to match
+ * @returns {Array<Object>} Matching request records
+ */
+export function findHmrcApiRequestsByMethodAndUrl(exportFilePath, method, urlPattern) {
+  const allMatches = findHmrcApiRequestsByUrl(exportFilePath, urlPattern);
+  return allMatches.filter((record) => record.method === method);
+}
+
+/**
+ * Assert that at least one HMRC API request exists for the given URL pattern
+ * @param {string} exportFilePath - Path to hmrc-api-requests.jsonl
+ * @param {string} method - HTTP method
+ * @param {string|RegExp} urlPattern - URL pattern to match
+ * @param {string} description - Description for error messages
+ */
+export function assertHmrcApiRequestExists(exportFilePath, method, urlPattern, description = "") {
+  console.log(`Asserting HMRC API request exists: ${method} ${urlPattern}`);
+  const matches = findHmrcApiRequestsByMethodAndUrl(exportFilePath, method, urlPattern);
+  const desc = description ? ` (${description})` : "";
+  expect(matches.length, `Expected at least one ${method} request to ${urlPattern}${desc}`).toBeGreaterThan(0);
+  return matches;
+}
+
+/**
+ * Assert specific values in an HMRC API request record
+ * @param {Object} record - The HMRC API request record
+ * @param {Object} expectedValues - Object with expected field values
+ */
+export function assertHmrcApiRequestValues(record, expectedValues) {
+  for (const [key, expectedValue] of Object.entries(expectedValues)) {
+    const actualValue = getNestedValue(record, key);
+    expect(actualValue, `Expected ${key} to be ${expectedValue}, but got ${actualValue}`).toBe(expectedValue);
+  }
+}
+
+/**
+ * Count specific values in an HMRC API request record
+ * @param {Object} record - The HMRC API request record
+ * @param {Object} expectedValues - Object with expected field values
+ */
+export function countHmrcApiRequestValues(record, expectedValues) {
+  const entries = Object.entries(expectedValues);
+
+  for (const [key, expectedValue] of entries) {
+    const actualValue = getNestedValue(record, key);
+
+    if (actualValue !== expectedValue) {
+      return 0;
+    }
+  }
+
+  console.log(`Matched all expected values in ${record.url}:`, expectedValues);
+
+  return 1;
+}
+
+/**
+ * Get a nested value from an object using dot notation
+ * @param {Object} obj - The object to search
+ * @param {string} path - Dot-notation path (e.g., "httpRequest.method")
+ * @returns {*} The value at the path, or undefined if not found
+ */
+function getNestedValue(obj, path) {
+  const parts = path.split(".");
+  let current = obj;
+
+  for (const part of parts) {
+    if (current === null || current === undefined) {
+      return undefined;
+    }
+    current = current[part];
+  }
+
+  return current;
+}
+
+/**
+ * Assert that all HMRC API requests have the same hashedSub
+ * @param {string} exportFilePath - Path to hmrc-api-requests.jsonl
+ * @param {string} description - Description for error messages
+ * @param {Object} options - Options for validation
+ * @param {number} options.maxHashedSubs - Maximum allowed unique hashedSub values (default: 2)
+ * @param {boolean} options.allowOAuthDifference - Allow different hashedSub for OAuth requests (default: true)
+ */
+export function assertConsistentHashedSub(exportFilePath, description = "", options = {}) {
+  const { maxHashedSubs = 2, allowOAuthDifference = true } = options;
+
+  const records = readDynamoDbExport(exportFilePath);
+
+  if (records.length === 0) {
+    logger.warn(`No HMRC API request records found in ${exportFilePath}`);
+    return;
+  }
+
+  const hashedSubs = [...new Set(records.map((r) => r.hashedSub).filter((h) => h))];
+  const oauthRequests = records.filter((r) => r.url && r.url.includes("/oauth/token"));
+  const authenticatedRequests = records.filter((r) => r.url && !r.url.includes("/oauth/token"));
+  const oauthHashedSubs = [...new Set(oauthRequests.map((r) => r.hashedSub))];
+  const authenticatedHashedSubs = [...new Set(authenticatedRequests.map((r) => r.hashedSub))];
+  const desc = description ? ` (${description})` : "";
+
+  // If allowing OAuth difference, validate that we have at most 2 hashedSubs: one for OAuth, one for authenticated
+  if (allowOAuthDifference && hashedSubs.length) {
+    // Verify OAuth requests use one hashedSub and authenticated requests use another
+    expect(oauthHashedSubs.length, `Expected OAuth requests to have a single hashedSub${desc}, but found ${oauthHashedSubs.length}`).toBe(
+      1,
+    );
+
+    expect(
+      authenticatedHashedSubs.length,
+      `Expected authenticated requests to have a single hashedSub${desc}, but found ${authenticatedHashedSubs.length}`,
+    ).toBe(1);
+
+    logger.info(
+      `Found ${records.length} HMRC API requests: OAuth (${oauthRequests.length}) with hashedSub ${oauthHashedSubs[0]}, ` +
+        `authenticated (${authenticatedRequests.length}) with hashedSub ${authenticatedHashedSubs[0]}`,
+    );
+  } else {
+    expect(
+      hashedSubs.length,
+      `Expected all HMRC API requests to have the same hashedSub${desc}, but found ${hashedSubs.length} different values: ${hashedSubs.join(", ")}`,
+    ).toBeLessThanOrEqual(maxHashedSubs);
+
+    logger.info(`Found ${records.length} HMRC API requests with ${hashedSubs.length} unique hashedSub value(s)`);
+  }
+
+  return hashedSubs;
+}
+
+/**
+ * HMRC Fraud Prevention headers that are intentionally NOT supplied.
+ * These headers are documented to HMRC as not applicable for this application.
+ *
+ * - gov-client-multi-factor: Cognito MFA not yet implemented
+ * - gov-vendor-license-ids: Open-source software with no license keys
+ * - gov-client-public-port: Browser apps cannot access client TCP port
+ *
+ * @see buildFraudHeaders.js for server-side header generation
+ * @see submit.js buildGovClientHeaders() for client-side header generation
+ */
+export const intentionallyNotSuppliedHeaders = ["gov-client-multi-factor", "gov-vendor-license-ids", "gov-client-public-port"];
+
+/**
+ * Essential HMRC Fraud Prevention headers that MUST be present in every HMRC API request.
+ * These are generated server-side by buildFraudHeaders.js and should always exist.
+ */
+export const essentialFraudPreventionHeaders = [
+  "gov-client-connection-method",
+  "gov-client-user-ids",
+  "gov-vendor-product-name",
+  "gov-vendor-version",
+];
+
+/**
+ * Assert that essential fraud prevention headers are present in an HMRC API request.
+ * @param {object} hmrcApiRequest - The HMRC API request from DynamoDB
+ * @param {string} context - Description of the request for error messages
+ */
+export function assertEssentialFraudPreventionHeadersPresent(hmrcApiRequest, context = "HMRC API request") {
+  const requestHeaders = hmrcApiRequest.httpRequest?.headers || {};
+  const headerKeysLower = Object.keys(requestHeaders).map((k) => k.toLowerCase());
+
+  const missingHeaders = essentialFraudPreventionHeaders.filter((header) => !headerKeysLower.includes(header.toLowerCase()));
+
+  if (missingHeaders.length > 0) {
+    console.error(`[DynamoDB Assertions]: Missing essential fraud prevention headers in ${context}:`, missingHeaders);
+    console.error(`[DynamoDB Assertions]: Present headers:`, Object.keys(requestHeaders));
+    expect(missingHeaders, `Missing essential fraud prevention headers in ${context}`).toEqual([]);
+  }
+}
+
+export function assertFraudPreventionHeaders(hmrcApiRequestsFile, noErrors = false, noWarnings = false, allValidFeedbackHeaders = false) {
+  let fraudPreventionHeadersValidationFeedbackGetRequests;
+  if (allValidFeedbackHeaders) {
+    fraudPreventionHeadersValidationFeedbackGetRequests = assertHmrcApiRequestExists(
+      hmrcApiRequestsFile,
+      "GET",
+      `/test/fraud-prevention-headers/vat-mtd/validation-feedback`,
+      "Fraud prevention headers validation feedback",
+    );
+  } else {
+    fraudPreventionHeadersValidationFeedbackGetRequests = [];
+  }
+  console.log(
+    `[DynamoDB Assertions]: Found ${fraudPreventionHeadersValidationFeedbackGetRequests.length} Fraud prevention headers validation feedback GET request(s)`,
+  );
+  fraudPreventionHeadersValidationFeedbackGetRequests.forEach((fraudPreventionHeadersValidationFeedbackGetRequest, index) => {
+    assertHmrcApiRequestValues(fraudPreventionHeadersValidationFeedbackGetRequest, {
+      "httpRequest.method": "GET",
+      "httpResponse.statusCode": 200,
+    });
+    console.log(
+      `[DynamoDB Assertions]: Fraud prevention headers validation feedback GET request #${index + 1} validated successfully with details:`,
+    );
+    const requests = fraudPreventionHeadersValidationFeedbackGetRequest.httpResponse.body.requests;
+    requests.forEach((request) => {
+      console.log(`[DynamoDB Assertions]: Request URL: ${request.url}, Code: ${request.code}`);
+      const invalidHeaders = request.headers.filter((header) => header.code === "INVALID_HEADER");
+      //.filter((header) => !intentionallyNotSuppliedHeaders.includes(header.header));
+      const notValidHeaders = request.headers
+        .filter((header) => header.code !== "VALID_HEADER")
+        .filter((header) => !intentionallyNotSuppliedHeaders.includes(header.header));
+      if (allValidFeedbackHeaders) {
+        expect(invalidHeaders, `Expected no invalid headers, but got: ${JSON.stringify(invalidHeaders)}`).toEqual([]);
+        expect(notValidHeaders, `Expected no not valid headers, but got: ${JSON.stringify(notValidHeaders)}`).toEqual([]);
+        // Intentionally not checked at the top level because there are headers we ignore
+        // expect(request.code).toBe("VALID_HEADERS");
+      }
+    });
+  });
+
+  // Assert Fraud prevention headers validation GET request exists and validate key fields
+  const fraudPreventionHeadersValidationGetRequests = assertHmrcApiRequestExists(
+    hmrcApiRequestsFile,
+    "GET",
+    `/test/fraud-prevention-headers/validate`,
+    "Fraud prevention headers validation",
+  );
+  console.log(
+    `[DynamoDB Assertions]: Found ${fraudPreventionHeadersValidationGetRequests.length} Fraud prevention headers validation GET request(s)`,
+  );
+  fraudPreventionHeadersValidationGetRequests.forEach((fraudPreventionHeadersValidationGetRequest, index) => {
+    assertHmrcApiRequestValues(fraudPreventionHeadersValidationGetRequest, {
+      "httpRequest.method": "GET",
+      "httpResponse.statusCode": 200,
+    });
+    console.log(
+      `[DynamoDB Assertions]: Fraud prevention headers validation GET request #${index + 1} validated successfully with details:`,
+    );
+
+    const responseBody = fraudPreventionHeadersValidationGetRequest.httpResponse.body;
+    console.log(`[DynamoDB Assertions]: Request code: ${responseBody.code}`);
+    console.log(`[DynamoDB Assertions]: Errors: ${responseBody.errors?.length}`);
+    console.log(`[DynamoDB Assertions]: Warnings: ${responseBody.warnings?.length}`);
+    console.log(`[DynamoDB Assertions]: Ignored headers: ${intentionallyNotSuppliedHeaders}`);
+
+    // CRITICAL: Fail if NO fraud prevention headers were submitted at all
+    // This is different from "some headers invalid" - we specifically check for the "no headers" message
+    const noHeadersSubmittedMessage = "No fraud prevention headers submitted";
+    if (responseBody.code === "INVALID_HEADERS" && responseBody.message?.includes(noHeadersSubmittedMessage)) {
+      console.error(`[DynamoDB Assertions]: CRITICAL - No fraud prevention headers submitted at all!`);
+      console.error(`[DynamoDB Assertions]: Message: ${responseBody.message}`);
+      expect.fail(
+        `HMRC fraud prevention validation failed: No fraud prevention headers were submitted. This indicates a bug in buildFraudHeaders.`,
+      );
+    }
+
+    const errors = responseBody.errors?.filter((error) => {
+      const headers = error.headers.filter((header) => !intentionallyNotSuppliedHeaders.includes(header));
+      return headers.length > 0;
+    });
+    console.log(`[DynamoDB Assertions]: Errors: ${errors?.length} (out of non-ignored ${responseBody.errors?.length} headers)`);
+    if (noErrors) {
+      if (errors) {
+        expect(errors).toEqual([]);
+        expect(errors?.length).toBe(0);
+      }
+    }
+
+    const warnings = responseBody.warnings?.filter((warning) => {
+      const headers = warning.headers.filter((header) => !intentionallyNotSuppliedHeaders.includes(header));
+      return headers.length > 0;
+    });
+    console.log(`[DynamoDB Assertions]: Warnings: ${warnings?.length} (out of non-ignored ${responseBody.warnings?.length} headers)`);
+    if (noWarnings) {
+      if (warnings) {
+        expect(warnings).toEqual([]);
+        expect(warnings.length).toBe(0);
+      }
+    }
+
+    console.log(`[DynamoDB Assertions]: Request code: ${responseBody.code}`);
+    // Intentionally not checked at the top level because there are headers we ignore
+    // expect(responseBody.code).toBe("VALID_HEADERS");
+
+    console.log("[DynamoDB Assertions]: Fraud prevention headers validation GET body validated successfully");
+  });
+}

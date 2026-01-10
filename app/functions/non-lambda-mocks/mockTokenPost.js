@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2025-2026 DIY Accounting Ltd
+
+// app/functions/mockTokenPost.js
+
+import { createLogger } from "../../lib/logger.js";
+
+const logger = createLogger({ source: "app/functions/non-lambda-mocks/mockTokenPost.js" });
+
+export function apiEndpoint(app) {
+  // Proxy to local mock OAuth2 server token endpoint to avoid browser PNA/CORS
+  app.post("/api/v1/mock/token", async (req, res) => {
+    try {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(req.body || {})) {
+        if (Array.isArray(value)) {
+          for (const v of value) params.append(key, v);
+        } else if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      }
+
+      const resp = await fetch("http://localhost:8080/default/token", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      });
+
+      const contentType = resp.headers.get("content-type") || "application/json";
+      const text = await resp.text();
+      res.status(resp.status).set("content-type", contentType).send(text);
+    } catch (e) {
+      logger.error(`Mock token proxy error: ${e?.stack || e}`);
+      res.status(500).json({ message: "Mock token proxy failed", error: String(e) });
+    }
+  });
+}

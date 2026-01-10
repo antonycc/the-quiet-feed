@@ -1,0 +1,213 @@
+<!-- loginWithCognitoCallback.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIY Accounting Submit - Login with Google or Antonycc OIDC via Cognito callback</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../submit.css" />
+    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
+    <meta name="rum:region" content="${AWS_REGION}" />
+    <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
+    <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
+    <!-- HEAD-prefetch to help mitigate API cold starts for this page's calls -->
+    <!--script async src="../prefetch/prefetch-cognito-token-head.js"></script-->
+    <!--script async src="../prefetch/prefetch-bundle-head.js"></script-->
+  </head>
+  <body>
+    <header>
+      <div class="header-nav">
+        <div class="hamburger-menu">
+          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <a href="../index.html">Home</a>
+            <a href="../account/bundles.html">Bundles</a>
+            <a href="../hmrc/receipt/receipts.html">Receipts</a>
+            <a href="../guide/index.html">User Guide</a>
+            <a href="../about.html">About</a>
+          </div>
+        </div>
+        <div class="auth-section">
+          <span class="entitlement-status">Activity: unrestricted</span>
+          <span class="login-status">Not logged in</span>
+          <a href="../auth/login.html" class="login-link">Log in</a>
+        </div>
+      </div>
+      <h1>DIY Accounting Submit - Login with Google or Antonycc OIDC via Cognito callback</h1>
+      <p class="subtitle">Submit UK VAT returns to HMRC under Making Tax Digital (MTD)</p>
+    </header>
+
+    <div id="mainContent">
+      <div id="statusMessagesContainer"></div>
+
+      <div id="loadingSpinner" class="spinner" style="display: none"></div>
+
+      <div class="form-container" style="text-align: center">
+        <h2 id="welcomeHeading">Welcome</h2>
+        <p>Return home.</p>
+        <button type="button" class="btn" onclick="window.location.href = '../index.html'">Home</button>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-left">
+        <a href="#" id="viewSourceLink" style="display: none">view source</a>
+        <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
+        <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+      </div>
+      <div class="footer-content">
+        <div class="footer-center">
+          <p>&copy; 2025 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="../submit.js"></script>
+    <script src="../lib/request-cache.js"></script>
+    <script src="../lib/toml-parser.js"></script>
+    <script src="../widgets/hamburger-menu.js"></script>
+    <script src="../widgets/entitlement-status.js"></script>
+    <script src="../widgets/auth-status.js"></script>
+    <script src="../widgets/status-messages.js"></script>
+    <script src="../widgets/loading-spinner.js"></script>
+    <script>
+      // Check for authentication callback
+      function checkAuthCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+        const state = urlParams.get("state");
+        const error = urlParams.get("error");
+        const errorDescription = urlParams.get("error_description");
+
+        if (code) {
+          console.log("Authentication callback received with code:", code);
+          handleAuthCallback(code, state);
+        } else if (error || errorDescription) {
+          console.error("OAuth error received:", error, errorDescription);
+          showStatus(`Authentication error: ${errorDescription || error}`, "error");
+        }
+      }
+
+      function base64UrlDecode(str) {
+        // Replace URL-safe chars
+        str = str.replace(/-/g, "+").replace(/_/g, "/");
+        // Add padding if missing
+        const pad = str.length % 4;
+        if (pad) {
+          str += "=".repeat(4 - pad);
+        }
+        return atob(str);
+      }
+
+      // Handle authentication callback from Cognito
+      async function handleAuthCallback(code, state) {
+        try {
+          showLoading();
+          showStatus("Exchanging authorization code for access token...", "info");
+
+          const url = `/api/v1/cognito/token`;
+          const body = {
+            grant_type: "authorization_code",
+            code: code,
+          };
+          console.log(`Exchanging token. Remote call initiated: POST ${url} ++ Body: ${body}`);
+
+          const tokenResponse = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams(body),
+          });
+
+          if (!tokenResponse.ok) {
+            throw new Error("Failed to exchange authorization code for tokens");
+          }
+
+          const tokens = await tokenResponse.json();
+          console.log("Received tokens from Cognito " + JSON.stringify(tokens));
+
+          // Store tokens in localStorage (support both snake_case and camelCase fields)
+          const accessToken = tokens.accessToken || tokens.access_token;
+          const idToken = tokens.idToken || tokens.id_token;
+          const refreshToken = tokens.refreshToken || tokens.refresh_token;
+
+          if (accessToken) {
+            localStorage.setItem("cognitoAccessToken", accessToken);
+          }
+          if (idToken) {
+            localStorage.setItem("cognitoIdToken", idToken);
+          }
+          if (refreshToken) {
+            localStorage.setItem("cognitoRefreshToken", refreshToken);
+          }
+
+          // Decode ID token to get user info
+          if (!idToken) {
+            throw new Error("Missing idToken in exchange-token response");
+          }
+          const base64Payload = idToken.split(".")[1];
+          const jsonPayload = base64UrlDecode(base64Payload);
+          const idTokenPayload = JSON.parse(jsonPayload);
+
+          console.log("Received id_token from Cognito " + JSON.stringify(idTokenPayload));
+
+          // Handle optional email gracefully
+          const userEmail = idTokenPayload.email;
+
+          localStorage.setItem(
+            "userInfo",
+            JSON.stringify({
+              sub: idTokenPayload.sub,
+              email: userEmail,
+              given_name: idTokenPayload.given_name,
+              family_name: idTokenPayload.family_name,
+            }),
+          );
+
+          console.log("User authenticated successfully using Cognito:", userEmail || "no email provided");
+          showStatus("Authenticated successfully. Fetching bundles...", "info");
+
+          // Extract MFA status from amr (Authentication Methods Reference) claim
+          // Google and other federated IdPs include MFA indicators in the amr array
+          const amrClaims = idTokenPayload.amr || [];
+          const mfaIndicators = ["mfa", "swk", "hwk", "otp"]; // mfa=multi-factor, swk=software key, hwk=hardware key, otp=one-time password
+          const hasMFA = Array.isArray(amrClaims) && amrClaims.some((method) => mfaIndicators.includes(method));
+
+          if (hasMFA) {
+            // Store MFA metadata for use in fraud prevention headers
+            const mfaMetadata = {
+              type: "OTHER", // Use OTHER for federated IdP MFA (Google 2FA, passkeys, etc.)
+              timestamp: new Date().toISOString(),
+              uniqueReference: crypto.randomUUID(),
+            };
+            sessionStorage.setItem("mfaMetadata", JSON.stringify(mfaMetadata));
+            console.log("MFA detected from federated IdP:", amrClaims, "Stored metadata:", mfaMetadata);
+          } else {
+            // No MFA detected - remove any existing metadata
+            sessionStorage.removeItem("mfaMetadata");
+            console.log("No MFA detected in amr claims:", amrClaims);
+          }
+
+          // No longer store bundles in localStorage; bundles will be fetched by pages as needed from /api/v1/bundle
+          showStatus("Authenticated successfully. Redirecting...", "info");
+
+          // Clear URL parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          // Redirect to bundles page or home
+          window.location.href = "../index.html";
+        } catch (error) {
+          console.error("Authentication callback error:", error);
+          showStatus(`Authentication failed: ${error.message}`, "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      // Check if this page was loaded as a callback from authentication
+      checkAuthCallback();
+    </script>
+  </body>
+</html>
