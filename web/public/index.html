@@ -219,10 +219,35 @@
       function createFeedItem(item) {
         const article = document.createElement('article');
         article.className = 'feed-item';
-        article.setAttribute('data-score', item.score);
+        article.setAttribute('data-score', item.score || 0);
         article.setAttribute('data-id', item.id);
+        if (item.type) article.setAttribute('data-type', item.type);
 
-        // Score class
+        // Score display - handle info/action types differently
+        let scoreHtml;
+        if (item.type === 'info') {
+          scoreHtml = `
+            <div class="feed-item-score score-info">
+              <span class="score-value">ℹ</span>
+              <span class="score-label">INFO</span>
+            </div>`;
+        } else if (item.type === 'action') {
+          scoreHtml = `
+            <div class="feed-item-score score-action">
+              <span class="score-value">→</span>
+              <span class="score-label">GO</span>
+            </div>`;
+        } else {
+          // Regular scored article
+          const scoreClass = item.score >= 80 ? 'score-high' : item.score >= 50 ? 'score-medium' : 'score-low';
+          scoreHtml = `
+            <div class="feed-item-score">
+              <span class="score-value ${scoreClass}">${item.score}</span>
+              <span class="score-label">SCORE</span>
+            </div>`;
+        }
+
+        // Legacy score class for backwards compatibility
         const scoreClass = item.score >= 80 ? 'score-high' : item.score >= 50 ? 'score-medium' : 'score-low';
 
         // Time ago
@@ -271,10 +296,7 @@
                 ${item.author ? `<span>by ${item.author}</span>` : ''}
               </div>
             </div>
-            <div class="feed-item-score">
-              <span class="score-value ${scoreClass}">${item.score}</span>
-              <span class="score-label">SCORE</span>
-            </div>
+            ${scoreHtml}
           </div>
           <p class="feed-item-excerpt">${item.excerpt}</p>
           ${mediaHtml}

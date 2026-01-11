@@ -11,7 +11,7 @@
       "publishedAt": "2026-01-01T00:00:00Z",
       "url": "#",
       "excerpt": "You're currently browsing as ANONYMOUS. View curated public feeds, see how scoring works, explore the interface. No account required.",
-      "score": 100,
+      "type": "info",
       "tags": ["TIER", "CURRENT"]
     },
     {
@@ -22,7 +22,7 @@
       "publishedAt": "2026-01-01T00:00:00Z",
       "url": "auth/login.html",
       "excerpt": "Sign in to connect your own feed sources. Pull from LinkedIn, Twitter/X, RSS feeds. Get personalized scoring, save your mute filters, track your preferences across devices.",
-      "score": 95,
+      "type": "action",
       "tags": ["TIER", "UPGRADE"]
     },
     {
@@ -33,7 +33,7 @@
       "publishedAt": "2026-01-01T00:00:00Z",
       "url": "account/bundles.html",
       "excerpt": "Unlock HARD COPY for complete access: WIRE MODE headline normalization, advanced DEDUP clustering, API access, TERM CLI, data export. Support the project.",
-      "score": 90,
+      "type": "action",
       "tags": ["TIER", "PREMIUM"]
     }
   ]

@@ -1,15 +1,4 @@
-# SPDX-License-Identifier: AGPL-3.0-only
-# Copyright (C) 2025-2026 Antony Cartwright
-#
-# The Quiet Feed - Feed Sources Catalog
-# This catalog defines available RSS/Atom feeds for ingestion
-
-version = "1.0.0"
-
-# ============================================================================
-# CURATED PUBLIC FEEDS
-# These feeds are available to ANONYMOUS users in the DEFAULT tier
-# ============================================================================
+version = "2.0.0"
 
 [[sources]]
 id = "hackernews-frontpage"
@@ -23,6 +12,9 @@ enabled = true
 notes = "Top stories from Hacker News"
 terms_url = "https://news.ycombinator.com/newsguidelines.html"
 permission = "public-rss"
+last_checked = "2026-01-11T15:03:46.387Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
 id = "hackernews-best"
@@ -36,71 +28,9 @@ enabled = true
 notes = "Best stories from Hacker News (higher quality threshold)"
 terms_url = "https://news.ycombinator.com/newsguidelines.html"
 permission = "public-rss"
-
-[[sources]]
-id = "bbc-news-world"
-name = "BBC News World"
-url = "https://feeds.bbci.co.uk/news/world/rss.xml"
-category = "news"
-format = "rss"
-tier = "anonymous"
-refresh_minutes = 15
-enabled = true
-notes = "BBC World News headlines"
-terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
-permission = "public-rss"
-
-[[sources]]
-id = "bbc-news-technology"
-name = "BBC Technology"
-url = "https://feeds.bbci.co.uk/news/technology/rss.xml"
-category = "tech"
-format = "rss"
-tier = "anonymous"
-refresh_minutes = 30
-enabled = true
-notes = "BBC Technology news"
-terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
-permission = "public-rss"
-
-[[sources]]
-id = "reuters-world"
-name = "Reuters World News"
-url = "https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best"
-category = "news"
-format = "rss"
-tier = "anonymous"
-refresh_minutes = 15
-enabled = false
-notes = "Reuters top world news - verify feed availability"
-terms_url = "https://www.reuters.com/info/disclaimer/"
-permission = "public-rss"
-
-[[sources]]
-id = "arxiv-cs-ai"
-name = "arXiv CS.AI"
-url = "https://export.arxiv.org/rss/cs.AI"
-category = "research"
-format = "rss"
-tier = "anonymous"
-refresh_minutes = 60
-enabled = true
-notes = "Artificial Intelligence papers from arXiv"
-terms_url = "https://arxiv.org/help/license"
-permission = "public-rss"
-
-[[sources]]
-id = "arxiv-cs-lg"
-name = "arXiv CS.LG"
-url = "https://export.arxiv.org/rss/cs.LG"
-category = "research"
-format = "rss"
-tier = "anonymous"
-refresh_minutes = 60
-enabled = true
-notes = "Machine Learning papers from arXiv"
-terms_url = "https://arxiv.org/help/license"
-permission = "public-rss"
+last_checked = "2026-01-11T15:03:46.742Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
 id = "lobsters"
@@ -114,6 +44,9 @@ enabled = true
 notes = "Computing-focused link aggregator"
 terms_url = "https://lobste.rs/about"
 permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.037Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
 id = "the-register"
@@ -127,6 +60,9 @@ enabled = true
 notes = "Tech news with a British perspective"
 terms_url = "https://www.theregister.com/about/company/terms_conditions/"
 permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.081Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
 id = "arstechnica"
@@ -140,10 +76,57 @@ enabled = true
 notes = "In-depth technology journalism"
 terms_url = "https://www.condenast.com/user-agreement"
 permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.159Z"
+last_status = "healthy"
+consecutive_failures = 0
 
-# ============================================================================
-# UK NEWS FEEDS
-# ============================================================================
+[[sources]]
+id = "slashdot"
+name = "Slashdot"
+url = "https://rss.slashdot.org/Slashdot/slashdotMain"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "News for nerds, stuff that matters"
+terms_url = "https://slashdot.org/terms.pl"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.232Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "bbc-news-world"
+name = "BBC News World"
+url = "https://feeds.bbci.co.uk/news/world/rss.xml"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 15
+enabled = true
+notes = "BBC World News headlines"
+terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.309Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "bbc-news-technology"
+name = "BBC Technology"
+url = "https://feeds.bbci.co.uk/news/technology/rss.xml"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "BBC Technology news"
+terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.365Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
 id = "bbc-uk"
@@ -157,6 +140,9 @@ enabled = true
 notes = "BBC UK domestic news"
 terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
 permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.475Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
 id = "guardian-uk"
@@ -170,27 +156,1064 @@ enabled = true
 notes = "Guardian UK news coverage"
 terms_url = "https://www.theguardian.com/help/terms-of-service"
 permission = "public-rss"
-
-# ============================================================================
-# FINANCE & BUSINESS
-# ============================================================================
+last_checked = "2026-01-11T15:03:47.544Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[sources]]
-id = "ft-markets"
-name = "Financial Times Markets"
-url = "https://www.ft.com/markets?format=rss"
+id = "guardian-world"
+name = "The Guardian World"
+url = "https://www.theguardian.com/world/rss"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Guardian international news"
+terms_url = "https://www.theguardian.com/help/terms-of-service"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.569Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "npr-news"
+name = "NPR News"
+url = "https://feeds.npr.org/1001/rss.xml"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "NPR news headlines"
+terms_url = "https://www.npr.org/about-npr/179876898/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.644Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "dw-world"
+name = "Deutsche Welle World"
+url = "https://rss.dw.com/rdf/rss-en-all"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "German international broadcaster"
+terms_url = "https://www.dw.com/en/use-of-dw-content/a-15714330"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.798Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "aljazeera-world"
+name = "Al Jazeera English"
+url = "https://www.aljazeera.com/xml/rss/all.xml"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Al Jazeera English news"
+terms_url = "https://www.aljazeera.com/terms-and-conditions/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.878Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "france24-world"
+name = "France 24 World"
+url = "https://www.france24.com/en/rss"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "France 24 English international news"
+terms_url = "https://www.france24.com/en/terms-and-conditions"
+permission = "public-rss"
+last_checked = "2026-01-11T15:03:47.986Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "nhk-world"
+name = "NHK World Japan"
+url = "https://www3.nhk.or.jp/nhkworld/en/news/list-rss.xml"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Japan's public broadcaster world service"
+terms_url = "https://www.nhk.or.jp/terms/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:47.993Z"
+last_status = "unreliable"
+last_error = "Timeout after 30000ms"
+consecutive_failures = 2
+
+[[sources]]
+id = "abc-australia"
+name = "ABC News Australia"
+url = "https://www.abc.net.au/news/feed/51120/rss.xml"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Australian Broadcasting Corporation news"
+terms_url = "https://www.abc.net.au/conditions.htm"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.138Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-cs-ai"
+name = "arXiv CS.AI"
+url = "https://export.arxiv.org/rss/cs.AI"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Artificial Intelligence papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.207Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-cs-lg"
+name = "arXiv CS.LG"
+url = "https://export.arxiv.org/rss/cs.LG"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Machine Learning papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.249Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-cs-cl"
+name = "arXiv CS.CL"
+url = "https://export.arxiv.org/rss/cs.CL"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Computational Linguistics / NLP papers"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.263Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-cs-cr"
+name = "arXiv CS.CR"
+url = "https://export.arxiv.org/rss/cs.CR"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Cryptography and Security papers"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.276Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-physics"
+name = "arXiv Physics"
+url = "https://export.arxiv.org/rss/physics"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Physics papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.289Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-astro-ph"
+name = "arXiv Astrophysics"
+url = "https://export.arxiv.org/rss/astro-ph"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Astrophysics papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.303Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "arxiv-econ"
+name = "arXiv Economics"
+url = "https://export.arxiv.org/rss/econ"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Economics papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.317Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "pubmed-trending"
+name = "PubMed Trending"
+url = "https://pubmed.ncbi.nlm.nih.gov/trending/rss/"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Trending biomedical research papers"
+terms_url = "https://www.ncbi.nlm.nih.gov/home/about/policies/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.763Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "nature-latest"
+name = "Nature Latest Research"
+url = "https://www.nature.com/nature.rss"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Latest from Nature journal"
+terms_url = "https://www.nature.com/info/terms-and-conditions"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.850Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "science-latest"
+name = "Science Magazine"
+url = "https://www.science.org/rss/news_current.xml"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Science magazine news"
+terms_url = "https://www.science.org/content/page/terms-service"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:48.899Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "plos-one"
+name = "PLOS ONE"
+url = "https://journals.plos.org/plosone/feed/atom"
+category = "research"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Open access multidisciplinary research"
+terms_url = "https://plos.org/terms-of-use/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:49.082Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "wikipedia-featured"
+name = "Wikipedia Featured Articles"
+url = "https://en.wikipedia.org/w/api.php?action=featuredfeed&feed=featured&feedformat=atom"
+category = "knowledge"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Wikipedia's featured articles"
+terms_url = "https://foundation.wikimedia.org/wiki/Terms_of_Use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:49.160Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "wikipedia-potd"
+name = "Wikipedia Picture of the Day"
+url = "https://en.wikipedia.org/w/api.php?action=featuredfeed&feed=potd&feedformat=atom"
+category = "knowledge"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Wikipedia's picture of the day"
+terms_url = "https://foundation.wikimedia.org/wiki/Terms_of_Use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:49.184Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "wikipedia-itn"
+name = "Wikipedia In The News"
+url = "https://en.wikipedia.org/w/api.php?action=featuredfeed&feed=onthisday&feedformat=atom"
+category = "knowledge"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Wikipedia In The News section"
+terms_url = "https://foundation.wikimedia.org/wiki/Terms_of_Use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:49.207Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "wikidata-changes"
+name = "Wikidata Recent Changes"
+url = "https://www.wikidata.org/w/api.php?action=feedrecentchanges&feedformat=atom"
+category = "knowledge"
+format = "atom"
+tier = "enhance"
+refresh_minutes = 30
+enabled = false
+notes = "Wikidata recent changes - very high volume"
+terms_url = "https://foundation.wikimedia.org/wiki/Terms_of_Use"
+permission = "public-rss"
+
+[[sources]]
+id = "nasa-breaking"
+name = "NASA Breaking News"
+url = "https://www.nasa.gov/rss/dyn/breaking_news.rss"
+category = "space"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "NASA breaking news announcements"
+terms_url = "https://www.nasa.gov/about/highlights/HP_Privacy.html"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:49.919Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "nasa-image-day"
+name = "NASA Image of the Day"
+url = "https://www.nasa.gov/rss/dyn/lg_image_of_the_day.rss"
+category = "space"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "NASA's image of the day"
+terms_url = "https://www.nasa.gov/about/highlights/HP_Privacy.html"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:50.898Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "spaceweather"
+name = "SpaceWeather.com"
+url = "https://spaceweather.com/rss/rss.xml"
+category = "space"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Space weather alerts and news"
+terms_url = "https://spaceweather.com/about.html"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:51.823Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "noaa-spaceweather"
+name = "NOAA Space Weather Alerts"
+url = "https://services.swpc.noaa.gov/rss/alerts.rss"
+category = "space"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Official NOAA space weather alerts"
+terms_url = "https://www.noaa.gov/information-technology/disclaimer"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:52.067Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "esa-news"
+name = "European Space Agency"
+url = "https://www.esa.int/rssfeed/TopNews"
+category = "space"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "ESA top news"
+terms_url = "https://www.esa.int/Services/Terms_and_conditions"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:52.132Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "gov-uk-all"
+name = "UK Government"
+url = "https://www.gov.uk/government/all.atom"
+category = "government"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "UK Government announcements"
+terms_url = "https://www.gov.uk/help/terms-conditions"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:52.304Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "parliament-uk"
+name = "UK Parliament"
+url = "https://www.parliament.uk/rss/all.rss"
+category = "government"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "UK Parliament news and publications"
+terms_url = "https://www.parliament.uk/site-information/copyright/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:52.368Z"
+last_status = "auth_required"
+last_error = "HTTP 403: Authentication required"
+consecutive_failures = 2
+
+[[sources]]
+id = "whitehouse"
+name = "White House"
+url = "https://www.whitehouse.gov/feed/"
+category = "government"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "White House announcements"
+terms_url = "https://www.whitehouse.gov/privacy/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:52.494Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "congress-bills"
+name = "US Congress Bills"
+url = "https://www.govinfo.gov/rss/bills.xml"
+category = "government"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "New bills from US Congress"
+terms_url = "https://www.govinfo.gov/about"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:52.634Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "federal-register"
+name = "US Federal Register"
+url = "https://www.federalregister.gov/documents/current.rss"
+category = "government"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "US Federal Register daily rules and regulations"
+terms_url = "https://www.federalregister.gov/reader-aids"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:53.195Z"
+last_status = "error"
+last_error = "Invalid feed format (content-type: text/html; charset=utf-8)"
+consecutive_failures = 2
+
+[[sources]]
+id = "eu-press"
+name = "European Commission Press"
+url = "https://ec.europa.eu/commission/presscorner/api/rss"
+category = "government"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "European Commission press releases"
+terms_url = "https://ec.europa.eu/info/legal-notice_en"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:53.640Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "eu-legislation"
+name = "EUR-Lex New Legislation"
+url = "https://eur-lex.europa.eu/rss/document/L.rss"
+category = "government"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "New EU legislation"
+terms_url = "https://eur-lex.europa.eu/content/legal-notice/legal-notice.html"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:54.167Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "un-news"
+name = "United Nations News"
+url = "https://news.un.org/feed/subscribe/en/news/all/rss.xml"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "UN News Centre"
+terms_url = "https://www.un.org/en/about-us/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:54.221Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "who-news"
+name = "World Health Organization"
+url = "https://www.who.int/rss-feeds/news-english.xml"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "WHO news releases"
+terms_url = "https://www.who.int/about/policies/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:54.294Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "world-bank"
+name = "World Bank"
+url = "https://blogs.worldbank.org/rss.xml"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "World Bank blogs and analysis"
+terms_url = "https://www.worldbank.org/en/about/legal/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:54.500Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "imf-news"
+name = "IMF News"
+url = "https://www.imf.org/en/News/rss"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "International Monetary Fund news"
+terms_url = "https://www.imf.org/external/terms.htm"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:54.899Z"
+last_status = "error"
+last_error = "Invalid feed format (content-type: text/html; charset=utf-8)"
+consecutive_failures = 2
+
+[[sources]]
+id = "icrc-news"
+name = "ICRC News"
+url = "https://www.icrc.org/en/rss"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "International Committee of the Red Cross"
+terms_url = "https://www.icrc.org/en/copyright-privacy"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:55.604Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "amnesty-news"
+name = "Amnesty International"
+url = "https://www.amnesty.org/en/feed/"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Amnesty International news and reports"
+terms_url = "https://www.amnesty.org/en/terms-and-conditions/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:55.694Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "hrw-news"
+name = "Human Rights Watch"
+url = "https://www.hrw.org/rss/news_updates"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Human Rights Watch news"
+terms_url = "https://www.hrw.org/about/site-terms"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:55.816Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "transparency-intl"
+name = "Transparency International"
+url = "https://www.transparency.org/en/rss"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 240
+enabled = true
+notes = "Anti-corruption organization news"
+terms_url = "https://www.transparency.org/en/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:04:55.867Z"
+last_status = "auth_required"
+last_error = "HTTP 403: Authentication required"
+consecutive_failures = 2
+
+[[sources]]
+id = "greenpeace"
+name = "Greenpeace International"
+url = "https://www.greenpeace.org/international/feed/"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Environmental organization news"
+terms_url = "https://www.greenpeace.org/international/terms-and-conditions/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:28.907Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "oxfam"
+name = "Oxfam International"
+url = "https://www.oxfam.org/en/rss.xml"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Anti-poverty organization news"
+terms_url = "https://www.oxfam.org/en/terms-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:29.003Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "wef-agenda"
+name = "World Economic Forum"
+url = "https://www.weforum.org/agenda/feed"
+category = "international"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "WEF Agenda articles"
+terms_url = "https://www.weforum.org/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:29.084Z"
+last_status = "auth_required"
+last_error = "HTTP 403: Authentication required"
+consecutive_failures = 2
+
+[[sources]]
+id = "ecb-press"
+name = "European Central Bank"
+url = "https://www.ecb.europa.eu/rss/press.html"
 category = "finance"
 format = "rss"
-tier = "enhance"
-refresh_minutes = 15
-enabled = false
-notes = "FT Markets - may require subscription, verify availability"
-terms_url = "https://www.ft.com/servicestools/help/terms"
-permission = "check-terms"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "ECB press releases"
+terms_url = "https://www.ecb.europa.eu/home/disclaimer/html/index.en.html"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:29.167Z"
+last_status = "healthy"
+consecutive_failures = 0
 
-# ============================================================================
-# CATEGORIES METADATA
-# ============================================================================
+[[sources]]
+id = "fed-news"
+name = "Federal Reserve News"
+url = "https://www.federalreserve.gov/feeds/press_all.xml"
+category = "finance"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "US Federal Reserve press releases"
+terms_url = "https://www.federalreserve.gov/disclaimer.htm"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:29.365Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "boe-news"
+name = "Bank of England"
+url = "https://www.bankofengland.co.uk/rss/news"
+category = "finance"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Bank of England news"
+terms_url = "https://www.bankofengland.co.uk/legal/terms-and-conditions"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:29.453Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "bis-speeches"
+name = "Bank for International Settlements"
+url = "https://www.bis.org/rss/speeches.rss"
+category = "finance"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "BIS central banker speeches"
+terms_url = "https://www.bis.org/terms_conditions.htm"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:29.722Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "noaa-climate"
+name = "NOAA Climate News"
+url = "https://www.climate.gov/rss.xml"
+category = "environment"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "NOAA Climate.gov news"
+terms_url = "https://www.noaa.gov/information-technology/disclaimer"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:30.164Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "ipcc-news"
+name = "IPCC News"
+url = "https://www.ipcc.ch/feed/"
+category = "environment"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 240
+enabled = true
+notes = "Intergovernmental Panel on Climate Change"
+terms_url = "https://www.ipcc.ch/copyright/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:30.439Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "usgs-earthquakes"
+name = "USGS Earthquakes M4.5+"
+url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.atom"
+category = "environment"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 15
+enabled = true
+notes = "Significant earthquakes in last 24h"
+terms_url = "https://www.usgs.gov/policies-and-notices"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:30.754Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "volcano-discovery"
+name = "VolcanoDiscovery"
+url = "https://www.volcanodiscovery.com/rss.xml"
+category = "environment"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Volcanic activity updates"
+terms_url = "https://www.volcanodiscovery.com/about.html"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:30.867Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "cisa-alerts"
+name = "CISA Alerts"
+url = "https://www.cisa.gov/uscert/ncas/alerts.xml"
+category = "security"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "US Cybersecurity and Infrastructure Security Agency alerts"
+terms_url = "https://www.cisa.gov/website-policies"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.030Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "ncsc-uk"
+name = "NCSC UK Advisories"
+url = "https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml"
+category = "security"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "UK National Cyber Security Centre"
+terms_url = "https://www.ncsc.gov.uk/terms-and-conditions"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.117Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "krebs-security"
+name = "Krebs on Security"
+url = "https://krebsonsecurity.com/feed/"
+category = "security"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Security news by Brian Krebs"
+terms_url = "https://krebsonsecurity.com/terms/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.269Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "schneier-security"
+name = "Schneier on Security"
+url = "https://www.schneier.com/feed/atom/"
+category = "security"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Bruce Schneier's security blog"
+terms_url = "https://www.schneier.com/privacy/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.320Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "gwern-new"
+name = "Gwern.net"
+url = "https://gwern.net/index.rss"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 240
+enabled = true
+notes = "Long-form essays on varied topics"
+terms_url = "https://gwern.net/about"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.538Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "lesswrong"
+name = "LessWrong"
+url = "https://www.lesswrong.com/feed.xml"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Rationality and AI safety community"
+terms_url = "https://www.lesswrong.com/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.633Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "alignment-forum"
+name = "AI Alignment Forum"
+url = "https://www.alignmentforum.org/feed.xml"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "AI safety research discussions"
+terms_url = "https://www.alignmentforum.org/terms-of-use"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:31.841Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "marginal-revolution"
+name = "Marginal Revolution"
+url = "https://marginalrevolution.com/feed"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Economics blog by Tyler Cowen"
+terms_url = "https://marginalrevolution.com/about"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:32.070Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "astral-codex"
+name = "Astral Codex Ten"
+url = "https://www.astralcodexten.com/feed"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "Scott Alexander's blog"
+terms_url = "https://www.astralcodexten.com/about"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:32.176Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "metaculus-predictions"
+name = "Metaculus Questions"
+url = "https://www.metaculus.com/api2/feed/"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 240
+enabled = true
+notes = "Prediction market questions"
+terms_url = "https://www.metaculus.com/terms-of-use/"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:32.938Z"
+last_status = "unreliable"
+last_error = "HTTP 404: Not Found"
+consecutive_failures = 2
+
+[[sources]]
+id = "ietf-rfc"
+name = "IETF RFCs"
+url = "https://www.rfc-editor.org/rfcrss.xml"
+category = "esoteric"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 120
+enabled = true
+notes = "New Internet standards RFCs"
+terms_url = "https://www.rfc-editor.org/info/rfc-editor-info"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:33.236Z"
+last_status = "healthy"
+consecutive_failures = 0
+
+[[sources]]
+id = "cve-recent"
+name = "CVE Recent Entries"
+url = "https://cvefeed.io/rssfeed/latest.xml"
+category = "security"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Recent CVE vulnerability entries"
+terms_url = "https://cvefeed.io/terms"
+permission = "public-rss"
+last_checked = "2026-01-11T15:05:33.282Z"
+last_status = "healthy"
+consecutive_failures = 0
 
 [[categories]]
 id = "tech"
@@ -201,7 +1224,7 @@ default_score_threshold = 50
 [[categories]]
 id = "news"
 name = "World News"
-description = "International news and current affairs"
+description = "International news and current affairs from major agencies"
 default_score_threshold = 60
 
 [[categories]]
@@ -213,19 +1236,53 @@ default_score_threshold = 60
 [[categories]]
 id = "research"
 name = "Research"
-description = "Academic papers and research publications"
+description = "Academic papers and peer-reviewed research publications"
 default_score_threshold = 70
 
 [[categories]]
 id = "finance"
 name = "Finance"
-description = "Financial markets and business news"
+description = "Central banks, monetary policy, and financial markets"
 default_score_threshold = 55
 
-# ============================================================================
-# PERMISSION TYPES
-# ============================================================================
-# public-rss     - Publicly available RSS/Atom feed, no authentication required
-# check-terms    - Need to verify terms of service before enabling
-# oauth-required - Requires OAuth authentication from user
-# api-key        - Requires API key (stored in Secrets Manager)
+[[categories]]
+id = "government"
+name = "Government"
+description = "Official government announcements and legislation"
+default_score_threshold = 65
+
+[[categories]]
+id = "international"
+name = "International Organizations"
+description = "UN, NGOs, and intergovernmental organizations"
+default_score_threshold = 60
+
+[[categories]]
+id = "space"
+name = "Space & Astronomy"
+description = "Space exploration, astronomy, and space weather"
+default_score_threshold = 50
+
+[[categories]]
+id = "environment"
+name = "Environment"
+description = "Climate, natural hazards, and environmental monitoring"
+default_score_threshold = 55
+
+[[categories]]
+id = "security"
+name = "Security"
+description = "Cybersecurity alerts and analysis"
+default_score_threshold = 60
+
+[[categories]]
+id = "knowledge"
+name = "Knowledge"
+description = "Wikipedia and knowledge base updates"
+default_score_threshold = 50
+
+[[categories]]
+id = "esoteric"
+name = "Esoteric"
+description = "Specialized analysis, predictions, and deep research"
+default_score_threshold = 70

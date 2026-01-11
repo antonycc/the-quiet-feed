@@ -11,7 +11,7 @@
  * Options:
  *   --source <id>     Fetch specific source only
  *   --category <cat>  Fetch sources in category
- *   --output <dir>    Output directory (default: ./web/public/sample-content/feeds)
+ *   --output <dir>    Output directory (default: ./app/test-data/sample-content/feeds)
  *   --dry-run         Show what would be fetched without fetching
  *   --help            Show this help
  */
@@ -22,7 +22,7 @@ import TOML from "@iarna/toml";
 import { fetchAndParseFeed } from "../app/services/rssFeedService.js";
 
 const CATALOG_PATH = "./web/public/feeds.catalogue.toml";
-const DEFAULT_OUTPUT_DIR = "./web/public/sample-content/feeds";
+const DEFAULT_OUTPUT_DIR = "./app/test-data/sample-content/feeds";
 
 async function main() {
   const args = process.argv.slice(2);

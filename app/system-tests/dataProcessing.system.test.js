@@ -307,6 +307,59 @@ describe("System: Data Processing Pipeline", () => {
     });
   });
 
+  describe("Feed catalogue processing", () => {
+    it("loads the feeds catalogue from TOML", async () => {
+      const toml = await import("@iarna/toml");
+      const { readFileSync } = await import("fs");
+      const { join } = await import("path");
+
+      const cataloguePath = join(process.cwd(), "web/public/feeds.catalogue.toml");
+      const content = readFileSync(cataloguePath, "utf-8");
+      const catalogue = toml.parse(content);
+
+      expect(catalogue.sources).toBeDefined();
+      expect(catalogue.sources.length).toBeGreaterThan(0);
+      expect(catalogue.categories).toBeDefined();
+    });
+
+    it("filters enabled sources correctly", async () => {
+      const toml = await import("@iarna/toml");
+      const { readFileSync } = await import("fs");
+      const { join } = await import("path");
+
+      const cataloguePath = join(process.cwd(), "web/public/feeds.catalogue.toml");
+      const content = readFileSync(cataloguePath, "utf-8");
+      const catalogue = toml.parse(content);
+
+      const enabledSources = catalogue.sources.filter((s) => s.enabled !== false);
+      expect(enabledSources.length).toBeGreaterThan(0);
+
+      // All enabled sources should have required fields
+      enabledSources.forEach((source) => {
+        expect(source.id).toBeDefined();
+        expect(source.name).toBeDefined();
+        expect(source.url).toBeDefined();
+        expect(source.category).toBeDefined();
+      });
+    });
+
+    it("filters sources by category", async () => {
+      const toml = await import("@iarna/toml");
+      const { readFileSync } = await import("fs");
+      const { join } = await import("path");
+
+      const cataloguePath = join(process.cwd(), "web/public/feeds.catalogue.toml");
+      const content = readFileSync(cataloguePath, "utf-8");
+      const catalogue = toml.parse(content);
+
+      const techSources = catalogue.sources.filter((s) => s.category === "tech" && s.enabled !== false);
+      expect(techSources.length).toBeGreaterThan(0);
+
+      const newsSources = catalogue.sources.filter((s) => s.category === "news" && s.enabled !== false);
+      expect(newsSources.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("URL normalization for deduplication", () => {
     it("normalizes URLs with different tracking parameters", () => {
       const urls = [

@@ -13,6 +13,7 @@ import {
   getEnvVarAndLog,
   runLocalHttpServer,
 } from "./helpers/behaviour-helpers.js";
+import { setupFeeds } from "./helpers/feed-setup.js";
 
 dotenvConfigIfNotBlank({ path: ".env" });
 
@@ -43,6 +44,14 @@ test.beforeAll(async () => {
 
   // Ensure screenshot directory exists
   fs.mkdirSync(screenshotPath, { recursive: true });
+
+  // Optionally refresh feeds (set TEST_REFRESH_FEEDS=true to enable)
+  const feedResult = await setupFeeds({ verbose: true });
+  if (feedResult.success) {
+    console.log(`[Feed Setup] Refreshed ${feedResult.itemCount} items from ${feedResult.feedCount} feeds`);
+  } else if (feedResult.skipped) {
+    console.log("[Feed Setup] Using existing sample feeds");
+  }
 
   // Run local HTTP server if configured
   serverProcess = await runLocalHttpServer(runTestServer, httpServerPort);

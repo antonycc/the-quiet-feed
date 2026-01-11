@@ -11,7 +11,7 @@
  * Options:
  *   --input <file>    Score items from JSON file
  *   --feed <dir>      Score all feeds in directory
- *   --output <dir>    Output directory (default: ./web/public/sample-content/scores)
+ *   --output <dir>    Output directory (default: ./app/test-data/sample-content/scores)
  *   --rules           Force rule-based scoring (no LLM)
  *   --dry-run         Show what would be scored without scoring
  *   --help            Show this help
@@ -25,8 +25,8 @@ import path from "path";
 import { scoreWithRules, scoreWithLLM } from "../app/services/scoringService.js";
 import { computeContentHash } from "../app/lib/contentHash.js";
 
-const DEFAULT_OUTPUT_DIR = "./web/public/sample-content/scores";
-const DEFAULT_FEED_DIR = "./web/public/sample-content/feeds";
+const DEFAULT_OUTPUT_DIR = "./app/test-data/sample-content/scores";
+const DEFAULT_FEED_DIR = "./app/test-data/sample-content/feeds";
 
 async function main() {
   const args = process.argv.slice(2);

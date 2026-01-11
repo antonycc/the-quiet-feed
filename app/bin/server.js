@@ -80,6 +80,11 @@ app.use("/docs", (req, res, next) => {
   next();
 });
 
+// Serve test data directories for development (sample-feeds, sample-content)
+// These are stored in app/test-data/ but served as if they were in web/public/
+app.use("/sample-feeds", express.static(path.join(__dirname, "../test-data/sample-feeds"), { dotfiles: "allow" }));
+app.use("/sample-content", express.static(path.join(__dirname, "../test-data/sample-content"), { dotfiles: "allow" }));
+
 app.use(express.static(path.join(__dirname, "../../web/public"), { dotfiles: "allow" }));
 
 mockAuthUrlGetApiEndpoint(app);

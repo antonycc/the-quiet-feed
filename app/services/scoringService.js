@@ -327,13 +327,15 @@ export const scoreWithLLM = async (item, options = {}) => {
  *
  * Priority:
  * 1. If preferRules is set, use rule-based scoring
- * 2. If useLocalLLM is set, use Ollama (for system tests)
- * 3. If ANTHROPIC_API_KEY is set, use Claude API
- * 4. Otherwise, fall back to rule-based scoring
+ * 2. If provider is explicitly set, use that provider
+ * 3. If useLocalLLM is set, use Ollama (for system tests)
+ * 4. If ANTHROPIC_API_KEY is set, use Claude API
+ * 5. Otherwise, fall back to rule-based scoring
  *
  * @param {Object} item - Feed item to score
  * @param {Object} [options] - Options
  * @param {boolean} [options.preferRules] - Force rule-based scoring
+ * @param {string} [options.provider] - Explicit provider: 'ollama' or 'anthropic'
  * @param {boolean} [options.useLocalLLM] - Use Ollama for local LLM scoring
  * @param {Object} [options.llmClient] - Custom LLM client instance
  * @returns {Promise<Object>} Score result
@@ -349,12 +351,21 @@ export const scoreContent = async (item, options = {}) => {
     return scoreWithLLMClient(item, options);
   }
 
-  // Priority 3: Local LLM (Ollama) for system/behaviour tests
+  // Priority 3: Explicit provider selection
+  if (options.provider === "ollama") {
+    return scoreWithLocalLLM(item, options);
+  }
+
+  if (options.provider === "anthropic") {
+    return scoreWithLLM(item, options);
+  }
+
+  // Priority 4: Local LLM (Ollama) for system/behaviour tests
   if (options.useLocalLLM) {
     return scoreWithLocalLLM(item, options);
   }
 
-  // Priority 4: Cloud LLM (Anthropic) for production
+  // Priority 5: Cloud LLM (Anthropic) for production
   if (process.env.ANTHROPIC_API_KEY) {
     return scoreWithLLM(item, options);
   }
