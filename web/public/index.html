@@ -15,22 +15,20 @@
   <body>
     <header>
       <div class="header-nav">
-        <div class="hamburger-menu">
-          <button class="hamburger-btn" aria-label="Menu" onclick="toggleMenu()">&#9776;</button>
-          <div class="menu-dropdown" id="menuDropdown">
-            <a href="index.html">Feed</a>
-            <a href="about.html">About</a>
-            <a href="account/bundles.html">Settings</a>
-          </div>
+        <nav class="nav-links">
+          <a href="index.html" class="nav-link" id="navFeed">Feed</a>
+          <a href="index.html?feed=about" class="nav-link" id="navAbout">About</a>
+          <a href="index.html?feed=settings" class="nav-link" id="navSettings">Settings</a>
+        </nav>
+        <div class="header-brand">
+          <span class="system-prefix">SYSTEM://</span>
+          <span class="brand-title">THE QUIET FEED</span>
         </div>
         <div class="auth-section">
-          <span class="entitlement-status" id="entitlementStatus"></span>
-          <span class="login-status" id="loginStatus">Not logged in</span>
+          <span class="login-status" id="loginStatus">ANONYMOUS</span>
           <a href="auth/login.html" class="login-link" id="authLink">ENHANCE</a>
         </div>
       </div>
-      <span class="system-prefix">SYSTEM://</span>
-      <h1>THE QUIET FEED</h1>
       <p class="subtitle">Your feeds, stripped of the garbage</p>
     </header>
 
@@ -66,26 +64,6 @@
       <div class="feed-load-more" id="loadMoreContainer" style="display: none;">
         <button class="btn-load-more" onclick="loadMore()">LOAD MORE</button>
       </div>
-
-      <!-- Join CTA -->
-      <div class="tier-cards" style="margin-top: 2rem;">
-        <div class="tier-card featured">
-          <div class="tier-name">THE $20 CLUB</div>
-          <div class="tier-price">$20<small>/month</small></div>
-          <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
-            The price of Claude Pro for a bet on something quieter.
-          </p>
-          <ul class="tier-features">
-            <li>Full HARD COPY access from day one</li>
-            <li>Lifetime FREE when trigger fires</li>
-            <li>Founding member status forever</li>
-            <li>No ads, ever</li>
-          </ul>
-          <button class="btn" style="width: 100%; margin-top: 1rem;" onclick="window.location.href='auth/login.html'">
-            JOIN THE $20 CLUB
-          </button>
-        </div>
-      </div>
     </main>
 
     <footer>
@@ -105,7 +83,6 @@
 
     <!-- Scripts -->
     <script type="module" src="./submit.js"></script>
-    <script src="widgets/hamburger-menu.js"></script>
     <script src="widgets/auth-status.js"></script>
     <script>
       // Feed state
@@ -117,7 +94,10 @@
 
       // Initialize
       document.addEventListener('DOMContentLoaded', async () => {
-        await loadFeed('default');
+        // Check for feed query param
+        const urlParams = new URLSearchParams(window.location.search);
+        const feedParam = urlParams.get('feed') || 'default';
+        await loadFeed(feedParam);
         checkAuthStatus();
       });
 
@@ -131,21 +111,42 @@
         if (idToken && userInfo) {
           try {
             const user = JSON.parse(userInfo);
-            loginStatus.textContent = user.email || 'Logged in';
+            loginStatus.textContent = user.email || 'ENHANCE';
             authLink.textContent = 'SETTINGS';
             authLink.href = 'account/bundles.html';
           } catch (e) {
             console.error('Error parsing user info:', e);
           }
+        } else {
+          loginStatus.textContent = 'ANONYMOUS';
         }
       }
+
+      // Special feeds that hide the source selector
+      const SPECIAL_FEEDS = ['about', 'settings'];
 
       // Load feed from JSON
       async function loadFeed(feedId) {
         currentFeed = feedId;
         displayedItems = 0;
 
-        // Update active button
+        // Update nav links
+        document.getElementById('navFeed').classList.toggle('active', !SPECIAL_FEEDS.includes(feedId));
+        document.getElementById('navAbout').classList.toggle('active', feedId === 'about');
+        document.getElementById('navSettings').classList.toggle('active', feedId === 'settings');
+
+        // Show/hide feed sources for special feeds
+        const feedSources = document.getElementById('feedSources');
+        const feedFilters = document.querySelector('.feed-filters');
+        if (SPECIAL_FEEDS.includes(feedId)) {
+          feedSources.style.display = 'none';
+          if (feedFilters) feedFilters.style.display = 'none';
+        } else {
+          feedSources.style.display = 'flex';
+          if (feedFilters) feedFilters.style.display = 'flex';
+        }
+
+        // Update active source button
         document.querySelectorAll('.feed-source-btn').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.feed === feedId);
         });
@@ -157,7 +158,7 @@
         spinner.style.display = 'block';
 
         try {
-          const response = await fetch(`/sample-feeds/${feedId}.json`);
+          const response = await fetch(`./sample-feeds/${feedId}.json`);
           if (!response.ok) throw new Error('Feed not found');
 
           feedData = await response.json();
@@ -325,28 +326,18 @@
         renderFeedItems();
       }
 
-      // Placeholder actions
+      // Placeholder actions - reference tiers not pricing
       function muteItem(id) {
-        alert('MUTE: This feature requires ENHANCE tier. Sign in to mute topics.');
+        alert('MUTE: Sign in to ENHANCE your feed with mute controls.');
       }
 
       function traceItem(id) {
-        alert('TRACE: Origin tracking will be available in the next release.');
+        alert('TRACE: Origin tracking coming soon.');
       }
 
       function expandDedup(id) {
-        alert('DEDUP: Expanding similar items will be available in the next release.');
+        alert('DEDUP: Expand similar items coming soon.');
       }
-
-      // Close menu when clicking outside
-      window.onclick = function(event) {
-        if (!event.target.matches('.hamburger-btn')) {
-          const dropdown = document.getElementById('menuDropdown');
-          if (dropdown && dropdown.classList.contains('show')) {
-            dropdown.classList.remove('show');
-          }
-        }
-      };
     </script>
   </body>
 </html>

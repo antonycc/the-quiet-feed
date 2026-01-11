@@ -31,7 +31,7 @@ const timestamp = () => new Date().toISOString().replace(/[:.]/g, "-");
 test.setTimeout(120_000);
 
 test.beforeEach(async ({}, testInfo) => {
-  testInfo.annotations.push({ type: "test-id", description: "anonymousBehaviour" });
+  testInfo.annotations.push({ type: "test-id", description: "web-test-anonymous" });
 });
 
 test.beforeAll(async () => {
@@ -83,9 +83,9 @@ test("Anonymous user: View default feed without login", async ({ page }, testInf
   /* ****************** */
 
   await test.step("Verify not logged in", async () => {
-    // Check login status shows "Not logged in"
+    // Check login status shows "ANONYMOUS"
     const loginStatus = page.locator("#loginStatus");
-    await expect(loginStatus).toContainText("Not logged in");
+    await expect(loginStatus).toContainText("ANONYMOUS");
 
     // Check auth link shows "ENHANCE" (not "SETTINGS")
     const authLink = page.locator("#authLink");
@@ -239,27 +239,6 @@ test("Anonymous user: View default feed without login", async ({ page }, testInf
   });
 
   /* ****************** */
-  /*  VERIFY $20 CLUB CTA */
-  /* ****************** */
-
-  await test.step("Verify $20 Club CTA is displayed", async () => {
-    // Scroll to bottom to see CTA
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(500);
-
-    // Check $20 Club card is visible
-    const tierCard = page.locator(".tier-card.featured");
-    await expect(tierCard).toBeVisible();
-
-    // Verify it mentions $20 Club
-    await expect(tierCard.locator(".tier-name")).toContainText("$20 CLUB");
-    await expect(tierCard.locator(".tier-price")).toContainText("$20");
-
-    await page.screenshot({ path: `${screenshotPath}/09-${timestamp()}-twenty-dollar-club-cta.png` });
-    console.log("[Anonymous Test] $20 Club CTA verified");
-  });
-
-  /* ****************** */
   /*  FINAL FULL PAGE SCREENSHOT */
   /* ****************** */
 
@@ -269,7 +248,7 @@ test("Anonymous user: View default feed without login", async ({ page }, testInf
     await page.waitForTimeout(300);
 
     await page.screenshot({
-      path: `${screenshotPath}/10-${timestamp()}-final-state.png`,
+      path: `${screenshotPath}/09-${timestamp()}-final-state.png`,
       fullPage: true,
     });
     console.log("[Anonymous Test] Final state captured");
@@ -280,7 +259,7 @@ test("Anonymous user: View default feed without login", async ({ page }, testInf
   /* ****************** */
 
   const testContext = {
-    testId: "anonymousBehaviour",
+    testId: "web-test-anonymous",
     name: testInfo.title,
     title: "Anonymous User Feed View",
     description: "Verifies anonymous users can view the default feed without logging in. Tests SHIELD compliance (explicit pagination, no infinite scroll).",

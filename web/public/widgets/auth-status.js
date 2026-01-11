@@ -23,12 +23,12 @@
       const userLabel = pickDisplayName(user);
       console.log("User info:", user);
       console.log("User label:", userLabel);
-      loginStatusElement.textContent = `Logged in as ${userLabel}`;
+      loginStatusElement.textContent = userLabel;
       loginLinkElement.textContent = "Logout";
       loginLinkElement.href = "#";
       loginLinkElement.onclick = logout;
     } else {
-      loginStatusElement.textContent = "Not logged in";
+      loginStatusElement.textContent = "ANONYMOUS";
       const currentPage = window.location.pathname.split("/").pop();
       if (currentPage === "login.html") {
         loginLinkElement.textContent = "Home";

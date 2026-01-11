@@ -3,75 +3,69 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>DIY Accounting Submit - Login</title>
+    <title>ENHANCE - The Quiet Feed</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../submit.css" />
-    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
     <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
     <meta name="rum:region" content="${AWS_REGION}" />
     <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
     <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
-    <!-- HEAD-prefetch to help mitigate API cold starts for this page's calls -->
-    <!--script async src="../prefetch/prefetch-cognito-authurl-head.js"></script-->
-    <!--script async src="../prefetch/prefetch-cognito-token-head.js"></script-->
   </head>
   <body>
     <header>
       <div class="header-nav">
-        <div class="hamburger-menu">
-          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
-          <div class="menu-dropdown" id="menuDropdown">
-            <a href="../index.html">Home</a>
-            <a href="../account/bundles.html">Bundles</a>
-            <a href="../hmrc/receipt/receipts.html">Receipts</a>
-            <a href="../guide/index.html">User Guide</a>
-            <a href="../about.html">About</a>
-          </div>
+        <nav class="nav-links">
+          <a href="../index.html" class="nav-link">Feed</a>
+          <a href="../index.html?feed=about" class="nav-link">About</a>
+          <a href="../index.html?feed=settings" class="nav-link">Settings</a>
+        </nav>
+        <div class="header-brand">
+          <span class="system-prefix">SYSTEM://</span>
+          <span class="brand-title">THE QUIET FEED</span>
         </div>
         <div class="auth-section">
-          <span class="entitlement-status">Activity: unrestricted</span>
-          <span class="login-status">Not logged in</span>
-          <a href="../index.html" class="login-link">Home</a>
+          <span class="login-status" id="loginStatus">ANONYMOUS</span>
+          <a href="../index.html" class="login-link" id="authLink">Home</a>
         </div>
       </div>
-      <h1>DIY Accounting Submit</h1>
-      <p class="subtitle">Submit UK VAT returns to HMRC under Making Tax Digital (MTD)</p>
+      <p class="subtitle">Sign in to ENHANCE your feed</p>
     </header>
 
-    <div id="mainContent">
+    <main id="mainContent">
       <div id="statusMessagesContainer"></div>
 
       <div class="form-container" style="text-align: center">
-        <h2>Login</h2>
-        <p>Choose your authentication provider to continue:</p>
+        <h2>ENHANCE</h2>
+        <p>Connect your feed sources and unlock personalized scoring</p>
 
         <div class="auth-providers">
           <div class="auth-provider">
             <button type="button" class="btn auth-btn google-btn" id="loginWithCognito">
               <img src="../images/g-logo.png" alt="Google" class="provider-logo" />
-              Continue with Google via Amazon Cognito
+              Continue with Google
             </button>
           </div>
 
           <div class="auth-provider" id="mockOAuth2Provider">
             <button type="button" class="btn auth-btn" id="loginWithMockOAuth2">
-              <img src="https://avatars.githubusercontent.com/u/11848947?s=48&v=4" alt="navikt/mock-oauth2-server" class="provider-logo" />
+              <img src="https://avatars.githubusercontent.com/u/11848947?s=48&v=4" alt="mock-oauth2-server" class="provider-logo" />
               Continue with mock-oauth2-server
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </main>
 
     <footer>
       <div class="footer-content">
         <div class="footer-left">
-          <a href="#" id="viewSourceLink" style="display: none">view source</a>
-          <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
-          <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+          <a href="../tests/index.html" target="_blank">tests</a>
+          <a href="../docs/index.html" target="_blank">api</a>
+          <a href="../privacy.html">privacy</a>
+          <a href="../terms.html">terms</a>
         </div>
         <div class="footer-center">
-          <p>&copy; 2025 DIY Accounting Limited</p>
+          <p>&copy; 2025-2026 Antony Cartwright</p>
         </div>
         <div class="footer-right" id="localstorageContainer"></div>
       </div>
@@ -83,10 +77,7 @@
     <script src="../lib/request-cache.js"></script>
     <script src="../lib/toml-parser.js"></script>
     <script src="../widgets/status-messages.js"></script>
-    <script src="../widgets/hamburger-menu.js"></script>
-    <script src="../widgets/entitlement-status.js"></script>
     <script src="../widgets/auth-status.js"></script>
-    <script type="module" src="../widgets/view-source-link.js"></script>
     <script src="../widgets/localstorage-viewer.js"></script>
     <script>
       (async function () {
@@ -97,68 +88,54 @@
         }
       })();
 
-      // Login with Google or Antonycc OIDC via Cognito
       async function loginWithCognito() {
-        console.log("Initiating login with Google or Antonycc OIDC via Cognito");
+        console.log("Initiating login with Google via Cognito");
 
-        console.log("Clear stored tokens and user info");
         localStorage.removeItem("authState");
         localStorage.removeItem("cognitoAccessToken");
         localStorage.removeItem("cognitoIdToken");
         localStorage.removeItem("cognitoRefreshToken");
         localStorage.removeItem("userInfo");
-        localStorage.removeItem("authState");
 
-        // Generate state parameter for security
         const state = Math.random().toString(36).substring(2, 15);
         localStorage.setItem("authState", state);
 
         let authResponseUrl;
         if (window.__env && window.authUrlBuilder) {
           authResponseUrl = window.authUrlBuilder.buildCognitoAuthUrl(state);
-          console.log("Using client-side generated Cognito Auth URL:", authResponseUrl);
         } else {
-          // Get OAuth URL from API (fallback)
           const authResponse = await getAuthUrl(state, "cognito");
           authResponseUrl = authResponse.authUrl;
-          console.log("Using server-side Cognito Auth URL:", authResponseUrl);
         }
 
-        console.log("Redirecting to Antonycc via Cognito OAuth URL");
         try {
           window.__correlation?.prepareRedirect?.();
         } catch {}
         window.location.href = authResponseUrl;
       }
 
-      // Login with Mock OAuth2 Server (and stubbed cognito)
       async function loginWithMockOAuth2() {
-        console.log("Initiating navikt/mock-oauth2-server login");
+        console.log("Initiating mock-oauth2-server login");
 
-        console.log("Clear stored tokens and user info");
         localStorage.removeItem("cognitoAccessToken");
         localStorage.removeItem("cognitoIdToken");
         localStorage.removeItem("cognitoRefreshToken");
         localStorage.removeItem("userInfo");
         localStorage.removeItem("authState");
 
-        // Generate state parameter for security
         const state = Math.random().toString(36).substring(2, 15);
         localStorage.setItem("authState", state);
 
-        // Get OAuth URL
         const authResponse = await getAuthUrl(state, "mock");
         const authUrl = authResponse.authUrl;
 
-        showStatus(`Handing off to ${authUrl}`, "info");
-        console.log("Redirecting to navikt/mock-oauth2-server");
+        showStatus(`Redirecting to ${authUrl}`, "info");
         try {
           window.__correlation?.prepareRedirect?.();
         } catch {}
         window.location.href = authUrl;
       }
 
-      // Check if user is already logged in
       function checkExistingAuth() {
         const accessToken = localStorage.getItem("cognitoAccessToken");
         const userInfo = localStorage.getItem("userInfo");
@@ -169,21 +146,16 @@
         }
       }
 
-      // DOM elements
       const loginWithCognitoButton = document.getElementById("loginWithCognito");
       const loginWithMockOAuth2Button = document.getElementById("loginWithMockOAuth2");
 
-      // Event listeners
       loginWithCognitoButton.onclick = loginWithCognito;
       loginWithMockOAuth2Button.addEventListener("click", async (event) => {
-        event.preventDefault(); // Prevent default button action
+        event.preventDefault();
         await loginWithMockOAuth2();
       });
 
       sessionStorage.removeItem("currentActivity");
-      console.log("Current activity cleared");
-
-      // Initialize authentication on page load
       checkExistingAuth();
     </script>
   </body>

@@ -3,10 +3,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>DIY Accounting Submit - Bundles</title>
+    <title>HARD COPY - The Quiet Feed</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../submit.css" />
-    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
     <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
     <meta name="rum:region" content="${AWS_REGION}" />
     <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
@@ -15,74 +14,49 @@
   <body>
     <header>
       <div class="header-nav">
-        <div class="hamburger-menu">
-          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
-          <div class="menu-dropdown" id="menuDropdown">
-            <a href="../index.html">Home</a>
-            <a href="../account/bundles.html">Bundles</a>
-            <a href="../hmrc/receipt/receipts.html">Receipts</a>
-            <a href="../guide/index.html">User Guide</a>
-            <a href="../about.html">About</a>
-          </div>
+        <nav class="nav-links">
+          <a href="../index.html" class="nav-link">Feed</a>
+          <a href="../index.html?feed=about" class="nav-link">About</a>
+          <a href="../index.html?feed=settings" class="nav-link active">Settings</a>
+        </nav>
+        <div class="header-brand">
+          <span class="system-prefix">SYSTEM://</span>
+          <span class="brand-title">THE QUIET FEED</span>
         </div>
         <div class="auth-section">
-          <span class="entitlement-status">Activity: unrestricted</span>
-          <span class="login-status">Not logged in</span>
-          <a href="../auth/login.html" class="login-link">Log in</a>
+          <span class="login-status" id="loginStatus">ANONYMOUS</span>
+          <a href="../auth/login.html" class="login-link" id="authLink">ENHANCE</a>
         </div>
       </div>
-      <h1>DIY Accounting Submit</h1>
-      <p class="subtitle">Submit UK VAT returns to HMRC under Making Tax Digital (MTD)</p>
+      <p class="subtitle">HARD COPY subscription</p>
     </header>
 
-    <div id="mainContent">
+    <main id="mainContent">
       <div id="statusMessagesContainer"></div>
-
       <div id="loadingSpinner" class="spinner" style="display: none"></div>
 
-      <div class="form-container" style="text-align: center">
-        <h2>Bundles</h2>
+      <div class="form-container">
+        <h2>HARD COPY</h2>
+        <p style="color: var(--color-text-secondary); margin-bottom: 2rem;">
+          Unlock full access to The Quiet Feed
+        </p>
 
-        <div class="bundles-list" id="catalogBundles"></div>
+        <div id="catalogBundles"></div>
 
-        <div style="margin-top: 3em; padding-top: 2em; border-top: 1px solid #ddd">
-          <h3>Your Current Bundles</h3>
-          <div id="currentBundles" style="margin: 1em 0"></div>
-        </div>
-
-        <div style="margin-top: 2em">
-          <button
-            type="button"
-            class="btn"
-            onclick="window.location.href = '../index.html'"
-            style="background-color: #6c757d; border-color: #6c757d"
-          >
-            Back to Home
-          </button>
-        </div>
-
-        <div style="margin-top: 3em; padding-top: 1em; border-top: 1px solid #eee">
-          <button
-            type="button"
-            class="btn"
-            id="removeAllBtn"
-            style="background-color: #dc3545; border-color: #dc3545; color: white; font-size: 0.9em"
-          >
-            Remove All Bundles
-          </button>
-        </div>
+        <div id="currentBundles" style="margin-top: 2rem;"></div>
       </div>
-    </div>
+    </main>
 
     <footer>
       <div class="footer-content">
         <div class="footer-left">
-          <a href="#" id="viewSourceLink" style="display: none">view source</a>
-          <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
-          <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+          <a href="../tests/index.html" target="_blank">tests</a>
+          <a href="../docs/index.html" target="_blank">api</a>
+          <a href="../privacy.html">privacy</a>
+          <a href="../terms.html">terms</a>
         </div>
         <div class="footer-center">
-          <p>&copy; 2025 DIY Accounting Limited</p>
+          <p>&copy; 2025-2026 Antony Cartwright</p>
         </div>
         <div class="footer-right" id="localstorageContainer"></div>
       </div>
@@ -92,32 +66,25 @@
     <script src="../lib/request-cache.js"></script>
     <script src="../lib/bundle-cache.js"></script>
     <script src="../lib/toml-parser.js"></script>
-    <script src="../widgets/hamburger-menu.js"></script>
-    <script src="../widgets/entitlement-status.js"></script>
     <script src="../widgets/auth-status.js"></script>
     <script src="../widgets/status-messages.js"></script>
     <script src="../widgets/loading-spinner.js"></script>
-    <script type="module" src="../widgets/view-source-link.js"></script>
     <script src="../widgets/localstorage-viewer.js"></script>
 
     <script>
-      // --- helpers
       const getIdToken = () => {
         try {
           return localStorage.getItem("cognitoIdToken");
         } catch (e) {
-          // In opaque origins (e.g., setContent in tests), localStorage may be inaccessible
           return null;
         }
       };
 
-      // Lightweight wrappers that use page-level cache when available, with safe fallbacks for tests
       const __rc = typeof window !== "undefined" && window.requestCache ? window.requestCache : null;
       const fetchAndParse = async (url, opts = {}) => {
         try {
           if (__rc && typeof __rc.getJSON === "function" && !url.endsWith(".toml")) return __rc.getJSON(url, opts);
         } catch {}
-        // Fallback: Use fetchWithIdToken if authorization is needed
         const init = opts.init || {};
         const hasAuthHeader = init.headers && (init.headers.Authorization || init.headers.authorization);
         let res;
@@ -126,7 +93,6 @@
         } else {
           res = await fetch(url, init);
         }
-
         try {
           if (url.endsWith(".toml")) {
             const text = await res.text();
@@ -137,19 +103,18 @@
           return null;
         }
       };
+
       const invalidate = (prefix) => {
         try {
           if (__rc && typeof __rc.invalidate === "function") return __rc.invalidate(prefix);
         } catch {}
       };
 
-      // In-memory bundles state for this page
       let __userBundles = [];
       let __fetchBundlesController = null;
 
       const parseUserBundles = () => (Array.isArray(__userBundles) ? __userBundles : []);
 
-      // Fetch bundles from API endpoint (single source of truth, with lightweight caching)
       const fetchUserBundles = async () => {
         const idToken = getIdToken();
         if (!idToken) {
@@ -172,7 +137,6 @@
           }
         }
 
-        // Abort previous fetch if any
         if (__fetchBundlesController) {
           __fetchBundlesController.abort();
         }
@@ -187,13 +151,12 @@
           if (bundlesData && bundlesData.bundles && Array.isArray(bundlesData.bundles)) {
             __userBundles = bundlesData.bundles.map((b) => b.bundleId);
             if (userId) {
-              await window.bundleCache.setBundles(userId, __userBundles, 5 * 60 * 1000); // 5 minutes TTL
+              await window.bundleCache.setBundles(userId, __userBundles, 5 * 60 * 1000);
             }
             return __userBundles;
           }
         } catch (err) {
           if (err.name === "AbortError") {
-            console.log("Fetch user bundles aborted");
             return __userBundles;
           }
           console.warn("Failed to fetch bundles:", err);
@@ -212,23 +175,22 @@
           return b?.bundleId === id;
         });
 
-      const markToRequest = (btn, message = "Request bundle") => {
+      const markToRequest = (btn, message = "Subscribe") => {
         btn.textContent = message;
         btn.disabled = false;
-        btn.style.backgroundColor = "#2c5aa0";
+        btn.style.backgroundColor = "var(--color-accent)";
       };
 
-      const markGranted = (btn, message = "Added ✓") => {
+      const markGranted = (btn, message = "Active") => {
         btn.textContent = message;
         btn.disabled = true;
-        btn.style.backgroundColor = "#28a745";
+        btn.style.backgroundColor = "var(--color-success)";
       };
 
-      // --- request individual bundle
       async function requestBundle(bundleId, bundleName, qualifiers = {}, fireAndForget = true) {
         const idToken = getIdToken();
         if (!idToken) {
-          showStatus("Please log in first to request bundles.", "warning");
+          showStatus("Please sign in to ENHANCE first.", "warning");
           window.location.href = "../auth/login.html";
           return false;
         }
@@ -236,9 +198,7 @@
         try {
           const r = await window.fetchWithIdToken("/api/v1/bundle", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             fireAndForget,
             body: JSON.stringify({ bundleId, qualifiers }),
           });
@@ -246,8 +206,7 @@
 
           if (r.ok) {
             if (r.status === 202 || body.status === "granted" || body.status === "already_granted") {
-              showStatus(`Bundle "${bundleName}" added successfully.`, "success");
-              // Update local state and write through to persistent cache
+              showStatus(`${bundleName} activated successfully.`, "success");
               if (!hasBundle(__userBundles, bundleId)) {
                 __userBundles.push(bundleId);
               }
@@ -260,90 +219,81 @@
               if (userId) {
                 await window.bundleCache.setBundles(userId, __userBundles, 5 * 60 * 1000);
               }
-              // Refresh in-memory cache and re-render
               invalidate("/api/v1/bundle");
-              try {
-                renderCurrentBundles();
-              } catch {}
-              try {
-                updateBundleStatus();
-              } catch {}
+              try { renderCurrentBundles(); } catch {}
+              try { updateBundleStatus(); } catch {}
               return true;
-            } else {
-              showStatus(`Bundle ${bundleId} request failed: unexpected response`, "error");
             }
           } else {
-            showStatus(`Failed to request bundle: ${body.error || "Unknown error"}`, "error");
+            showStatus(`Failed: ${body.error || "Unknown error"}`, "error");
           }
         } catch (err) {
-          showStatus(`Failed to request bundle. Error: ${err?.message || err}.`, "error");
+          showStatus(`Error: ${err?.message || err}.`, "error");
         }
         return false;
       }
 
-      // --- render one catalog card
       const cardHtml = (b) => {
-        // Ensure we always work with strings and avoid using String.replaceAll for broader compatibility
         const rawName = (b && (b.name || b.id)) || "";
         const safeName = String(rawName).replace(/\"/g, "&quot;");
         return `
-          <div class="service-item" style="text-align:left">
-            <button type="button" class="btn service-btn" data-bundle-id="${b.id}" data-bundle-name="${safeName}">Request ${rawName}</button>
+          <div class="tier-card featured" style="max-width: 400px; margin: 0 auto;">
+            <div class="tier-name">${rawName}</div>
+            <p style="color: var(--color-text-secondary); margin: 1rem 0;">
+              ${b.description || 'Full access to all features'}
+            </p>
+            <ul class="tier-features">
+              <li>WIRE MODE headline normalization</li>
+              <li>Advanced DEDUP clustering</li>
+              <li>API access</li>
+              <li>TERM CLI</li>
+              <li>Data export</li>
+            </ul>
+            <button type="button" class="btn" data-bundle-id="${b.id}" data-bundle-name="${safeName}"
+              style="width: 100%; margin-top: 1rem;">
+              Subscribe to ${rawName}
+            </button>
           </div>`;
       };
 
-      // --- click handler for all request buttons
       document.addEventListener("click", async (e) => {
         const btn = e.target.closest("button[data-bundle-id]");
         if (!btn) return;
 
         const bundleId = btn.getAttribute("data-bundle-id");
         const bundleName = btn.getAttribute("data-bundle-name") || bundleId;
-        const card = btn.closest(".service-item");
         const original = btn.textContent;
 
-        const qualifiers = {};
-        const tx = card?.querySelector('input[name="transactionId"]');
-        if (tx?.value) qualifiers.transactionId = tx.value;
-        const tier = card?.querySelector('input[name="subscriptionTier"]');
-        if (tier?.value) qualifiers.subscriptionTier = tier.value;
-
-        btn.textContent = "Requesting...";
+        btn.textContent = "Processing...";
         btn.disabled = true;
 
-        const success = await requestBundle(bundleId, bundleName, qualifiers, true);
+        const success = await requestBundle(bundleId, bundleName, {}, true);
         if (success) {
-          markGranted(btn, `Added ✓ ${bundleName}`);
+          markGranted(btn, `${bundleName} Active`);
         } else {
           btn.textContent = original;
           btn.disabled = false;
         }
       });
 
-      // --- reflect previously granted
       function updateBundleStatus() {
         const bundles = parseUserBundles();
         document.querySelectorAll("button[data-bundle-id]").forEach((btn) => {
           const id = btn.getAttribute("data-bundle-id");
           const name = btn.getAttribute("data-bundle-name") || id;
           if (hasBundle(bundles, id)) {
-            markGranted(btn, `Added ✓ ${name}`);
+            markGranted(btn, `${name} Active`);
           } else {
-            markToRequest(btn, `Request ${name}`);
+            markToRequest(btn, `Subscribe to ${name}`);
           }
         });
       }
 
-      // --- bootstrap: fetch catalog and render
       (async function () {
         const container = document.getElementById("catalogBundles");
         try {
-          // Fetch user bundles first
           await fetchUserBundles();
-          // Ensure current bundles (with remove actions) are rendered immediately on page load
-          try {
-            renderCurrentBundles();
-          } catch {}
+          try { renderCurrentBundles(); } catch {}
 
           const idToken = getIdToken();
           const headers = idToken ? { Authorization: `Bearer ${idToken}` } : undefined;
@@ -351,197 +301,70 @@
             ttlMs: 300000,
             init: headers ? { headers } : undefined,
           });
+
           if (!catalog || !catalog.bundles) {
-            container.innerHTML = '<p class="service-description">Catalog unavailable.</p>';
+            container.innerHTML = '<p style="color: var(--color-text-secondary);">HARD COPY coming soon.</p>';
             return;
           }
 
-          // Read current environment from submit.environment-name.txt in docroot (next to index.html)
-          async function readEnvironment() {
-            try {
-              const envRes = await fetch("../submit.environment-name.txt", { cache: "no-store" });
-              if (envRes.ok) {
-                const text = (await envRes.text()).trim();
-                return text || null;
-              }
-            } catch {}
-            return null; // Unknown environment
+          // Filter for HARD COPY bundle only
+          const hardCopyBundles = (catalog.bundles || [])
+            .filter((b) => b.id && b.id.toLowerCase().includes('hard'));
+
+          if (hardCopyBundles.length === 0) {
+            // Show default HARD COPY card
+            container.innerHTML = `
+              <div class="tier-card featured" style="max-width: 400px; margin: 0 auto;">
+                <div class="tier-name">HARD COPY</div>
+                <p style="color: var(--color-text-secondary); margin: 1rem 0;">
+                  Full access to all features
+                </p>
+                <ul class="tier-features">
+                  <li>WIRE MODE headline normalization</li>
+                  <li>Advanced DEDUP clustering</li>
+                  <li>API access</li>
+                  <li>TERM CLI</li>
+                  <li>Data export</li>
+                </ul>
+                <button type="button" class="btn" style="width: 100%; margin-top: 1rem;" disabled>
+                  Coming Soon
+                </button>
+              </div>`;
+          } else {
+            container.innerHTML = hardCopyBundles.map(cardHtml).join("\n");
           }
-
-          const env = await readEnvironment();
-
-          const cards = (catalog.bundles || [])
-            .filter((b) => b["allocation"] && b["allocation"] !== "automatic")
-            // If the bundle specifies listedInEnvironments, only list it when current env is included
-            .filter((b) => {
-              const listed = b?.listedInEnvironments;
-              if (!Array.isArray(listed) || listed.length === 0) return true; // visible everywhere by default
-              if (!env) return false; // if environment unknown, hide bundles that specify restrictions
-              return listed.includes(env);
-            })
-            .map(cardHtml)
-            .join("\n");
-          container.innerHTML = cards || '<p class="service-description">No bundles available.</p>';
           updateBundleStatus();
         } catch (err) {
-          try {
-            console.error("[bundles.html] Catalog bootstrap error:", err && (err.stack || err.message || err));
-          } catch {}
-          container.innerHTML = '<p class="service-description">Failed to load catalog.</p>';
+          console.error("[bundles.html] Error:", err);
+          container.innerHTML = '<p style="color: var(--color-text-secondary);">Failed to load.</p>';
         }
       })();
 
-      // --- render current user bundles with remove buttons
       function renderCurrentBundles() {
         const container = document.getElementById("currentBundles");
         const bundles = parseUserBundles();
 
-        //if (bundles.length === 0) {
-        //  container.innerHTML = '<p style="color: #666; font-style: italic;">No bundles added yet.</p>';
-        //  return;
-        //}
+        if (bundles.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
 
         const bundleCards = bundles
           .map((bundleEntry) => {
             const bundleId = typeof bundleEntry === "string" ? bundleEntry : bundleEntry.bundleId;
-            const expiryInfo =
-              typeof bundleEntry === "string"
-                ? bundleEntry.includes("EXPIRY=")
-                  ? bundleEntry.split("EXPIRY=")[1]
-                  : ""
-                : bundleEntry.expiry || "";
-
             return `
-            <div class="service-item" style="text-align:left; margin-bottom: 1em; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 1em;">
-              <span style="display:flex; align-items:center; gap:0.75em">
-                <span>${bundleId}</span>
-                <button type="button" class="btn" data-remove-bundle-id="${bundleId}"
-                  style="background-color: #dc3545; border-color: #dc3545; color: white; font-size: 0.8em; padding: 0.15em 0.5em; min-width: unset; width:auto; display:inline-flex; align-items:center;">
-                    Remove
-                </button>
-                ${expiryInfo ? `<span>(expires: ${expiryInfo})</span>` : ""}
-              </span>
+            <div style="background: var(--color-surface); border-radius: 8px; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-family: var(--font-mono);">${bundleId}</span>
+              <span style="color: var(--color-success); font-family: var(--font-mono); font-size: 0.875rem;">ACTIVE</span>
             </div>`;
           })
           .join("");
 
-        container.innerHTML = bundleCards;
+        container.innerHTML = `<h3 style="margin-bottom: 1rem;">Your Subscriptions</h3>${bundleCards}`;
       }
 
-      // --- click handler for remove buttons
-      document.addEventListener("click", async (e) => {
-        if (e.target.closest("button[data-remove-bundle-id]")) {
-          const btn = e.target.closest("button[data-remove-bundle-id]");
-          const bundleId = btn.getAttribute("data-remove-bundle-id");
-          await removeBundle(bundleId);
-        } else if (e.target.id === "removeAllBtn") {
-          await removeAllBundles();
-        }
-      });
+      try { sessionStorage.removeItem("currentActivity"); } catch {}
 
-      // --- remove individual bundle
-      async function removeBundle(bundleId, fireAndForget = true) {
-        const idToken = getIdToken();
-        if (!idToken) {
-          showStatus("Please log in first to remove bundles.", "warning");
-          window.location.href = "../auth/login.html";
-          return;
-        }
-
-        try {
-          const response = await window.fetchWithIdToken("/api/v1/bundle", {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            fireAndForget,
-            body: JSON.stringify({ bundleId }),
-          });
-
-          const result = await response.json().catch(() => ({}));
-
-          if (response.ok) {
-            // Update local state and write through to persistent cache
-            __userBundles = __userBundles.filter((b) => (typeof b === "string" ? b : b.bundleId) !== bundleId);
-            const userInfoJson = localStorage.getItem("userInfo");
-            let userId = null;
-            try {
-              const userInfo = JSON.parse(userInfoJson);
-              userId = userInfo && userInfo.sub;
-            } catch {}
-            if (userId) {
-              await window.bundleCache.setBundles(userId, __userBundles, 5 * 60 * 1000);
-            }
-            invalidate("/api/v1/bundle");
-            renderCurrentBundles();
-            updateBundleStatus(); // Update the request buttons
-            showStatus(`Bundle "${bundleId}" removed successfully.`, "success");
-          } else {
-            showStatus(`Failed to remove bundle: ${result.error || "Unknown error"}`, "error");
-          }
-        } catch (error) {
-          showStatus("Failed to remove bundle. Please try again.", "error");
-          console.error("Remove bundle error:", error);
-        }
-      }
-
-      // --- remove all bundles
-      async function removeAllBundles(fireAndForget = true) {
-        const idToken = getIdToken();
-        if (!idToken) {
-          showStatus("Please log in first to remove bundles.", "warning");
-          window.location.href = "../auth/login.html";
-          return;
-        }
-
-        try {
-          const response = await window.fetchWithIdToken("/api/v1/bundle", {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            fireAndForget,
-            body: JSON.stringify({ removeAll: true }),
-          });
-
-          const result = await response.json().catch(() => ({}));
-
-          if (response.ok) {
-            // Update local state and write through to persistent cache
-            __userBundles = [];
-            const userInfoJson = localStorage.getItem("userInfo");
-            let userId = null;
-            try {
-              const userInfo = JSON.parse(userInfoJson);
-              userId = userInfo && userInfo.sub;
-            } catch {}
-            if (userId) {
-              await window.bundleCache.setBundles(userId, __userBundles, 5 * 60 * 1000);
-            }
-            invalidate("/api/v1/bundle");
-            renderCurrentBundles();
-            updateBundleStatus(); // Update the request buttons
-            showStatus("All bundles removed successfully.", "success");
-          } else {
-            showStatus(`Failed to remove all bundles: ${result.error || "Unknown error"}`, "error");
-          }
-        } catch (error) {
-          showStatus("Failed to remove all bundles. Please try again.", "error");
-          console.error("Remove all bundles error:", error);
-        }
-      }
-
-      // --- initialize current bundles display
-      setTimeout(() => {
-        renderCurrentBundles();
-      }, 100);
-
-      // --- page init
-      try {
-        sessionStorage.removeItem("currentActivity");
-      } catch {}
-
-      // Initialize page - wait for submit.js module to be ready
       function initPage() {
         checkAuthStatus();
       }
