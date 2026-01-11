@@ -1,0 +1,258 @@
+{
+  "feedId": "default",
+  "name": "Curated Feed",
+  "description": "A curated selection of quality content across news, tech, and research",
+  "lastUpdated": "2026-01-11T10:30:00Z",
+  "itemCount": 12,
+  "items": [
+    {
+      "id": "item-001",
+      "title": "Anthropic Releases Claude 3.5 Sonnet: What Developers Need to Know",
+      "url": "https://example.com/claude-35-sonnet",
+      "source": "TECH CRUNCH",
+      "sourceType": "news",
+      "author": "Sarah Chen",
+      "publishedAt": "2026-01-11T09:15:00Z",
+      "excerpt": "Anthropic's latest model brings significant improvements in coding tasks, with benchmarks showing 40% better performance on complex debugging scenarios. The model also introduces new safety features for enterprise deployments.",
+      "score": 87,
+      "signals": {
+        "factual": 23,
+        "original": 22,
+        "professional": 21,
+        "signal": 21
+      },
+      "tags": ["AI", "DEVELOPERS"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-001.json"
+    },
+    {
+      "id": "item-002",
+      "title": "UK Government Announces New Digital Services Framework",
+      "originalTitle": "STARMER SLAMS Critics As Digital Revolution ROCKS Westminster!",
+      "url": "https://example.com/uk-digital-framework",
+      "source": "BBC NEWS",
+      "sourceType": "news",
+      "author": "James Wilson",
+      "publishedAt": "2026-01-11T08:45:00Z",
+      "excerpt": "The Department for Science, Innovation and Technology has published new guidelines for government digital services. The framework emphasizes accessibility, security, and interoperability across departments.",
+      "score": 72,
+      "signals": {
+        "factual": 20,
+        "original": 15,
+        "professional": 19,
+        "signal": 18
+      },
+      "tags": ["UK POLITICS", "TECH POLICY"],
+      "wireMode": true,
+      "mediaType": null,
+      "contentPath": "/sample-content/item-002.json"
+    },
+    {
+      "id": "item-003",
+      "title": "Research Paper: Efficient Attention Mechanisms for Long-Context LLMs",
+      "url": "https://arxiv.org/abs/2601.12345",
+      "source": "ARXIV",
+      "sourceType": "research",
+      "author": "Zhang et al.",
+      "publishedAt": "2026-01-10T22:00:00Z",
+      "excerpt": "We present a novel attention mechanism that reduces memory complexity from O(n\u00b2) to O(n log n) while maintaining comparable performance on standard benchmarks. Our approach enables processing of contexts up to 1M tokens on consumer hardware.",
+      "score": 94,
+      "signals": {
+        "factual": 24,
+        "original": 25,
+        "professional": 23,
+        "signal": 22
+      },
+      "tags": ["ML RESEARCH", "TRANSFORMERS"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-003.json"
+    },
+    {
+      "id": "item-004",
+      "title": "TypeScript 6.0 Beta Released with Native AOT Compilation",
+      "url": "https://example.com/typescript-6-beta",
+      "source": "HACKER NEWS",
+      "sourceType": "tech",
+      "author": "microsoft",
+      "publishedAt": "2026-01-11T07:30:00Z",
+      "excerpt": "Microsoft has released TypeScript 6.0 beta featuring ahead-of-time compilation, reducing cold start times by up to 80%. The release also includes improved type inference for async generators and a new 'strict' preset.",
+      "score": 81,
+      "signals": {
+        "factual": 21,
+        "original": 20,
+        "professional": 20,
+        "signal": 20
+      },
+      "tags": ["TYPESCRIPT", "JAVASCRIPT"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-004.json"
+    },
+    {
+      "id": "item-005",
+      "title": "Analysis: The Economics of AI Infrastructure at Scale",
+      "url": "https://example.com/ai-infrastructure-economics",
+      "source": "STRATECHERY",
+      "sourceType": "analysis",
+      "author": "Ben Thompson",
+      "publishedAt": "2026-01-10T14:00:00Z",
+      "excerpt": "The cost structure of running large language models is shifting. With inference costs dropping 10x per year, the bottleneck is moving from compute to data quality and human feedback. This has profound implications for AI business models.",
+      "score": 89,
+      "signals": {
+        "factual": 22,
+        "original": 24,
+        "professional": 22,
+        "signal": 21
+      },
+      "tags": ["AI", "BUSINESS"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-005.json"
+    },
+    {
+      "id": "item-006",
+      "title": "PostgreSQL 17: What's New for Application Developers",
+      "url": "https://example.com/postgresql-17",
+      "source": "POSTGRES WEEKLY",
+      "sourceType": "tech",
+      "author": "Craig Kerstiens",
+      "publishedAt": "2026-01-10T16:00:00Z",
+      "excerpt": "PostgreSQL 17 brings native JSON schema validation, improved parallel query execution, and a new 'upsert returning' syntax. The release also includes significant performance improvements for JSONB operations.",
+      "score": 76,
+      "signals": {
+        "factual": 20,
+        "original": 18,
+        "professional": 19,
+        "signal": 19
+      },
+      "tags": ["DATABASES", "POSTGRESQL"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-006.json"
+    },
+    {
+      "id": "item-007",
+      "title": "Video: Building Production-Ready RAG Systems",
+      "url": "https://example.com/rag-production-video",
+      "source": "YOUTUBE",
+      "sourceType": "video",
+      "author": "AI Engineering",
+      "publishedAt": "2026-01-09T20:00:00Z",
+      "excerpt": "A comprehensive walkthrough of building retrieval-augmented generation systems that actually work in production. Covers chunking strategies, embedding model selection, and evaluation frameworks.",
+      "score": 68,
+      "signals": {
+        "factual": 18,
+        "original": 16,
+        "professional": 17,
+        "signal": 17
+      },
+      "tags": ["AI", "VIDEO", "TUTORIAL"],
+      "mediaType": "video",
+      "thumbnailUrl": "/sample-content/thumb-007.svg",
+      "duration": "45:32",
+      "contentPath": "/sample-content/item-007.json"
+    },
+    {
+      "id": "item-008",
+      "title": "AWS Lambda Now Supports 10GB Memory and 6 vCPUs",
+      "url": "https://example.com/aws-lambda-10gb",
+      "source": "AWS NEWS",
+      "sourceType": "news",
+      "author": "AWS",
+      "publishedAt": "2026-01-11T06:00:00Z",
+      "excerpt": "Amazon Web Services has doubled the maximum memory allocation for Lambda functions to 10GB, with proportional vCPU scaling up to 6 cores. This enables new use cases including ML inference and video processing.",
+      "score": 71,
+      "signals": {
+        "factual": 19,
+        "original": 17,
+        "professional": 18,
+        "signal": 17
+      },
+      "tags": ["AWS", "SERVERLESS"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-008.json"
+    },
+    {
+      "id": "item-009",
+      "title": "Study: Remote Work Productivity Five Years On",
+      "url": "https://example.com/remote-work-study-2026",
+      "source": "NATURE",
+      "sourceType": "research",
+      "author": "Stanford Digital Economy Lab",
+      "publishedAt": "2026-01-10T10:00:00Z",
+      "excerpt": "A longitudinal study of 50,000 knowledge workers finds that hybrid arrangements (2-3 days in office) show the highest productivity gains, while fully remote workers report better work-life balance but lower promotion rates.",
+      "score": 83,
+      "signals": {
+        "factual": 23,
+        "original": 20,
+        "professional": 20,
+        "signal": 20
+      },
+      "tags": ["RESEARCH", "WORKPLACE"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-009.json"
+    },
+    {
+      "id": "item-010",
+      "title": "Just launched my new side project! [Show HN]",
+      "url": "https://example.com/show-hn-project",
+      "source": "HACKER NEWS",
+      "sourceType": "social",
+      "author": "anonymous",
+      "publishedAt": "2026-01-11T05:30:00Z",
+      "excerpt": "Built this over the weekend. It's a tool that helps you manage your bookmarks. Would love feedback!",
+      "score": 32,
+      "signals": {
+        "factual": 5,
+        "original": 12,
+        "professional": 8,
+        "signal": 7
+      },
+      "tags": ["SHOW HN"],
+      "mediaType": null,
+      "contentPath": "/sample-content/item-010.json"
+    },
+    {
+      "id": "item-011",
+      "title": "Thread: Lessons from Scaling to 1M Users",
+      "url": "https://example.com/scaling-thread",
+      "source": "LINKEDIN",
+      "sourceType": "social",
+      "author": "Emma Roberts, CTO at TechCorp",
+      "publishedAt": "2026-01-10T12:00:00Z",
+      "excerpt": "After 18 months of scaling our platform from 10K to 1M users, here are the 7 lessons I wish I'd known from day one. Thread on architecture decisions, team structure, and what we got wrong.",
+      "score": 78,
+      "signals": {
+        "factual": 19,
+        "original": 21,
+        "professional": 19,
+        "signal": 19
+      },
+      "tags": ["ENGINEERING", "STARTUP"],
+      "dedup": {
+        "count": 3,
+        "sources": ["LINKEDIN", "TWITTER", "THREADS"]
+      },
+      "mediaType": null,
+      "contentPath": "/sample-content/item-011.json"
+    },
+    {
+      "id": "item-012",
+      "title": "Promoted: Transform Your Business with AI - Free Webinar",
+      "url": "https://example.com/sponsored-webinar",
+      "source": "LINKEDIN",
+      "sourceType": "sponsored",
+      "author": "TechVendor Inc.",
+      "publishedAt": "2026-01-11T00:00:00Z",
+      "excerpt": "Join our exclusive webinar to learn how leading enterprises are using AI to drive 10x productivity gains. Register now for free!",
+      "score": 15,
+      "signals": {
+        "factual": 3,
+        "original": 2,
+        "professional": 5,
+        "signal": 5
+      },
+      "tags": ["SPONSORED", "DEMOTED"],
+      "demoted": true,
+      "mediaType": null,
+      "contentPath": "/sample-content/item-012.json"
+    }
+  ]
+}

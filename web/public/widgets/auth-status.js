@@ -34,8 +34,8 @@
         loginLinkElement.textContent = "Home";
         loginLinkElement.href = "../index.html";
       } else {
-        loginLinkElement.textContent = "Log in";
-        loginLinkElement.href = "../auth/login.html";
+        loginLinkElement.textContent = "ENHANCE";
+        loginLinkElement.href = "auth/login.html";
       }
       loginLinkElement.onclick = null;
     }

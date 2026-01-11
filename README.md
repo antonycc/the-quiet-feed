@@ -17,14 +17,15 @@ The Slopalypse is here. The Quiet Feed is a filter between you and the flood.
 
 ---
 
-## The $100 Club: Believer Pricing
+## The $20 Club: Believer Pricing
 
 We use a model inspired by [Roam Research's Believer pricing](https://thebootstrappedfounder.com/lifetime-deals-and-saas-businesses/) and [Ghost's Kickstarter](https://www.thegrowthlist.co/tactics/charge-early-adopters): early adopters fund the build, then get rewarded when it succeeds.
 
 ```
-THE $100 CLUB
+THE $20 CLUB
 
-$100/month while we build.
+$20/month while we build.
+The price of Claude Pro for a bet on something quieter.
 
 You get:
 ├─ Full HARD COPY access from day one
@@ -33,32 +34,32 @@ You get:
 ├─ Founding member status forever
 └─ No ads, ever
 
-No cap on members.
-More founders = faster trigger = everyone wins.
+Trigger estimate: ~400,000 users / ~8,000 founders
+Post-trigger price: $2/month (10% margin, $2 floor)
 ```
 
 ### The Four Numbers
 
 | Number | What It Means |
 |--------|---------------|
-| **$100/month** | Founder price during build phase |
+| **$20/month** | Founder price—Claude Pro equivalent, accessible but committed |
 | **24× costs** | War chest trigger—when 1 month profit covers 2 years runway |
 | **10% margin** | Post-trigger pricing floats to maintain this margin |
 | **$2 floor** | Price never drops below $2/month; surplus builds resilience |
 
 ### How The Trigger Works
 
-| Scale | Cost | Trigger (24×) | $100 Club @ 2% | Profit | Fires? |
-|-------|------|---------------|----------------|--------|--------|
-| 5K users | £600 | £14,400 | 100 members | £7,400 | ✗ |
-| 10K users | £905 | £21,720 | 200 members | £15,095 | ✗ |
-| **25K users** | £1,500 | £36,000 | 500 members | **£38,500** | **✓** |
+| Scale | Cost | Trigger (24×) | $20 Club @ 2% | Profit | Fires? |
+|-------|------|---------------|---------------|--------|--------|
+| 100K users | £2,280 | £54,720 | 2,000 members | £29,720 | ✗ |
+| 200K users | £3,200 | £76,800 | 4,000 members | £60,800 | ✗ |
+| **400K users** | £4,800 | £115,200 | 8,000 members | **£123,200** | **✓** |
 
-At ~25,000 users with ~500 $100 Club members:
-- You bank £38,500 (the war chest)
-- All 500 founders go FREE forever
-- Price drops to 10% margin (~$3.33 at that scale)
-- Price floats down as scale increases, floor at $2
+At ~400,000 users with ~8,000 $20 Club founders:
+- You bank £123,000 (the war chest—covers 2+ years of costs)
+- All 8,000 founders go FREE forever
+- Price drops to $2 floor (10% margin already exceeded)
+- Your total investment: ~$600 over 2-3 years → lifetime free
 
 ---
 

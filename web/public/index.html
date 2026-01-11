@@ -1,91 +1,98 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>The Quiet Feed</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Your feeds, stripped of the garbage. A read-only feed aggregator that surfaces signal from noise." />
     <link rel="stylesheet" href="./submit.css" />
-    <!-- CloudWatch RUM configuration placeholders; replace values during deployment -->
+    <!-- CloudWatch RUM configuration placeholders -->
     <meta name="rum:appMonitorId" content="${RUM_APP_MONITOR_ID}" />
     <meta name="rum:region" content="${AWS_REGION}" />
     <meta name="rum:identityPoolId" content="${RUM_IDENTITY_POOL_ID}" />
     <meta name="rum:guestRoleArn" content="${RUM_GUEST_ROLE_ARN}" />
-    <style>
-      :root {
-        --font-body: system-ui, -apple-system, sans-serif;
-        --font-mono: "SF Mono", "Consolas", "Courier New", monospace;
-        --color-text: #1f2937;
-        --color-secondary: #475569;
-        --color-accent: #b45309;
-        --color-background: #ffffff;
-        --color-surface: #fef3c7;
-      }
-    </style>
   </head>
   <body>
     <header>
       <div class="header-nav">
         <div class="hamburger-menu">
-          <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
+          <button class="hamburger-btn" aria-label="Menu" onclick="toggleMenu()">&#9776;</button>
           <div class="menu-dropdown" id="menuDropdown">
-            <a href="index.html">Home</a>
-            <a href="account/bundles.html">Bundles</a>
+            <a href="index.html">Feed</a>
             <a href="about.html">About</a>
+            <a href="account/bundles.html">Settings</a>
           </div>
         </div>
         <div class="auth-section">
-          <span class="entitlement-status">Activity: unrestricted</span>
-          <span class="login-status">Not logged in</span>
-          <a href="auth/login.html" class="login-link">Log in</a>
+          <span class="entitlement-status" id="entitlementStatus"></span>
+          <span class="login-status" id="loginStatus">Not logged in</span>
+          <a href="auth/login.html" class="login-link" id="authLink">ENHANCE</a>
         </div>
       </div>
-      <h1>The Quiet Feed</h1>
+      <span class="system-prefix">SYSTEM://</span>
+      <h1>THE QUIET FEED</h1>
       <p class="subtitle">Your feeds, stripped of the garbage</p>
     </header>
 
-    <div id="mainContent">
+    <main id="mainContent">
       <div id="statusMessagesContainer"></div>
 
-      <div class="form-container" style="text-align: center">
-        <h2>Feed aggregation coming soon</h2>
+      <!-- Feed Source Selector -->
+      <div class="feed-sources" id="feedSources">
+        <button class="feed-source-btn active" data-feed="default" onclick="loadFeed('default')">ALL</button>
+        <button class="feed-source-btn" data-feed="tech" onclick="loadFeed('tech')">TECH</button>
+        <button class="feed-source-btn" data-feed="news" onclick="loadFeed('news')">NEWS</button>
+      </div>
 
-        <div style="margin: 2em 0; padding: 2em; background-color: var(--color-surface, #fef3c7); border-radius: 8px; border: 1px solid #ddd">
-          <p style="margin-bottom: 1em; color: var(--color-secondary, #475569); font-family: var(--font-mono, monospace);">
-            SCORE. TRACE. DEDUP. MUTE.
-          </p>
-          <p style="color: var(--color-text, #1f2937);">
-            A read-only feed aggregator that strips away the noise and delivers what matters.
-          </p>
+      <!-- Feed Header with Filters -->
+      <div class="feed-header">
+        <div>
+          <span id="feedName" style="font-family: var(--font-mono); color: var(--color-accent);">CURATED FEED</span>
+          <span id="feedCount" style="color: var(--color-text-secondary); font-size: 0.875rem; margin-left: 0.5rem;"></span>
         </div>
+        <div class="feed-filters">
+          <button class="feed-filter active" onclick="toggleFilter(this, 'all')">ALL</button>
+          <button class="feed-filter" onclick="toggleFilter(this, 'high')">HIGH SCORE</button>
+          <button class="feed-filter" onclick="toggleFilter(this, 'wire')">WIRE MODE</button>
+        </div>
+      </div>
 
-        <div id="dynamicActivities" style="margin: 2em 0"></div>
+      <!-- Feed Container -->
+      <div class="feed-container" id="feedContainer">
+        <div class="spinner" id="feedSpinner"></div>
+      </div>
 
-        <div
-          class="add-service-section"
-          style="margin: 2em 0; padding: 1.5em; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #ddd"
-        >
-          <p style="margin-bottom: 1em; color: #666; font-style: italic">
-            Configure your feed sources and preferences.
+      <!-- Load More (SHIELD - explicit pagination, no infinite scroll) -->
+      <div class="feed-load-more" id="loadMoreContainer" style="display: none;">
+        <button class="btn-load-more" onclick="loadMore()">LOAD MORE</button>
+      </div>
+
+      <!-- Join CTA -->
+      <div class="tier-cards" style="margin-top: 2rem;">
+        <div class="tier-card featured">
+          <div class="tier-name">THE $20 CLUB</div>
+          <div class="tier-price">$20<small>/month</small></div>
+          <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
+            The price of Claude Pro for a bet on something quieter.
           </p>
-          <button
-            type="button"
-            class="btn"
-            onclick="window.location.href = 'account/bundles.html'"
-            style="background-color: var(--color-accent, #b45309); border-color: var(--color-accent, #b45309)"
-          >
-            Configure Feeds
+          <ul class="tier-features">
+            <li>Full HARD COPY access from day one</li>
+            <li>Lifetime FREE when trigger fires</li>
+            <li>Founding member status forever</li>
+            <li>No ads, ever</li>
+          </ul>
+          <button class="btn" style="width: 100%; margin-top: 1rem;" onclick="window.location.href='auth/login.html'">
+            JOIN THE $20 CLUB
           </button>
         </div>
       </div>
-    </div>
+    </main>
 
     <footer>
       <div class="footer-content">
         <div class="footer-left">
-          <a href="#" id="viewSourceLink" style="display: none">view source</a>
-          <a id="latestTestsLink" style="display: inline" target="_blank" href="tests/index.html">tests</a>
-          <a id="apiDocsLink" style="display: inline" target="_blank" href="./docs/index.html"> api </a>
+          <a href="tests/index.html" target="_blank">tests</a>
+          <a href="docs/index.html" target="_blank">api</a>
           <a href="privacy.html">privacy</a>
           <a href="terms.html">terms</a>
         </div>
@@ -96,291 +103,250 @@
       </div>
     </footer>
 
+    <!-- Scripts -->
     <script type="module" src="./submit.js"></script>
-    <script src="lib/request-cache.js"></script>
-    <script src="lib/toml-parser.js"></script>
     <script src="widgets/hamburger-menu.js"></script>
-    <script src="widgets/entitlement-status.js"></script>
     <script src="widgets/auth-status.js"></script>
-    <script type="module" src="widgets/view-source-link.js"></script>
-    <script src="widgets/localstorage-viewer.js"></script>
     <script>
-      // In-memory user bundles state (list of bundleId strings)
-      let __userBundles = [];
-      let __fetchBundlesController = null;
+      // Feed state
+      let currentFeed = 'default';
+      let currentFilter = 'all';
+      let feedData = null;
+      let displayedItems = 0;
+      const ITEMS_PER_PAGE = 10;
 
-      async function initializeBundles() {
-        const idToken = localStorage.getItem("cognitoIdToken");
-        const userInfo = localStorage.getItem("userInfo");
+      // Initialize
+      document.addEventListener('DOMContentLoaded', async () => {
+        await loadFeed('default');
+        checkAuthStatus();
+      });
+
+      // Check auth and update UI
+      function checkAuthStatus() {
+        const idToken = localStorage.getItem('cognitoIdToken');
+        const userInfo = localStorage.getItem('userInfo');
+        const loginStatus = document.getElementById('loginStatus');
+        const authLink = document.getElementById('authLink');
+
         if (idToken && userInfo) {
-          console.log("User is authenticated");
-
-          // Abort previous fetch if any
-          if (__fetchBundlesController) {
-            __fetchBundlesController.abort();
-          }
-          __fetchBundlesController = new AbortController();
-          const signal = __fetchBundlesController.signal;
-
-          // Fetch user bundles from endpoint (single source of truth)
           try {
-            const rc = window.requestCache;
-            let bundlesData;
-            if (rc && typeof rc.getJSON === "function") {
-              bundlesData = await rc.getJSON("/api/v1/bundle", {
-                ttlMs: 5000,
-                init: { headers: { Authorization: `Bearer ${idToken}` }, signal },
-              });
-            } else {
-              const response = await window.fetchWithIdToken("/api/v1/bundle", { signal });
-              if (response.ok) {
-                bundlesData = await response.json();
-              }
-            }
-
-            if (bundlesData && bundlesData.bundles && Array.isArray(bundlesData.bundles)) {
-              __userBundles = bundlesData.bundles.map((b) => b.bundleId);
-            } else {
-              __userBundles = [];
-            }
-          } catch (err) {
-            if (err.name === "AbortError") {
-              console.log("Fetch user bundles aborted");
-              return;
-            }
-            console.warn("Failed to fetch bundles:", err);
-            __userBundles = [];
-          } finally {
-            if (__fetchBundlesController?.signal === signal) {
-              __fetchBundlesController = null;
-            }
-          }
-          renderDynamicActivities();
-        } else {
-          console.log("User is not authenticated");
-          __userBundles = [];
-          renderDynamicActivities();
-        }
-      }
-
-      // Activities rendering based on bundles
-      function parseUserBundles() {
-        // Return in-memory state; do not use localStorage for bundles
-        return Array.isArray(__userBundles) ? __userBundles : [];
-      }
-
-      //function hasBundle(bundles, id) {
-      //  return (bundles || []).some((b) => typeof b === "string" && b === id);
-      //}
-
-      // Parse bundle expiry date from bundle string or object
-      function parseBundleExpiry(bundleEntry) {
-        if (!bundleEntry) return null;
-        if (typeof bundleEntry === "object") return bundleEntry.expiry || null;
-        if (typeof bundleEntry !== "string") return null;
-
-        const parts = bundleEntry.split("|");
-        if (parts.length < 2) return null;
-        const expiryMatch = parts[1].match(/EXPIRY=(.+)/);
-        if (expiryMatch && expiryMatch[1]) {
-          return expiryMatch[1]; // ISO date string like "2025-12-31" or full ISO timestamp
-        }
-        return null;
-      }
-
-      // Check if a bundle is expired
-      function isBundleExpired(bundleEntry) {
-        const expiryStr = parseBundleExpiry(bundleEntry);
-        if (!expiryStr) return false; // No expiry means not expired
-        const expiryDate = new Date(expiryStr);
-        if (isNaN(expiryDate.getTime())) return false; // Invalid date
-        return expiryDate < new Date(); // Expired if expiry date is in the past
-      }
-
-      // Get user's active bundles (automatic + granted non-expired)
-      function getActiveBundles(catalog, userBundles) {
-        const active = new Set();
-
-        // Add automatic bundles
-        if (catalog.bundles) {
-          for (const bundle of catalog.bundles) {
-            if (bundle.allocation === "automatic") {
-              active.add(bundle.id);
-            }
+            const user = JSON.parse(userInfo);
+            loginStatus.textContent = user.email || 'Logged in';
+            authLink.textContent = 'SETTINGS';
+            authLink.href = 'account/bundles.html';
+          } catch (e) {
+            console.error('Error parsing user info:', e);
           }
         }
-
-        // Add granted non-expired bundles
-        for (const bundleEntry of userBundles) {
-          if (!isBundleExpired(bundleEntry)) {
-            const bundleId = typeof bundleEntry === "string" ? bundleEntry.split("|")[0] : bundleEntry.bundleId;
-            active.add(bundleId);
-          }
-        }
-
-        return Array.from(active);
       }
 
-      // Get user's expired bundles
-      function getExpiredBundles(userBundles) {
-        const expired = new Set();
-        for (const bundleEntry of userBundles) {
-          if (isBundleExpired(bundleEntry)) {
-            const bundleId = typeof bundleEntry === "string" ? bundleEntry.split("|")[0] : bundleEntry.bundleId;
-            expired.add(bundleId);
-          }
-        }
-        return Array.from(expired);
-      }
+      // Load feed from JSON
+      async function loadFeed(feedId) {
+        currentFeed = feedId;
+        displayedItems = 0;
 
-      // Check if user has access to an activity
-      function canAccessActivity(activity, activeBundles) {
-        if (!activity.bundles || !Array.isArray(activity.bundles)) return false;
-        return activity.bundles.some((bundleId) => activeBundles.includes(bundleId));
-      }
+        // Update active button
+        document.querySelectorAll('.feed-source-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.feed === feedId);
+        });
 
-      // function renderActivitiesByBundle() {
-      //   const container = document.getElementById("activitiesByBundle");
-      //   if (!container) return;
-      //
-      //   // Keep the bundle summary section for now, but we could make this dynamic too
-      //   const bundles = parseUserBundles();
-      //   const sections = [];
-      //
-      //   // Default bundle always available
-      //   sections.push(`
-      //     <section style="margin-bottom:1em;">
-      //       <h3 style="margin:0 0 .5em 0;">Default bundle</h3>
-      //       <ul>
-      //         <li>VAT Obligations (Production) – available</li>
-      //         <li>View receipts – available</li>
-      //       </ul>
-      //     </section>
-      //   `);
-      //
-      //   if (hasBundle(bundles, "test") || hasBundle(bundles, "test")) {
-      //     sections.push(`
-      //       <section style="margin-bottom:1em;">
-      //         <h3 style="margin:0 0 .5em 0;">Test API bundle</h3>
-      //         <ul>
-      //           <li>Submit VAT (Sandbox API) – available</li>
-      //           <li>VAT Obligations (Sandbox API) – available</li>
-      //         </ul>
-      //       </section>
-      //     `);
-      //   }
-      //
-      //   container.innerHTML = sections.join("");
-      //   container.style.display = "block"; // Make sure it's visible
-      // }
-
-      // Generate dynamic activity buttons
-      async function renderDynamicActivities() {
-        const dynamicContainer = document.getElementById("dynamicActivities");
-        if (!dynamicContainer) return;
+        // Show spinner (recreate if needed since innerHTML clears it)
+        const container = document.getElementById('feedContainer');
+        container.innerHTML = '<div class="spinner" id="feedSpinner"></div>';
+        const spinner = document.getElementById('feedSpinner');
+        spinner.style.display = 'block';
 
         try {
-          // Fetch catalog
-          const response = await fetch("/submit.catalogue.toml");
-          if (!response.ok) {
-            dynamicContainer.innerHTML = '<p style="color: #b00020;">Unable to load activities. Please try again later.</p>';
-            return;
-          }
+          const response = await fetch(`/sample-feeds/${feedId}.json`);
+          if (!response.ok) throw new Error('Feed not found');
 
-          const text = await response.text();
-          const catalog = window.TOML ? window.TOML.parse(text) : await response.json().catch(() => ({}));
-          const userBundles = parseUserBundles();
-          const activeBundles = getActiveBundles(catalog, userBundles);
-          const expiredBundles = getExpiredBundles(userBundles);
+          feedData = await response.json();
 
-          // Categorize activities into accessible, expired, and inaccessible
-          const accessibleActivities = [];
-          const expiredActivities = [];
+          // Update header
+          document.getElementById('feedName').textContent = feedData.name.toUpperCase();
+          document.getElementById('feedCount').textContent = `${feedData.itemCount} items`;
 
-          for (const activity of catalog.activities || []) {
-            if (!activity.bundles || !Array.isArray(activity.bundles)) continue;
+          // Render initial items
+          renderFeedItems();
 
-            const hasNonExpiredAccess = activity.bundles.some((bundleId) => activeBundles.includes(bundleId));
-            const hasExpiredAccess = activity.bundles.some((bundleId) => expiredBundles.includes(bundleId));
-
-            if (hasNonExpiredAccess) {
-              accessibleActivities.push(activity);
-            } else if (hasExpiredAccess) {
-              expiredActivities.push(activity);
-            }
-          }
-
-          // If no activities at all, show message
-          if (accessibleActivities.length === 0 && expiredActivities.length === 0) {
-            dynamicContainer.innerHTML =
-              '<p style="color: #666;">No activities available. Request additional bundles to access more features.</p>';
-            return;
-          }
-
-          // Generate buttons for accessible activities
-          const activeButtons = accessibleActivities
-            .map((activity) => {
-              let path;
-              if (activity.paths) {
-                // Get the first path which contains .html (handles query parameters)
-                path = activity.paths.find((p) => p.includes(".html")) || "#";
-              } else {
-                path = activity.path || "#";
-              }
-              return `
-              <div style="margin: 1em 0">
-                <button type="button" class="btn" onclick="window.location.href='${path}'">
-                  ${activity.name}
-                </button>
-              </div>
-            `;
-            })
-            .join("");
-
-          // Generate disabled buttons for expired activities
-          const expiredButtons = expiredActivities
-            .map((activity) => {
-              return `
-              <div style="margin: 1em 0">
-                <button type="button" class="btn" disabled style="background-color: #ccc; border-color: #ccc; color: #666; cursor: not-allowed;">
-                  ${activity.name} (expired)
-                </button>
-              </div>
-            `;
-            })
-            .join("");
-
-          dynamicContainer.innerHTML = activeButtons + expiredButtons;
         } catch (error) {
-          console.error("Error loading activities:", error);
-          dynamicContainer.innerHTML = '<p style="color: #b00020;">Error loading activities. Please refresh the page.</p>';
+          console.error('Error loading feed:', error);
+          container.innerHTML = `
+            <div class="status-message status-error">
+              <div class="status-message-content">Unable to load feed. Please try again.</div>
+            </div>
+          `;
         }
+      }
+
+      // Render feed items
+      function renderFeedItems() {
+        const container = document.getElementById('feedContainer');
+        const spinner = document.getElementById('feedSpinner');
+        if (spinner) spinner.style.display = 'none';
+
+        if (!feedData || !feedData.items) {
+          container.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">No items to display.</p>';
+          return;
+        }
+
+        // Filter items
+        let items = feedData.items;
+        if (currentFilter === 'high') {
+          items = items.filter(item => item.score >= 75);
+        } else if (currentFilter === 'wire') {
+          items = items.filter(item => item.wireMode);
+        }
+
+        // Get items to display
+        const endIndex = Math.min(displayedItems + ITEMS_PER_PAGE, items.length);
+        const itemsToShow = items.slice(displayedItems, endIndex);
+
+        // Render items
+        itemsToShow.forEach(item => {
+          container.appendChild(createFeedItem(item));
+        });
+
+        displayedItems = endIndex;
+
+        // Show/hide load more
+        const loadMoreContainer = document.getElementById('loadMoreContainer');
+        loadMoreContainer.style.display = displayedItems < items.length ? 'block' : 'none';
+      }
+
+      // Create feed item element
+      function createFeedItem(item) {
+        const article = document.createElement('article');
+        article.className = 'feed-item';
+        article.setAttribute('data-score', item.score);
+        article.setAttribute('data-id', item.id);
+
+        // Score class
+        const scoreClass = item.score >= 80 ? 'score-high' : item.score >= 50 ? 'score-medium' : 'score-low';
+
+        // Time ago
+        const timeAgo = getTimeAgo(new Date(item.publishedAt));
+
+        // Tags HTML
+        const tagsHtml = item.tags ? item.tags.map(tag =>
+          `<span class="feed-tag">${tag}</span>`
+        ).join('') : '';
+
+        // Wire mode indicator
+        const wireModeHtml = item.wireMode ?
+          `<span class="feed-tag tag-wire">WIRE MODE</span>` : '';
+
+        // Dedup indicator
+        const dedupHtml = item.dedup ?
+          `<span class="feed-tag tag-dedup">${item.dedup.count} SHARES</span>` : '';
+
+        // Demoted indicator
+        const demotedHtml = item.demoted ?
+          `<span class="feed-tag" style="background: #fee2e2; color: #991b1b;">DEMOTED</span>` : '';
+
+        // Video thumbnail
+        const mediaHtml = item.mediaType === 'video' ?
+          `<div style="margin-top: 0.75rem; position: relative;">
+            <img src="${item.thumbnailUrl}" alt="Video thumbnail" style="width: 100%; max-width: 320px; border-radius: 4px; opacity: 0.9;" />
+            <span style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; font-family: var(--font-mono);">${item.duration}</span>
+          </div>` : '';
+
+        // Original title for wire mode
+        const originalTitleHtml = item.originalTitle ?
+          `<p style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.25rem;">
+            Original: "${item.originalTitle}"
+          </p>` : '';
+
+        article.innerHTML = `
+          <div class="feed-item-header">
+            <div class="feed-item-content">
+              <h3 class="feed-item-title">
+                <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
+              </h3>
+              ${originalTitleHtml}
+              <div class="feed-item-meta">
+                <span class="feed-item-source">${item.source}</span>
+                <span class="feed-item-time">${timeAgo}</span>
+                ${item.author ? `<span>by ${item.author}</span>` : ''}
+              </div>
+            </div>
+            <div class="feed-item-score">
+              <span class="score-value ${scoreClass}">${item.score}</span>
+              <span class="score-label">SCORE</span>
+            </div>
+          </div>
+          <p class="feed-item-excerpt">${item.excerpt}</p>
+          ${mediaHtml}
+          <div class="feed-item-tags">
+            ${tagsHtml}
+            ${wireModeHtml}
+            ${dedupHtml}
+            ${demotedHtml}
+          </div>
+          <div class="feed-item-actions">
+            <button class="feed-action" onclick="muteItem('${item.id}')">MUTE</button>
+            <button class="feed-action" onclick="traceItem('${item.id}')">TRACE</button>
+            ${item.dedup ? `<button class="feed-action" onclick="expandDedup('${item.id}')">EXPAND</button>` : ''}
+          </div>
+        `;
+
+        return article;
+      }
+
+      // Time ago helper
+      function getTimeAgo(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
+      }
+
+      // Load more (SHIELD - explicit action required)
+      function loadMore() {
+        renderFeedItems();
+      }
+
+      // Toggle filter
+      function toggleFilter(btn, filter) {
+        currentFilter = filter;
+        displayedItems = 0;
+
+        document.querySelectorAll('.feed-filter').forEach(f => f.classList.remove('active'));
+        btn.classList.add('active');
+
+        const container = document.getElementById('feedContainer');
+        container.innerHTML = '';
+        renderFeedItems();
+      }
+
+      // Placeholder actions
+      function muteItem(id) {
+        alert('MUTE: This feature requires ENHANCE tier. Sign in to mute topics.');
+      }
+
+      function traceItem(id) {
+        alert('TRACE: Origin tracking will be available in the next release.');
+      }
+
+      function expandDedup(id) {
+        alert('DEDUP: Expanding similar items will be available in the next release.');
       }
 
       // Close menu when clicking outside
-      window.onclick = function (event) {
-        if (!event.target.matches(".hamburger-btn")) {
-          const dropdown = document.getElementById("menuDropdown");
-          if (dropdown.classList.contains("show")) {
-            dropdown.classList.remove("show");
+      window.onclick = function(event) {
+        if (!event.target.matches('.hamburger-btn')) {
+          const dropdown = document.getElementById('menuDropdown');
+          if (dropdown && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
           }
         }
       };
-
-      sessionStorage.removeItem("currentActivity");
-      console.log("Current activity cleared");
-
-      // Initialize page - wait for submit.js module to be ready
-      function initPage() {
-        checkAuthStatus();
-        initializeBundles();
-      }
-
-      if (window.__submitReady__) {
-        initPage();
-      } else {
-        document.addEventListener("submit-ready", initPage, { once: true });
-      }
     </script>
   </body>
 </html>
