@@ -1,0 +1,33 @@
+{
+  "id": "hackernews-frontpage",
+  "name": "Hacker News",
+  "category": "tech",
+  "generatedAt": "2026-01-11T16:09:43.182Z",
+  "itemCount": 1,
+  "items": [
+    {
+      "title": "Minneapolis Is Not Even a Close Call –A Lawsplainer on Officer-Involved",
+      "url": "https://shipwreckedcrew.substack.com/p/minneapolis-is-not-even-a-close-call",
+      "excerpt": "Article URL: https://shipwreckedcrew.substack.com/p/minneapolis-is-not-even-a-close-call Comments URL: https://news.ycombinator.com/item?id=46576784 Points: 3 # Comments: 1",
+      "publishedAt": "2026-01-11T15:54:37.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46576784",
+      "author": "PhaedrusV",
+      "category": "tech",
+      "source": "Hacker News",
+      "hash": "f4702b9a1cee4555",
+      "fetchedAt": "2026-01-11T16:08:46.267Z",
+      "feedUrl": "https://hnrss.org/frontpage",
+      "score": 55,
+      "signals": {
+        "factual": 4,
+        "original": 17,
+        "professional": 13,
+        "signal": 21
+      },
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "hackernews-frontpage",
+      "processedAt": "2026-01-11T16:09:06.167Z"
+    }
+  ]
+}
