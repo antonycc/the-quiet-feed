@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2025-2026 DIY Accounting Ltd
+// Copyright (C) 2025-2026 Antony Cartwright
 
 // behaviour-tests/auth.behaviour.test.js
 
@@ -10,7 +10,6 @@ import { dotenvConfigIfNotBlank } from "@app/lib/env.js";
 import {
   addOnPageLogging,
   getEnvVarAndLog,
-  isSandboxMode,
   runLocalHttpServer,
   runLocalOAuth2Server,
   runLocalDynamoDb,
@@ -23,8 +22,6 @@ import {
   logOutAndExpectToBeLoggedOut,
   verifyLoggedInStatus,
 } from "./steps/behaviour-login-steps.js";
-import { goToReceiptsPageUsingHamburgerMenu } from "./steps/behaviour-hmrc-receipts-steps.js";
-import { intentionallyNotSuppliedHeaders } from "./helpers/dynamodb-assertions.js";
 import {
   appendTraceparentTxt,
   appendUserSubTxt,
@@ -57,11 +54,8 @@ const testAuthUsername = getEnvVarAndLog("testAuthUsername", "TEST_AUTH_USERNAME
 const baseUrl = getEnvVarAndLog("baseUrl", "DIY_SUBMIT_BASE_URL", null);
 const runDynamoDb = getEnvVarAndLog("runDynamoDb", "TEST_DYNAMODB", null);
 const bundleTableName = getEnvVarAndLog("bundleTableName", "BUNDLE_DYNAMODB_TABLE_NAME", null);
-const hmrcApiRequestsTableName = getEnvVarAndLog("hmrcApiRequestsTableName", "HMRC_API_REQUESTS_DYNAMODB_TABLE_NAME", null);
-const receiptsTableName = getEnvVarAndLog("receiptsTableName", "RECEIPTS_DYNAMODB_TABLE_NAME", null);
 
 let mockOAuth2Process;
-let s3Endpoint;
 let serverProcess;
 let ngrokProcess;
 let dynamoControl;
@@ -104,7 +98,7 @@ test.beforeAll(async ({ page }, testInfo) => {
   }
 
   // Run servers needed for the test (after env overrides so child sees them)
-  dynamoControl = await runLocalDynamoDb(runDynamoDb, bundleTableName, hmrcApiRequestsTableName, receiptsTableName);
+  dynamoControl = await runLocalDynamoDb(runDynamoDb, bundleTableName);
   mockOAuth2Process = await runLocalOAuth2Server(runMockOAuth2);
   serverProcess = await runLocalHttpServer(runTestServer, httpServerPort);
   ngrokProcess = await runLocalSslProxy(runProxy, httpServerPort, baseUrl);
@@ -191,13 +185,6 @@ test("Click through: Cognito Auth", async ({ page }, testInfo) => {
   await verifyLoggedInStatus(page, screenshotPath);
   await consentToDataCollection(page, screenshotPath);
 
-  /* ********** */
-  /*  RECEIPTS  */
-  /* ********** */
-
-  await goToReceiptsPageUsingHamburgerMenu(page, screenshotPath);
-  await goToHomePageUsingHamburgerMenu(page, screenshotPath);
-
   /* ********* */
   /*  BUNDLES  */
   /* ********* */
@@ -228,7 +215,6 @@ test("Click through: Cognito Auth", async ({ page }, testInfo) => {
     name: testInfo.title,
     title: "Cognito Auth",
     description: "Clicks through the app to complete the Cognito Auth.",
-    hmrcApis: [],
     env: {
       envName,
       baseUrl,
@@ -239,17 +225,12 @@ test("Click through: Cognito Auth", async ({ page }, testInfo) => {
       testAuthProvider,
       testAuthUsername,
       bundleTableName,
-      hmrcApiRequestsTableName,
-      receiptsTableName,
       runDynamoDb,
     },
     testData: {
-      s3Endpoint,
       userSub,
       observedTraceparent,
       testUrl,
-      isSandboxMode: isSandboxMode(),
-      intentionallyNotSuppliedHeaders,
     },
     artefactsDir: outputDir,
     screenshotPath,

@@ -1,8 +1,8 @@
-# DIY Accounting Submit - Repository Documentation
+# The Quiet Feed - Repository Documentation
 
-**Generated:** 2026-01-07
+**Generated:** 2026-01-10
 
-This document provides a high-level overview of the `submit.diyaccounting.co.uk` repository. For detailed reference, consult the source files directly.
+This document provides a high-level overview of The Quiet Feed repository. For detailed reference, consult the source files directly.
 
 ## Table of Contents
 
@@ -15,7 +15,7 @@ This document provides a high-level overview of the `submit.diyaccounting.co.uk`
 
 ## Repository Overview
 
-**DIY Accounting Submit** is a full-stack serverless application for submitting UK VAT returns via HMRC's Making Tax Digital (MTD) APIs.
+**The Quiet Feed** is a full-stack serverless feed aggregator that surfaces signal from your social connections while filtering noise. It does not post, comment, or interact with source platforms—it exists to give you back your attention.
 
 ### Technology Stack
 
@@ -25,19 +25,31 @@ This document provides a high-level overview of the `submit.diyaccounting.co.uk`
 | **Backend** | Node.js (Express for local dev, AWS Lambda for production) |
 | **Infrastructure** | AWS CDK v2 (Java) |
 | **Testing** | Vitest (unit/system), Playwright (browser/behaviour) |
-| **Authentication** | AWS Cognito + Google IdP (production), Mock OAuth2 (local) |
-| **Storage** | DynamoDB (bundles, receipts, API requests), S3 (receipts backup) |
-| **API Integration** | HMRC MTD VAT API (test and production) |
+| **Authentication** | AWS Cognito + OAuth providers (production), Mock OAuth2 (local) |
+| **Storage** | DynamoDB (bundles/feed configurations) |
+| **Quality Scoring** | Claude API (planned) |
 | **Local Dev Proxy** | ngrok (exposes localhost for OAuth callbacks) |
 
 ### Key Features
 
-- **VAT Submissions**: Submit VAT returns to HMRC via MTD API
-- **VAT Obligations**: Retrieve and display VAT obligations
-- **Receipt Storage**: Store and retrieve HMRC submission receipts
-- **Bundle/Entitlement System**: User subscription management
+- **SCORE**: Quality rating 0-100 for each feed item
+- **TRACE**: Origin tracking and propagation path visualization
+- **DEDUP**: Semantic deduplication of similar content
+- **MUTE**: Complete exclusion of topics or sources
+- **WIRE MODE**: Headline normalization (removes sensationalism)
+- **SHIELD**: Dark pattern neutralization (no autoplay, no infinite scroll)
+- **TERM**: Terminal interface (planned) with browser handoff for auth
+- **Bundle System**: User feed configuration and entitlement management
 - **Multi-Environment**: Supports local proxy, CI, and production deployments
-- **OAuth Integration**: Google/Cognito for production, mock OAuth2 for local testing
+- **OAuth Integration**: Cognito for production, mock OAuth2 for local testing
+
+### Access Tiers
+
+| Tier | Access | Features |
+|------|--------|----------|
+| **DEFAULT** | Anonymous | Curated public feed with SCORE visible |
+| **ENHANCE** | OAuth login | Personal feeds, all features enabled |
+| **HARD COPY** | Paid subscription | Unlimited platforms, export, API access |
 
 ## Environment Configuration
 
@@ -48,8 +60,8 @@ The repository uses multiple environment files. See the actual files for complet
 | **test** | `.env.test` | Unit/system tests with mocked services |
 | **proxy** | `.env.proxy` | Local dev with ngrok, Docker OAuth2, dynalite |
 | **proxyRunning** | `.env.proxyRunning` | Connect to already-running local services |
-| **ci** | `.env.ci` | CI with real AWS (`ci.submit.diyaccounting.co.uk`) |
-| **prod** | `.env.prod` | Production (`submit.diyaccounting.co.uk`) |
+| **ci** | `.env.ci` | CI with real AWS |
+| **prod** | `.env.prod` | Production (`thequietfeed.com`) |
 
 ### Key Environment Variables
 
@@ -57,10 +69,8 @@ Core variables defined in all environment files:
 
 - `ENVIRONMENT_NAME` / `DEPLOYMENT_NAME` - Environment identifiers
 - `DIY_SUBMIT_BASE_URL` - Application base URL
-- `HMRC_BASE_URI` / `HMRC_SANDBOX_BASE_URI` - HMRC API endpoints
-- `HMRC_CLIENT_ID` / `HMRC_SANDBOX_CLIENT_ID` - HMRC OAuth credentials
 - `COGNITO_USER_POOL_ID` / `COGNITO_CLIENT_ID` - AWS Cognito configuration
-- `*_DYNAMODB_TABLE_NAME` - DynamoDB table names
+- `BUNDLE_DYNAMODB_TABLE_NAME` - DynamoDB table for feed configurations
 
 **Read the `.env.*` files directly for complete variable listings.**
 
@@ -72,11 +82,8 @@ Core variables defined in all environment files:
 | AWS (CI/Prod) | AWS Secrets Manager |
 
 **Critical Secrets** (stored in Secrets Manager):
-- `{env}/submit/hmrc/client_secret` - HMRC production OAuth
-- `{env}/submit/hmrc/sandbox_client_secret` - HMRC sandbox OAuth
-- `{env}/submit/user-sub-hash-salt` - HMAC-SHA256 salt for user ID hashing
-
-See `_developers/SALTED_HASH_IMPLEMENTATION.md` and `_developers/SALT_SECRET_RECOVERY.md` for implementation details.
+- `{env}/quietfeed/google/client_secret` - Google OAuth
+- `{env}/quietfeed/user-sub-hash-salt` - HMAC-SHA256 salt for user ID hashing
 
 ## Build and Test Commands
 
@@ -90,7 +97,7 @@ npm test
 ./mvnw clean verify
 
 # Local E2E tests
-npm run test:submitVatBehaviour-proxy
+npm run test:behaviour-proxy
 ```
 
 **Read `package.json` for complete script listings.**
@@ -102,7 +109,7 @@ npm run test:submitVatBehaviour-proxy
 | Unit | `app/unit-tests/`, `web/unit-tests/` | `npm run test:unit` | Business logic |
 | System | `app/system-tests/` | `npm run test:system` | Docker integration |
 | Browser | `web/browser-tests/` | `npm run test:browser` | UI components |
-| Behaviour | `behaviour-tests/` | `npm run test:submitVatBehaviour-proxy` | E2E journeys |
+| Behaviour | `behaviour-tests/` | `npm run test:behaviour-proxy` | E2E journeys |
 
 ### Maven Commands
 
@@ -114,8 +121,8 @@ npm run test:submitVatBehaviour-proxy
 | `./mvnw spotless:apply` | Auto-format code |
 
 **Output Artifacts**:
-- `target/submit-application.jar` - CDK entry point for application stacks
-- `target/submit-environment.jar` - CDK entry point for environment stacks
+- `target/quietfeed-application.jar` - CDK entry point for application stacks
+- `target/quietfeed-environment.jar` - CDK entry point for environment stacks
 - `web/public/docs/openapi.yaml` - Generated API documentation
 
 **Read `pom.xml` for complete Maven configuration.**
@@ -139,8 +146,8 @@ Internet (Users)
   S3    HTTP API Gateway            │
 (Static)    │                       │
             ▼                       ▼
-      Lambda Functions ────► HMRC MTD API
-            │
+      Lambda Functions ────► External APIs
+            │                 (Feed Sources)
     ┌───────┼───────┐
     ▼       ▼       ▼
 Cognito  DynamoDB  Secrets Manager
@@ -151,7 +158,7 @@ Cognito  DynamoDB  Secrets Manager
 | Model | Pattern | Use Case |
 |-------|---------|----------|
 | **Synchronous** (`ApiLambda`) | Request → Lambda → Response | Fast operations (token exchange, bundle get) |
-| **Asynchronous** (`AsyncApiLambda`) | Request → 202 → SQS → Worker → Poll | Long-running ops (HMRC VAT submission) |
+| **Asynchronous** (`AsyncApiLambda`) | Request → 202 → SQS → Worker → Poll | Long-running ops (feed scoring, dedup) |
 
 **Async Flow**: Ingest Lambda → SQS Queue → Worker Lambda → DynamoDB (result) → Client polls
 
@@ -177,14 +184,13 @@ Created per deployment by `deploy.yml`:
 | DevStack | S3, CloudFront, ECR |
 | SelfDestructStack | Auto-destroy (non-prod) |
 | AuthStack | Auth Lambda functions |
-| HmrcStack | HMRC API Lambda functions |
-| AccountStack | Bundle management Lambdas |
+| AccountStack | Bundle/feed config Lambdas |
 | ApiStack | HTTP API Gateway |
 | EdgeStack | Production CloudFront |
 | PublishStack | S3 static file deployment |
 | OpsStack | CloudWatch dashboard |
 
-**Read the CDK stack files in `infra/main/java/co/uk/diyaccounting/submit/stacks/` for details.**
+**Read the CDK stack files in `infra/main/java/com/thequietfeed/stacks/` for details.**
 
 ### GitHub Actions Workflows
 
@@ -262,9 +268,9 @@ npm run server  # Express server
 |------|---------|
 | `bin/` | Entry point scripts (server.js, ngrok.js, dynamodb.js) |
 | `data/` | DynamoDB repository implementations |
-| `functions/` | Lambda function handlers (auth/, hmrc/, account/, infra/) |
+| `functions/` | Lambda function handlers (auth/, account/) |
 | `lib/` | Shared libraries (logger, JWT, HTTP helpers) |
-| `services/` | Business logic (hmrcApi.js, bundleManagement.js, subHasher.js) |
+| `services/` | Business logic (bundleManagement.js, subHasher.js) |
 | `unit-tests/` | Vitest unit tests |
 | `system-tests/` | Vitest integration tests |
 
@@ -274,7 +280,7 @@ npm run server  # Express server
 |------|---------|
 | `public/` | Static website files served by S3/CloudFront |
 | `public/auth/` | Authentication pages |
-| `public/hmrc/` | HMRC-related pages (VAT submission, receipts) |
+| `public/account/` | User account pages (bundles/feed config) |
 | `public/widgets/` | Reusable Web Components |
 | `public/docs/` | OpenAPI documentation (generated) |
 | `unit-tests/` | Vitest frontend unit tests |
@@ -298,20 +304,15 @@ npm run server  # Express server
 
 | Table | Purpose | Key Schema |
 |-------|---------|------------|
-| Bundles | User entitlements | `hashedSub` (PK), `product` (SK) |
-| Receipts | HMRC submission receipts | `hashedSub` (PK), `receiptId` (SK) |
-| HMRC API Requests | Audit log | `id` (PK), `timestamp` (SK) |
+| Bundles | User feed configurations | `hashedSub` (PK), `bundleId` (SK) |
 
 ### Async Request Tables
 
 Each async operation has its own request state table:
-- `submit-bundle-post-async-requests`
-- `submit-bundle-delete-async-requests`
-- `submit-hmrc-vat-return-post-async-requests`
-- `submit-hmrc-vat-return-get-async-requests`
-- `submit-hmrc-vat-obligation-get-async-requests`
+- `quietfeed-bundle-post-async-requests`
+- `quietfeed-bundle-delete-async-requests`
 
-**Schema**: `userId` (PK), `requestId` (SK), `status`, `data`, `ttl`
+**Schema**: `hashedSub` (PK), `requestId` (SK), `status`, `data`, `ttl`
 
 ## Security Architecture
 
@@ -335,6 +336,14 @@ Each async operation has its own request state table:
 - IAM least-privilege roles
 - CORS properly configured
 - JWT validation on all protected routes
+- No content persistence (feed items not stored)
+
+### Data Privacy Principles
+
+- **Read-only**: The Quiet Feed does not post, comment, or interact with source platforms
+- **No content storage**: Feed items are fetched, scored, and rendered but not persisted
+- **User-delegated access**: All API calls use user's OAuth token
+- **Links to originals**: Every item links to source platform
 
 ---
 
@@ -344,11 +353,12 @@ For specific topics, see:
 
 | Document | Location |
 |----------|----------|
+| Project vision & features | `README.md` |
+| Claude Code instructions | `CLAUDE.md` |
 | Developer setup | `_developers/SETUP.md` |
+| AWS account topology | `_developers/AWS_ACCOUNT_TOPOLOGY.md` |
 | Salted hash implementation | `_developers/SALTED_HASH_IMPLEMENTATION.md` |
 | Salt secret recovery | `_developers/SALT_SECRET_RECOVERY.md` |
-| CloudFront fix history | `_developers/archive/CLOUDFRONT_FRAUD_HEADERS_FIX.md` |
-| Test report generation | `scripts/generate-test-reports.js` |
 | API documentation | `web/public/docs/openapi.yaml` |
 
 **For detailed implementation, always refer to the source files directly.**

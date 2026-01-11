@@ -28,7 +28,6 @@ import {
 // Services layer
 import { checkAuthStatus, checkTokenExpiry, ensureSession, getAuthUrl } from "./lib/services/auth-service.js";
 import { authorizedFetch, fetchWithIdToken, handle403Error, executeAsyncRequestPolling } from "./lib/services/api-client.js";
-import { submitVat, getGovClientHeaders, getClientIP, getIPViaWebRTC } from "./lib/services/hmrc-service.js";
 import { bundlesForActivity, activitiesForBundle, isActivityAvailable, fetchCatalogText } from "./lib/services/catalog-service.js";
 
 // Correlation widget - render to the left of the entitlement status in the header
@@ -415,12 +414,6 @@ if (typeof window !== "undefined") {
   window.handle403Error = handle403Error;
   window.executeAsyncRequestPolling = executeAsyncRequestPolling;
 
-  // HMRC service
-  window.submitVat = submitVat;
-  window.getGovClientHeaders = getGovClientHeaders;
-  window.getClientIP = getClientIP;
-  window.getIPViaWebRTC = getIPViaWebRTC;
-
   // Catalog service
   window.bundlesForActivity = bundlesForActivity;
   window.activitiesForBundle = activitiesForBundle;
@@ -448,7 +441,7 @@ if (typeof window !== "undefined") {
 (function migrateStorageKeys() {
   try {
     if (typeof window === "undefined" || typeof localStorage === "undefined") return;
-    const keysToMigrate = ["submission_data", "currentActivity", "hmrcAccount", "pendingObligationsRequest", "pendingReturnRequest"];
+    const keysToMigrate = ["submission_data", "currentActivity"];
     keysToMigrate.forEach((key) => {
       try {
         localStorage.removeItem(key);
@@ -498,11 +491,6 @@ export {
   // API client
   authorizedFetch,
   fetchWithIdToken,
-  // HMRC service
-  submitVat,
-  getGovClientHeaders,
-  getClientIP,
-  getIPViaWebRTC,
   // Catalog service
   bundlesForActivity,
   activitiesForBundle,

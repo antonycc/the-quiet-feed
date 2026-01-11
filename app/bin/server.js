@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2025-2026 DIY Accounting Ltd
+// Copyright (C) 2025-2026 Antony Cartwright
 
 // app/bin/server.js
 
@@ -12,11 +12,6 @@ import { apiEndpoint as mockTokenPostApiEndpoint } from "../functions/non-lambda
 import { apiEndpoint as bundleGetApiEndpoint } from "../functions/account/bundleGet.js";
 import { apiEndpoint as bundlePostApiEndpoint } from "../functions/account/bundlePost.js";
 import { apiEndpoint as bundleDeleteApiEndpoint } from "../functions/account/bundleDelete.js";
-import { apiEndpoint as hmrcTokenPostApiEndpoint } from "../functions/hmrc/hmrcTokenPost.js";
-import { apiEndpoint as hmrcVatReturnPostApiEndpoint } from "../functions/hmrc/hmrcVatReturnPost.js";
-import { apiEndpoint as hmrcVatObligationGetApiEndpoint } from "../functions/hmrc/hmrcVatObligationGet.js";
-import { apiEndpoint as hmrcVatReturnGetApiEndpoint } from "../functions/hmrc/hmrcVatReturnGet.js";
-import { apiEndpoint as hmrcReceiptGetApiEndpoint } from "../functions/hmrc/hmrcReceiptGet.js";
 import { dotenvConfigIfNotBlank, validateEnv } from "../lib/env.js";
 import { context, createLogger } from "../lib/logger.js";
 
@@ -66,15 +61,7 @@ app.use((req, res, next) => {
 // Serve a virtual submit.env file for the client, using the server's own environment variables.
 // This ensures that behaviour tests (using ngrok) get the correct BASE_URL.
 app.get("/submit.env", (req, res) => {
-  const publicVars = [
-    "COGNITO_CLIENT_ID",
-    "COGNITO_BASE_URI",
-    "HMRC_CLIENT_ID",
-    "HMRC_BASE_URI",
-    "HMRC_SANDBOX_CLIENT_ID",
-    "HMRC_SANDBOX_BASE_URI",
-    "DIY_SUBMIT_BASE_URL",
-  ];
+  const publicVars = ["COGNITO_CLIENT_ID", "COGNITO_BASE_URI", "DIY_SUBMIT_BASE_URL"];
   const lines = publicVars.map((v) => `${v}=${process.env[v] || ""}`);
 
   res.setHeader("Content-Type", "text/plain");
@@ -100,11 +87,6 @@ mockTokenPostApiEndpoint(app);
 bundleGetApiEndpoint(app);
 bundlePostApiEndpoint(app);
 bundleDeleteApiEndpoint(app);
-hmrcTokenPostApiEndpoint(app);
-hmrcVatReturnPostApiEndpoint(app);
-hmrcVatObligationGetApiEndpoint(app);
-hmrcVatReturnGetApiEndpoint(app);
-hmrcReceiptGetApiEndpoint(app);
 
 // fallback to index.html for SPA routing (if needed)
 app.get(/.*/, (req, res) => {
@@ -123,27 +105,10 @@ if (__runDirect) {
   const strict = process.env.STRICT_ENV_VALIDATION === "true";
   try {
     if (strict) {
-      validateEnv([
-        "DIY_SUBMIT_BASE_URL",
-        "COGNITO_CLIENT_ID",
-        "COGNITO_BASE_URI",
-        "HMRC_BASE_URI",
-        "HMRC_SANDBOX_BASE_URI",
-        "HMRC_CLIENT_ID",
-        "HMRC_CLIENT_SECRET_ARN",
-        "HMRC_SANDBOX_CLIENT_ID",
-        "HMRC_SANDBOX_CLIENT_SECRET_ARN",
-        "RECEIPTS_DYNAMODB_TABLE_NAME",
-        "BUNDLE_DYNAMODB_TABLE_NAME",
-        "HMRC_API_REQUESTS_DYNAMODB_TABLE_NAME",
-        "HMRC_VAT_RETURN_POST_ASYNC_REQUESTS_TABLE_NAME",
-        "HMRC_VAT_RETURN_GET_ASYNC_REQUESTS_TABLE_NAME",
-        "HMRC_VAT_OBLIGATION_GET_ASYNC_REQUESTS_TABLE_NAME",
-        "SQS_QUEUE_URL",
-      ]);
+      validateEnv(["DIY_SUBMIT_BASE_URL", "COGNITO_CLIENT_ID", "COGNITO_BASE_URI", "BUNDLE_DYNAMODB_TABLE_NAME"]);
     } else {
       // In local/dev and behaviour tests, validate only essential vars
-      validateEnv(["DIY_SUBMIT_BASE_URL", "HMRC_BASE_URI"]);
+      validateEnv(["DIY_SUBMIT_BASE_URL"]);
     }
   } catch (e) {
     if (strict) {

@@ -25,12 +25,12 @@ public class ExampleStack extends Stack {
 - ObservabilityStack, DataStack, ApexStack, IdentityStack
 
 **Application Stacks** (`cdk-application/`): Per-deployment resources
-- DevStack, AuthStack, HmrcStack, ApiStack, EdgeStack, etc.
+- DevStack, AuthStack, ApiStack, EdgeStack, etc.
 
 ## Entry Points
 
-- `infra/main/java/co/uk/diyaccounting/submit/SubmitEnvironment.java`
-- `infra/main/java/co/uk/diyaccounting/submit/SubmitApplication.java`
+- `infra/main/java/com/thequietfeed/QuietFeedEnvironment.java`
+- `infra/main/java/com/thequietfeed/QuietFeedApplication.java`
 
 ## Formatting
 

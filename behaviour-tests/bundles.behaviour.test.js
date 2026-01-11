@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2025-2026 DIY Accounting Ltd
+// Copyright (C) 2025-2026 Antony Cartwright
 
 // behaviour-tests/bundles.behaviour.test.js
 
@@ -57,8 +57,6 @@ const testAuthUsername = getEnvVarAndLog("testAuthUsername", "TEST_AUTH_USERNAME
 const baseUrl = getEnvVarAndLog("baseUrl", "DIY_SUBMIT_BASE_URL", null);
 const runDynamoDb = getEnvVarAndLog("runDynamoDb", "TEST_DYNAMODB", null);
 const bundleTableName = getEnvVarAndLog("bundleTableName", "BUNDLE_DYNAMODB_TABLE_NAME", null);
-const hmrcApiRequestsTableName = getEnvVarAndLog("hmrcApiRequestsTableName", "HMRC_API_REQUESTS_DYNAMODB_TABLE_NAME", null);
-const receiptsTableName = getEnvVarAndLog("receiptsTableName", "RECEIPTS_DYNAMODB_TABLE_NAME", null);
 const wiremockMode = getEnvVarAndLog("wiremockMode", "TEST_WIREMOCK", "off");
 const wiremockPort = getEnvVarAndLog("wiremockPort", "WIREMOCK_PORT", 9090);
 const wiremockOutputDir = getEnvVarAndLog("wiremockOutputDir", "WIREMOCK_RECORD_OUTPUT_DIR", "target/wiremock-recordings");
@@ -103,7 +101,7 @@ test.beforeAll(async ({ page }, testInfo) => {
   }
 
   // Run local servers after env overrides
-  dynamoControl = await runLocalDynamoDb(runDynamoDb, bundleTableName, hmrcApiRequestsTableName, receiptsTableName);
+  dynamoControl = await runLocalDynamoDb(runDynamoDb, bundleTableName);
   mockOAuth2Process = await runLocalOAuth2Server(runMockOAuth2);
   serverProcess = await runLocalHttpServer(runTestServer, httpServerPort);
   ngrokProcess = await runLocalSslProxy(runProxy, httpServerPort, baseUrl);
@@ -225,13 +223,12 @@ test("Click through: Adding and removing bundles", async ({ page }, testInfo) =>
   /*  TEST CONTEXT JSON */
   /* ****************** */
 
-  // Build and write testContext.json (no HMRC API directly exercised here)
+  // Build and write testContext.json
   const testContext = {
     testId: "bundleBehaviour",
     name: testInfo.title,
     title: "Bundles management (App UI)",
     description: "Adds and removes bundles via the UI while authenticated; ensures flows behave as expected.",
-    hmrcApi: null,
     env: {
       envName,
       baseUrl,
@@ -242,8 +239,6 @@ test("Click through: Adding and removing bundles", async ({ page }, testInfo) =>
       testAuthProvider,
       testAuthUsername,
       bundleTableName,
-      hmrcApiRequestsTableName,
-      receiptsTableName,
       runDynamoDb,
     },
     testData: {
@@ -302,8 +297,6 @@ test("Click through: Adding and removing bundles", async ({ page }, testInfo) =>
     try {
       const exportResults = await exportAllTables(outputDir, dynamoControl.endpoint, {
         bundleTableName,
-        hmrcApiRequestsTableName,
-        receiptsTableName,
       });
       console.log("[DynamoDB Export]: Export completed:", exportResults);
     } catch (error) {

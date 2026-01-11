@@ -1,0 +1,132 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-only
+ * Copyright (C) 2025-2026 Antony Cartwright
+ */
+
+package com.thequietfeed;
+
+import static com.thequietfeed.utils.Kind.infof;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import software.amazon.awscdk.App;
+import software.amazon.awscdk.AppProps;
+import software.amazon.awscdk.assertions.Template;
+
+@SetEnvironmentVariable.SetEnvironmentVariables({
+    @SetEnvironmentVariable(key = "ENVIRONMENT_NAME", value = "test"),
+    @SetEnvironmentVariable(key = "DEPLOYMENT_NAME", value = "tt-witheight"),
+    @SetEnvironmentVariable(
+            key = "COGNITO_USER_POOL_ARN",
+            value = "arn:aws:cognito-idp:eu-west-2:111111111111:userpool/eu-west-2_123456789"),
+    @SetEnvironmentVariable(key = "COGNITO_CLIENT_ID", value = "tt-witheight-cognito-client-id"),
+    @SetEnvironmentVariable(key = "BASE_IMAGE_TAG", value = "test"),
+    @SetEnvironmentVariable(key = "CLOUD_TRAIL_ENABLED", value = "true"),
+    @SetEnvironmentVariable(key = "SELF_DESTRUCT_DELAY_HOURS", value = "1"),
+    @SetEnvironmentVariable(key = "HTTP_API_URL", value = "https://test-api.example.com/"),
+    @SetEnvironmentVariable(key = "DOC_ROOT_PATH", value = "web/public"),
+    @SetEnvironmentVariable(key = "CDK_DEFAULT_ACCOUNT", value = "111111111111"),
+    @SetEnvironmentVariable(key = "CDK_DEFAULT_REGION", value = "eu-west-2"),
+})
+class QuietFeedApplicationCdkResourceTest {
+
+    @Test
+    void shouldCreateQuietFeedApplicationWithResources() throws IOException {
+
+        Path cdkJsonPath = Path.of("cdk-application/cdk.json").toAbsolutePath();
+        Map<String, Object> ctx = buildContextPropertyMapFromCdkJsonPath(cdkJsonPath);
+        App app = new App(AppProps.builder().context(ctx).build());
+
+        QuietFeedApplication.QuietFeedApplicationProps appProps = QuietFeedApplication.loadAppProps(app, "cdk-application/");
+        var submitApplication = new QuietFeedApplication(app, appProps);
+        app.synth();
+        infof("CDK synth complete");
+
+        infof("Created stack:", submitApplication.devStack.getStackName());
+        Template.fromStack(submitApplication.devStack).resourceCountIs("AWS::ECR::Repository", 1);
+
+        infof("Created stack:", submitApplication.authStack.getStackName());
+        Template.fromStack(submitApplication.authStack).resourceCountIs("AWS::Lambda::Function", 2);
+
+        infof("Created stack:", submitApplication.accountStack.getStackName());
+        Template.fromStack(submitApplication.accountStack).resourceCountIs("AWS::Lambda::Function", 5);
+
+        infof("Created stack:", submitApplication.apiStack.getStackName());
+        Template apiStackTemplate = Template.fromStack(submitApplication.apiStack);
+        // Log all API Gateway routes present in the synthesized template
+        @SuppressWarnings("unchecked")
+        Map<String, Object> apiTemplateJson = (Map<String, Object>) apiStackTemplate.toJSON();
+        Object resourcesObj = apiTemplateJson.get("Resources");
+        if (resourcesObj instanceof Map) {
+            Map<String, Object> resources = (Map<String, Object>) resourcesObj;
+            int routeCount = 0;
+            for (Map.Entry<String, Object> e : resources.entrySet()) {
+                Object v = e.getValue();
+                if (v instanceof Map) {
+                    Map<String, Object> res = (Map<String, Object>) v;
+                    Object type = res.get("Type");
+                    if ("AWS::ApiGatewayV2::Route".equals(type)) {
+                        Map<String, Object> props = (Map<String, Object>) res.get("Properties");
+                        Object routeKey = props != null ? props.get("RouteKey") : null;
+                        Object target = props != null ? props.get("Target") : null;
+                        infof(
+                                "API route: id=%s routeKey=%s target=%s",
+                                e.getKey(), String.valueOf(routeKey), String.valueOf(target));
+                        routeCount++;
+                    }
+                }
+            }
+            infof("Total API routes found: %d", routeCount);
+        }
+
+        apiStackTemplate.resourceCountIs("AWS::ApiGatewayV2::Api", 1);
+        // Confirm key routes exist, including multiple HTTP methods on the same path
+        apiStackTemplate.hasResourceProperties("AWS::ApiGatewayV2::Route", Map.of("RouteKey", "POST /api/v1/bundle"));
+        apiStackTemplate.hasResourceProperties("AWS::ApiGatewayV2::Route", Map.of("RouteKey", "DELETE /api/v1/bundle"));
+        apiStackTemplate.hasResourceProperties(
+                "AWS::ApiGatewayV2::Route", Map.of("RouteKey", "DELETE /api/v1/bundle/{id}"));
+        // Keep overall counts stable
+        apiStackTemplate.resourceCountIs("AWS::ApiGatewayV2::Route", 8);
+
+        // Dashboard moved to environment-level ObservabilityStack
+        infof("Created stack:", submitApplication.opsStack.getStackName());
+
+        infof("Created stack:", submitApplication.edgeStack.getStackName());
+        Template.fromStack(submitApplication.edgeStack).resourceCountIs("AWS::CloudFront::Distribution", 1);
+
+        infof("Created stack:", submitApplication.publishStack.getStackName());
+        Template.fromStack(submitApplication.publishStack).resourceCountIs("Custom::CDKBucketDeployment", 1);
+
+        if (submitApplication.selfDestructStack != null) {
+            infof("Created stack:", submitApplication.selfDestructStack.getStackName());
+            Template.fromStack(submitApplication.selfDestructStack).resourceCountIs("AWS::Lambda::Function", 1);
+        }
+    }
+
+    private static @NotNull Map<String, Object> buildContextPropertyMapFromCdkJsonPath(Path cdkJsonPath)
+            throws IOException {
+        String json = Files.readString(cdkJsonPath);
+
+        // 2) Extract the "context" object
+        ObjectMapper om = new ObjectMapper();
+        JsonNode root = om.readTree(json);
+        JsonNode ctxNode = root.path("context");
+
+        Map<String, Object> ctx = new HashMap<>();
+        for (Iterator<Map.Entry<String, JsonNode>> it = ctxNode.fields(); it.hasNext(); ) {
+            Map.Entry<String, JsonNode> e = it.next();
+            // CDK context values are Objects; in your case they’re strings
+            ctx.put(e.getKey(), e.getValue().asText());
+        }
+        return ctx;
+    }
+}

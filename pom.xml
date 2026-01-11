@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>submit.diyaccounting.co.uk</groupId>
-    <artifactId>web</artifactId>
-    <version>0.1.1</version>
+    <groupId>com.thequietfeed</groupId>
+    <artifactId>the-quiet-feed</artifactId>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/antonycc/submit.diyaccounting.co.uk</url>
+            <url>https://maven.pkg.github.com/antonycc/the-quiet-feed</url>
         </repository>
     </distributionManagement>
 
     <properties>
-        <baseUrl>${env.DIY_SUBMIT_APEX_URL}</baseUrl>
+        <baseUrl>${env.QUIETFEED_APEX_URL}</baseUrl>
         <cdk.version>2.221.0</cdk.version>
         <immutables.version>2.11.6</immutables.version>
         <maven.compiler.source>21</maven.compiler.source>
@@ -272,19 +272,19 @@
                         <configuration>
                             <target>
                                 <!-- Create copies with desired names from the base shaded jar -->
-                                <copy file="${project.build.directory}/${project.build.finalName}-dist.jar" tofile="${project.build.directory}/submit-application.jar"></copy>
-                                <copy file="${project.build.directory}/${project.build.finalName}-dist.jar" tofile="${project.build.directory}/submit-environment.jar"></copy>
+                                <copy file="${project.build.directory}/${project.build.finalName}-dist.jar" tofile="${project.build.directory}/quietfeed-application.jar"></copy>
+                                <copy file="${project.build.directory}/${project.build.finalName}-dist.jar" tofile="${project.build.directory}/quietfeed-environment.jar"></copy>
 
                                 <!-- Update manifests in-place for each variant -->
-                                <jar jarfile="${project.build.directory}/submit-application.jar" update="true" zip64Mode="as-needed">
+                                <jar jarfile="${project.build.directory}/quietfeed-application.jar" update="true" zip64Mode="as-needed">
                                     <manifest>
-                                        <attribute name="Main-Class" value="co.uk.diyaccounting.submit.SubmitApplication"></attribute>
+                                        <attribute name="Main-Class" value="com.thequietfeed.QuietFeedApplication"></attribute>
                                     </manifest>
                                 </jar>
 
-                                <jar jarfile="${project.build.directory}/submit-environment.jar" update="true" zip64Mode="as-needed">
+                                <jar jarfile="${project.build.directory}/quietfeed-environment.jar" update="true" zip64Mode="as-needed">
                                     <manifest>
-                                        <attribute name="Main-Class" value="co.uk.diyaccounting.submit.SubmitEnvironment"></attribute>
+                                        <attribute name="Main-Class" value="com.thequietfeed.QuietFeedEnvironment"></attribute>
                                     </manifest>
                                 </jar>
                             </target>
@@ -322,7 +322,7 @@
                 <version>3.1.4</version>
                 <configuration>
                     <repositoryId>github</repositoryId>
-                    <url>https://maven.pkg.github.com/antonycc/submit.diyaccounting.co.uk</url>
+                    <url>https://maven.pkg.github.com/antonycc/the-quiet-feed</url>
                 </configuration>
             </plugin>
             <plugin>
@@ -365,7 +365,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"></transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>co.uk.diyaccounting.submit.swagger.OpenApiGenerator</mainClass>
+                                    <mainClass>com.thequietfeed.swagger.OpenApiGenerator</mainClass>
                                 </transformer>
                             </transformers>
 
@@ -461,14 +461,14 @@
                         <configuration>
                             <artifacts>
                                 <artifact>
-                                    <file>${project.build.directory}/submit-application.jar</file>
+                                    <file>${project.build.directory}/quietfeed-application.jar</file>
                                     <type>jar</type>
-                                    <classifier>submit-application</classifier>
+                                    <classifier>quietfeed-application</classifier>
                                 </artifact>
                                 <artifact>
-                                    <file>${project.build.directory}/submit-environment.jar</file>
+                                    <file>${project.build.directory}/quietfeed-environment.jar</file>
                                     <type>jar</type>
-                                    <classifier>submit-environment</classifier>
+                                    <classifier>quietfeed-environment</classifier>
                                 </artifact>
                             </artifacts>
                         </configuration>
@@ -488,7 +488,7 @@
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <mainClass>co.uk.diyaccounting.submit.swagger.OpenApiGenerator</mainClass>
+                            <mainClass>com.thequietfeed.swagger.OpenApiGenerator</mainClass>
                             <classpathScope>compile</classpathScope>
                             <commandlineArgs>${baseUrl} ${project.version} ${project.basedir}/web/public/docs</commandlineArgs>
                         </configuration>

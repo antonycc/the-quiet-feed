@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2025-2026 DIY Accounting Ltd
+// Copyright (C) 2025-2026 Antony Cartwright
 
 // app/lib/httpResponseHelper.js
 
 import { v4 as uuidv4 } from "uuid";
 import { createLogger, context } from "./logger.js";
-import { putHmrcApiRequest } from "../data/dynamoDbHmrcApiRequestRepository.js";
 
 const logger = createLogger({ source: "app/lib/httpResponseHelper.js" });
 
@@ -316,7 +315,7 @@ export function buildValidationError(request, errorMessages, govClientHeaders = 
   });
 }
 
-export async function performTokenExchange(providerUrl, body, auditForUserSub) {
+export async function performTokenExchange(providerUrl, body) {
   const requestHeaders = {
     "Content-Type": "application/x-www-form-urlencoded",
     ...(context.get("requestId") ? { "x-request-id": context.get("requestId") } : {}),
@@ -390,18 +389,6 @@ export async function performTokenExchange(providerUrl, body, auditForUserSub) {
     headers: responseHeadersObj,
     body: responseTokens,
   };
-  const userSubOrUuid = auditForUserSub || `unknown-user-${uuidv4()}`;
-  if (userSubOrUuid) {
-    try {
-      await putHmrcApiRequest(userSubOrUuid, { url: providerUrl, httpRequest, httpResponse, duration });
-    } catch (auditError) {
-      logger.error({
-        message: "Error auditing HMRC API request/response to DynamoDB",
-        error: auditError.message,
-        stack: auditError.stack,
-      });
-    }
-  }
 
   logger.info({
     message: "exchangeClientSecretForAccessToken response",
@@ -424,8 +411,8 @@ export async function performTokenExchange(providerUrl, body, auditForUserSub) {
   return { accessToken, response: response, responseBody };
 }
 
-export async function buildTokenExchangeResponse(request, url, body, auditForUserSub = undefined) {
-  const { accessToken, response, responseBody } = await performTokenExchange(url, body, auditForUserSub);
+export async function buildTokenExchangeResponse(request, url, body) {
+  const { accessToken, response, responseBody } = await performTokenExchange(url, body);
 
   if (!response.ok) {
     logger.error({
@@ -460,7 +447,6 @@ export async function buildTokenExchangeResponse(request, url, body, auditForUse
     request,
     data: {
       accessToken,
-      hmrcAccessToken: accessToken,
       idToken,
       refreshToken,
       expiresIn,
