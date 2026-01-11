@@ -9,7 +9,6 @@ import {
   ensureReceiptsTableExists,
   ensureAsyncRequestsTableExists,
 } from "@app/bin/dynamodb.js";
-import { startNgrok, extractDomainFromUrl } from "@app/bin/ngrok.js";
 import { spawn } from "child_process";
 import { checkIfServerIsRunning } from "./serverHelper.js";
 import { test } from "@playwright/test";
@@ -114,17 +113,25 @@ export async function runLocalDynamoDb(runDynamoDb, bundleTableName, hmrcApiRequ
   return { stop, endpoint };
 }
 
-export async function runLocalHttpServer(runTestServer, httpServerPort) {
-  logger.info(`[http]: runTestServer=${runTestServer}, httpServerPort=${httpServerPort}`);
+export async function runLocalHttpServer(runTestServer, httpServerPort, options = {}) {
+  const useHttps = options.useHttps || process.env.USE_HTTPS === "true";
+  const httpsPort = options.httpsPort || process.env.TEST_SERVER_HTTPS_PORT || 3443;
+  const effectivePort = useHttps ? httpsPort : httpServerPort;
+  const protocol = useHttps ? "https" : "http";
+  const host = useHttps ? "local.thequietfeed.com" : "127.0.0.1";
+
+  logger.info(`[http]: runTestServer=${runTestServer}, port=${effectivePort}, https=${useHttps}`);
   let serverProcess;
   if (runTestServer === "run") {
-    logger.info("[http]: Starting server process...");
+    logger.info(`[http]: Starting server process (${protocol})...`);
     // Spawn node directly instead of via npm run server to ensure env vars are inherited
     // eslint-disable-next-line sonarjs/no-os-command-from-path
     serverProcess = spawn("node", ["app/bin/server.js"], {
       env: {
         ...process.env,
         TEST_SERVER_HTTP_PORT: httpServerPort.toString(),
+        TEST_SERVER_HTTPS_PORT: httpsPort.toString(),
+        USE_HTTPS: useHttps ? "true" : "",
       },
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -132,49 +139,32 @@ export async function runLocalHttpServer(runTestServer, httpServerPort) {
     serverProcess.stdout.on("data", (data) => logger.info(`[http-stdout]: ${data.toString().trim()}`));
     serverProcess.stderr.on("data", (data) => logger.error(`[http-stderr]: ${data.toString().trim()}`));
 
-    await checkIfServerIsRunning(`http://127.0.0.1:${httpServerPort}`, 1000, undefined, "http");
+    await checkIfServerIsRunning(`${protocol}://${host}:${effectivePort}`, 1000, undefined, "http");
   } else {
     logger.info("[http]: Skipping server process as runTestServer is not set to 'run'");
   }
   return serverProcess;
 }
 
+/**
+ * @deprecated ngrok is no longer used. Use local HTTPS with local.thequietfeed.com instead.
+ * This function is kept for backwards compatibility but does nothing.
+ */
 export async function runLocalNgrokProxy(runProxy, httpServerPort, baseUrl) {
-  logger.info(`[proxy]: runProxy=${runProxy}, httpServerPort=${httpServerPort}, baseUrl=${baseUrl}`);
-  let stop;
-  let endpoint;
-  if (runProxy === "run") {
-    logger.info("[proxy]: Starting ngrok tunnel using @ngrok/ngrok...");
-    // Extract domain from baseUrl if provided
-    const domain = extractDomainFromUrl(baseUrl);
-    const started = await startNgrok({
-      addr: httpServerPort,
-      domain: domain,
-      poolingEnabled: true,
-    });
-    stop = started.stop;
-    endpoint = started.endpoint;
-    logger.info(`[proxy]: Started at ${endpoint}`);
-    await checkIfServerIsRunning(endpoint, 1000, undefined, "proxy");
-  } else {
-    logger.info("[proxy]: Skipping ngrok tunnel as runProxy is not set to 'run'");
-  }
-  return { stop, endpoint };
+  logger.info(`[proxy]: ngrok is deprecated. Using local HTTPS server at ${baseUrl || "DIY_SUBMIT_BASE_URL"}`);
+  logger.info(`[proxy]: Ensure local.thequietfeed.com is in /etc/hosts and certificates are set up.`);
+  // No-op: we use the HTTPS server directly via USE_HTTPS=true
+  return { stop: null, endpoint: null };
 }
 
+/**
+ * @deprecated ngrok/SSL proxy is no longer used. Use local HTTPS with local.thequietfeed.com instead.
+ * This function is kept for backwards compatibility but does nothing.
+ */
 export async function runLocalSslProxy(runProxy, httpServerPort, baseUrl) {
-  // This function is now a wrapper around runLocalNgrokProxy for backwards compatibility
-  logger.info(`[proxy]: runLocalSslProxy called (delegating to runLocalNgrokProxy)`);
-  const result = await runLocalNgrokProxy(runProxy, httpServerPort, baseUrl);
-  // For backwards compatibility, return an object that looks like a process with a kill method
-  return result.stop
-    ? {
-        kill: () => {
-          logger.info("[proxy]: kill() called on ngrok proxy, stopping...");
-          result.stop().catch((error) => logger.error("[proxy]: Error during kill:", error));
-        },
-      }
-    : null;
+  logger.info(`[proxy]: SSL proxy (ngrok) is deprecated. Using local HTTPS server at ${baseUrl || "DIY_SUBMIT_BASE_URL"}`);
+  // No-op: return null so callers don't try to .kill() it
+  return null;
 }
 
 export async function runLocalOAuth2Server(runMockOAuth2) {

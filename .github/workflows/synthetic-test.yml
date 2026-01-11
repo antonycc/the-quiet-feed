@@ -28,16 +28,12 @@ on:
         description: 'Behaviour test to run'
         required: false
         options:
-          - 'bundleBehaviour'
-          - 'postVatReturnBehaviour'
-          - 'getVatObligationsBehaviour'
-          - 'getVatReturnBehaviour'
-          - 'postVatReturnFraudPreventionHeadersBehaviour'
-          - 'submitVatBehaviour'
+          - 'anonymousBehaviour'
           - 'authBehaviour'
-          - 'complianceBehaviour'
+          - 'bundleBehaviour'
+          - 'enhanceBehaviour'
           - 'allBehaviour'
-        default: 'submitVatBehaviour'
+        default: 'anonymousBehaviour'
       generate-test-reports:
         type: boolean
         description: 'Generate test reports, e.g. true (default) or false'
@@ -61,16 +57,13 @@ on:
         type: string
         description: 'Generate test reports, e.g. "true" or "false"'
         required: true
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET:
-        required: true
   push:
     branches:
       - '**'
       - '!gh_pages'
       - '!dependabot/**'
     paths:
-      - 'behaviour-tests/submitVat.behaviour.test.js'
+      - 'behaviour-tests/bundles.behaviour.test.js'
       - '.github/workflows/synthetic-test.yml'
   schedule:
     # Check for cold starts over the hour using CloudWatch Logs Insights query:
@@ -112,7 +105,7 @@ jobs:
         id: normalise
         shell: bash
         run: |
-          X='${{ inputs.behaviour-test-suite }}' ; echo "behaviour-test-suite=${X:-submitVatBehaviour}" | tee -a "$GITHUB_OUTPUT"
+          X='${{ inputs.behaviour-test-suite }}' ; echo "behaviour-test-suite=${X:-anonymousBehaviour}" | tee -a "$GITHUB_OUTPUT"
           X='${{ inputs.generate-test-reports }}' ; echo "generate-test-reports=${X:-true}" | tee -a "$GITHUB_OUTPUT"
           echo 'environment-name=${{ inputs.environment-name }}' | tee -a "$GITHUB_OUTPUT"
           echo 'deployment-name=${{ inputs.deployment-name }}' | tee -a "$GITHUB_OUTPUT"
@@ -230,13 +223,10 @@ jobs:
           ; RESULT=${exit_code:-0} \
           ; echo "RESULT=$RESULT" | tee -a "$GITHUB_OUTPUT" \
           ; cp ./target/submit*.log ./target/behaviour-test-results/ || true \
-          ; cp ./hmrc-test-user.json ./target/behaviour-test-results/ || true \
           ; exit ${exit_code:-0} \
           ;
         env:
           DIY_SUBMIT_BASE_URL: ${{ needs.names.outputs.apex-url }}
-          HMRC_ACCOUNT: sandbox
-          HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
 
       - name: Configure AWS role via GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v5

@@ -1,0 +1,36 @@
+{
+  "id": "hackernews-frontpage",
+  "name": "Hacker News",
+  "category": "tech",
+  "generatedAt": "2026-01-11T17:14:41.987Z",
+  "itemCount": 1,
+  "items": [
+    {
+      "title": "Replace the Retiring Windows XP with Linux",
+      "url": "https://www.linux.com/training-tutorials/replace-retiring-windows-xp-linux/",
+      "excerpt": "Article URL: https://www.linux.com/training-tutorials/replace-retiring-windows-xp-linux/ Comments URL: https://news.ycombinator.com/item?id=46577019 Points: 13 # Comments: 3",
+      "publishedAt": "2026-01-11T16:20:47.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46577019",
+      "author": "righthand",
+      "category": "tech",
+      "source": "Hacker News",
+      "hash": "2589132635926868",
+      "fetchedAt": "2026-01-11T17:09:53.429Z",
+      "feedUrl": "https://hnrss.org/frontpage",
+      "score": 78,
+      "signals": {
+        "factual": 15,
+        "original": 20,
+        "professional": 30,
+        "signal": 45
+      },
+      "reasoning": "The post provides factual information about the transition from Windows XP to Linux and offers original insights with professional relevance.",
+      "modelId": "phi3:mini",
+      "sourceId": "hackernews-frontpage",
+      "processedAt": "2026-01-11T17:11:21.081Z",
+      "wireTitle": "US executive directs agencies to draft living standards policy proposal",
+      "wireSummary": "A US official has tasked federal departments with creating a comprehensive plan for improving the standard of living, as part of an initiative that includes replacing outdated operating systems like Windows XP.",
+      "wireModelId": "phi3:mini"
+    }
+  ]
+}

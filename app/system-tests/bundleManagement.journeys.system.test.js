@@ -126,25 +126,26 @@ describe("System journeys: bundleManagement", () => {
     const sub = "bm-journey-enforce";
     const token = makeJWT(sub);
     const authorizer = { jwt: { claims: { sub, "cognito:username": "journey" } } };
-    const hmrcPath = "/api/v1/hmrc/vat/return";
-    const event = buildEvent(token, authorizer, hmrcPath);
+    // API feed endpoint requires hard-copy bundle
+    const apiFeedPath = "/api/v1/feed";
+    const event = buildEvent(token, authorizer, apiFeedPath);
 
     // 1) Fail due to missing bundle
     await expect(bm.enforceBundles(event)).rejects.toThrow();
 
-    // 2) Add qualifying bundle and succeed
+    // 2) Add qualifying bundle (hard-copy) and succeed
     const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-    await bm.updateUserBundles(sub, [{ bundleId: "guest", expiry }]);
+    await bm.updateUserBundles(sub, [{ bundleId: "hard-copy", expiry }]);
     // Verify persisted in DynamoDB directly
     const itemsAfterAdd = await queryBundlesForUser(sub);
-    expect(itemsAfterAdd.find((it) => it.bundleId === "guest")).toBeTruthy();
+    expect(itemsAfterAdd.find((it) => it.bundleId === "hard-copy")).toBeTruthy();
     await bm.enforceBundles(event); // should pass now
 
     // 3) Remove bundle and fail again
     await bm.updateUserBundles(sub, []);
     // Verify removal persisted
     const itemsAfterRemove = await queryBundlesForUser(sub);
-    expect(itemsAfterRemove.find((it) => it.bundleId === "guest")).toBeUndefined();
+    expect(itemsAfterRemove.find((it) => it.bundleId === "hard-copy")).toBeUndefined();
     await expect(bm.enforceBundles(event)).rejects.toThrow();
   });
 });

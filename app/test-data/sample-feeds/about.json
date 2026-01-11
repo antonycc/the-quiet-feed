@@ -1,0 +1,51 @@
+{
+  "name": "About",
+  "description": "About The Quiet Feed",
+  "itemCount": 4,
+  "items": [
+    {
+      "id": "about-001",
+      "title": "SCORE - Transparent Relevance",
+      "source": "The Quiet Feed",
+      "author": "System",
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "url": "#",
+      "excerpt": "Every item shows its relevance score from 0-100. No hidden algorithms, no engagement tricks. You see exactly why content is ranked the way it is. High signal, low noise.",
+      "type": "info",
+      "tags": ["FEATURE", "TRANSPARENCY"]
+    },
+    {
+      "id": "about-002",
+      "title": "TRACE - Full Provenance",
+      "source": "The Quiet Feed",
+      "author": "System",
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "url": "#",
+      "excerpt": "Know exactly where your content comes from. Track the origin of stories, see how they spread, understand the full chain from source to your feed. No mystery, no manipulation.",
+      "type": "info",
+      "tags": ["FEATURE", "PROVENANCE"]
+    },
+    {
+      "id": "about-003",
+      "title": "DEDUP - Smart Duplicate Detection",
+      "source": "The Quiet Feed",
+      "author": "System",
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "url": "#",
+      "excerpt": "See the same story once, not fifty times. Semantic deduplication clusters similar content and shows you the best version. Your time is valuable.",
+      "type": "info",
+      "tags": ["FEATURE", "EFFICIENCY"]
+    },
+    {
+      "id": "about-004",
+      "title": "MUTE - You Control the Filter",
+      "source": "The Quiet Feed",
+      "author": "System",
+      "publishedAt": "2026-01-01T00:00:00Z",
+      "url": "#",
+      "excerpt": "Powerful topic and source filtering that you control. Hide what you don't want without algorithms deciding for you. Your feed, your rules.",
+      "type": "info",
+      "tags": ["FEATURE", "CONTROL"]
+    }
+  ]
+}

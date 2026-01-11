@@ -365,7 +365,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"></transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.thequietfeed.swagger.OpenApiGenerator</mainClass>
+                                    <mainClass>com.thequietfeed.QuietFeedApplication</mainClass>
                                 </transformer>
                             </transformers>
 
@@ -471,26 +471,6 @@
                                     <classifier>quietfeed-environment</classifier>
                                 </artifact>
                             </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- Generate OpenAPI/Swagger documentation -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-swagger-docs</id>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <mainClass>com.thequietfeed.swagger.OpenApiGenerator</mainClass>
-                            <classpathScope>compile</classpathScope>
-                            <commandlineArgs>${baseUrl} ${project.version} ${project.basedir}/web/public/docs</commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>

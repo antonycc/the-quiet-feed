@@ -72,9 +72,7 @@ jobs:
           echo ""
 
           TABLES=(
-            "${{ env.ENV_PREFIX }}-receipts"
             "${{ env.ENV_PREFIX }}-bundles"
-            "${{ env.ENV_PREFIX }}-hmrc-api-requests"
           )
 
           ALL_OK=true

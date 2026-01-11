@@ -343,6 +343,23 @@ header {
 .score-value.score-medium { color: var(--score-medium); }
 .score-value.score-low { color: var(--score-low); }
 
+/* Info and action indicators for house content (not scored articles) */
+.feed-item-score.score-info .score-value,
+.feed-item-score.score-action .score-value {
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+}
+
+.feed-item-score.score-info {
+  background: var(--color-surface);
+  border-radius: 4px;
+  padding: 0.25rem;
+}
+
+.feed-item-score.score-action .score-value {
+  color: var(--color-accent);
+}
+
 .score-label {
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -421,6 +438,12 @@ header {
 .feed-tag.tag-wire {
   background: #fce7f3;
   color: #9d174d;
+}
+
+/* Wire mode title styling */
+.feed-item-title.wire-mode-title a {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
 }
 
 /* Feed Actions */

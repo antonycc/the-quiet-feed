@@ -123,15 +123,15 @@ describe("System: bundleManagement with local dynalite", () => {
     const userId = "bm-sys-add";
     const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     const bundlesToSet = [
-      { bundleId: "guest", expiry },
-      { bundleId: "test", expiry },
+      { bundleId: "anonymous", expiry },
+      { bundleId: "enhance", expiry },
     ];
 
     await bm.updateUserBundles(userId, bundlesToSet);
 
     const after = await bundleRepository.getUserBundles(userId);
     const ids = after.map((b) => b.bundleId);
-    expect(new Set(ids)).toEqual(new Set(["guest", "test"]));
+    expect(new Set(ids)).toEqual(new Set(["anonymous", "enhance"]));
   });
 
   it("updateUserBundles should remove bundles not present in next update (Dynamo mode)", async () => {
@@ -139,16 +139,16 @@ describe("System: bundleManagement with local dynalite", () => {
     const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
     await bm.updateUserBundles(userId, [
-      { bundleId: "guest", expiry },
-      { bundleId: "test", expiry },
+      { bundleId: "anonymous", expiry },
+      { bundleId: "enhance", expiry },
     ]);
 
-    await bm.updateUserBundles(userId, [{ bundleId: "guest", expiry }]);
+    await bm.updateUserBundles(userId, [{ bundleId: "anonymous", expiry }]);
 
     const after = await bundleRepository.getUserBundles(userId);
     const ids = after.map((b) => b.bundleId);
-    expect(ids).toContain("guest");
-    expect(ids).not.toContain("test");
+    expect(ids).toContain("anonymous");
+    expect(ids).not.toContain("enhance");
   });
 
   it("enforceBundles should pass when no non-automatic bundles are required (unknown path)", async () => {
@@ -168,7 +168,7 @@ describe("System: bundleManagement with local dynalite", () => {
     await bm.enforceBundles(event);
   });
 
-  it("enforceBundles should fail without a required bundle for HMRC paths, then pass after grant (Dynamo mode)", async () => {
+  it("enforceBundles should fail without a required bundle for API paths, then pass after grant (Dynamo mode)", async () => {
     const sub = "bm-enforce-user";
     const token = makeJWT(sub);
     const authorizer = {
@@ -179,14 +179,15 @@ describe("System: bundleManagement with local dynalite", () => {
         },
       },
     };
-    const hmrcPath = "/api/v1/hmrc/vat/return";
-    const event = buildEvent(token, authorizer, hmrcPath);
+    // API feed endpoint requires hard-copy bundle
+    const apiFeedPath = "/api/v1/feed";
+    const event = buildEvent(token, authorizer, apiFeedPath);
 
     await expect(bm.enforceBundles(event)).rejects.toThrow();
 
-    // Grant a qualifying bundle and try again
+    // Grant a qualifying bundle (hard-copy) and try again
     const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-    await bm.updateUserBundles(sub, [{ bundleId: "guest", expiry }]);
+    await bm.updateUserBundles(sub, [{ bundleId: "hard-copy", expiry }]);
 
     await bm.enforceBundles(event); // should not throw now
   });

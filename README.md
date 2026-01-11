@@ -270,7 +270,7 @@ the-quiet-feed/
 │       ├── test.yml                # Test runner (reusable)
 │       └── set-origins.yml         # DNS/CloudFront updates
 ├── app/
-│   ├── bin/                        # Entry points (server.js, ngrok.js, dynamodb.js)
+│   ├── bin/                        # Entry points (server.js, dynamodb.js)
 │   ├── data/                       # DynamoDB repository implementations
 │   ├── functions/
 │   │   ├── auth/                   # cognitoTokenPost.js, customAuthorizer.js

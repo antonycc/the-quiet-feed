@@ -1,0 +1,32 @@
+{
+  "name": "Tech Feed",
+  "description": "Fresh tech content",
+  "itemCount": 2,
+  "generatedAt": "2026-01-11T17:14:41.991Z",
+  "items": [
+    {
+      "id": "2589132635926868",
+      "title": "Replace the Retiring Windows XP with Linux",
+      "url": "https://www.linux.com/training-tutorials/replace-retiring-windows-xp-linux/",
+      "excerpt": "Article URL: https://www.linux.com/training-tutorials/replace-retiring-windows-xp-linux/ Comments URL: https://news.ycombinator.com/item?id=46577019 Points: 13 # Comments: 3",
+      "score": 78,
+      "source": "Hacker News",
+      "category": "tech",
+      "publishedAt": "2026-01-11T16:20:47.000Z",
+      "wireTitle": "US executive directs agencies to draft living standards policy proposal",
+      "wireSummary": "A US official has tasked federal departments with creating a comprehensive plan for improving the standard of living, as part of an initiative that includes replacing outdated operating systems like Windows XP."
+    },
+    {
+      "id": "c64644c155963e8f",
+      "title": "I dumped Windows 11 for Linux, and you should too",
+      "url": "https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html",
+      "excerpt": "Article URL: https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html Comments URL: https://news.ycombinator.com/item?id=46574707 Points: 278 # Comments: 273",
+      "score": 51,
+      "source": "Hacker News Best",
+      "category": "tech",
+      "publishedAt": "2026-01-11T11:31:22.000Z",
+      "wireTitle": "User switches from Windows to Linux operating system",
+      "wireSummary": "A user has transitioned their computing experience from the Microsoft Windows 11 OS to a variant of Unix-like systems known as Linux, according to an article on NotebookCheck."
+    }
+  ]
+}

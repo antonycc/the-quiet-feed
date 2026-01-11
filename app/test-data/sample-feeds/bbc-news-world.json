@@ -1,0 +1,36 @@
+{
+  "id": "bbc-news-world",
+  "name": "BBC News World",
+  "category": "news",
+  "generatedAt": "2026-01-11T17:14:41.989Z",
+  "itemCount": 1,
+  "items": [
+    {
+      "title": "Iran warns it will retaliate if US attacks as protesters defy crackdown",
+      "url": "https://www.bbc.com/news/articles/cm2jek15m8no?at_medium=RSS&amp;at_campaign=rss",
+      "excerpt": "Medics at two hospitals tell the BBC more than 100 bodies have been brought in over a two day period.",
+      "publishedAt": "2026-01-11T17:04:05.000Z",
+      "guid": "https://www.bbc.com/news/articles/cm2jek15m8no#0",
+      "author": "",
+      "category": "news",
+      "source": "BBC News World",
+      "hash": "e5053249a7dbb81d",
+      "fetchedAt": "2026-01-11T17:13:06.766Z",
+      "feedUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "score": 30,
+      "signals": {
+        "factual": 10,
+        "original": 5,
+        "professional": 2,
+        "signal": 8
+      },
+      "reasoning": "The post contains factual information from a reputable source but lacks original insight and professional relevance.",
+      "modelId": "phi3:mini",
+      "sourceId": "bbc-news-world",
+      "processedAt": "2026-01-11T17:14:41.880Z",
+      "wireTitle": "Iran warns of retaliation if US military action",
+      "wireSummary": "In response to potential threats and protests against the crackdown in Iran, officials have stated they will respond with force. Reports indicate that medical facilities are experiencing an influx of casualties.",
+      "wireModelId": "phi3:mini"
+    }
+  ]
+}

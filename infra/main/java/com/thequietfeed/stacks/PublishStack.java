@@ -224,7 +224,6 @@ public class PublishStack extends Stack {
                         "/docs/*",
                         "/errors/*",
                         "/guide/*",
-                        "/hmrc/*",
                         "/images/*",
                         "/lib/*",
                         "/prefetch/*",

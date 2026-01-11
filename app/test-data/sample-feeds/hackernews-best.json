@@ -1,0 +1,36 @@
+{
+  "id": "hackernews-best",
+  "name": "Hacker News Best",
+  "category": "tech",
+  "generatedAt": "2026-01-11T17:14:41.988Z",
+  "itemCount": 1,
+  "items": [
+    {
+      "title": "I dumped Windows 11 for Linux, and you should too",
+      "url": "https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html",
+      "excerpt": "Article URL: https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html Comments URL: https://news.ycombinator.com/item?id=46574707 Points: 278 # Comments: 273",
+      "publishedAt": "2026-01-11T11:31:22.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46574707",
+      "author": "smurda",
+      "category": "tech",
+      "source": "Hacker News Best",
+      "hash": "c64644c155963e8f",
+      "fetchedAt": "2026-01-11T17:11:21.546Z",
+      "feedUrl": "https://hnrss.org/best",
+      "score": 51,
+      "signals": {
+        "factual": 4,
+        "original": 17,
+        "professional": 13,
+        "signal": 17
+      },
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "hackernews-best",
+      "processedAt": "2026-01-11T17:13:06.642Z",
+      "wireTitle": "User switches from Windows to Linux operating system",
+      "wireSummary": "A user has transitioned their computing experience from the Microsoft Windows 11 OS to a variant of Unix-like systems known as Linux, according to an article on NotebookCheck.",
+      "wireModelId": "phi3:mini"
+    }
+  ]
+}

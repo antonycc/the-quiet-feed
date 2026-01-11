@@ -8,7 +8,7 @@ describe("System: web/public/submit.catalogue.toml", () => {
   const catalog = loadCatalogFromRoot();
 
   it("should load version and key sections", () => {
-    expect(catalog.version).toBe("1.1.0");
+    expect(catalog.version).toBe("2.0.0");
     expect(Array.isArray(catalog.bundles)).toBe(true);
     expect(Array.isArray(catalog.activities)).toBe(true);
   });

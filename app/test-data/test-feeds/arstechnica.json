@@ -1,0 +1,33 @@
+{
+  "id": "arstechnica",
+  "name": "Ars Technica",
+  "category": "tech",
+  "generatedAt": "2026-01-11T15:33:13.347Z",
+  "itemCount": 1,
+  "items": [
+    {
+      "title": "The oceans just keep getting hotter",
+      "url": "https://arstechnica.com/science/2026/01/the-oceans-just-keep-getting-hotter/",
+      "excerpt": "",
+      "publishedAt": "2026-01-11T12:00:50.000Z",
+      "guid": "https://arstechnica.com/science/2026/01/the-oceans-just-keep-getting-hotter/",
+      "author": "<![CDATA[Molly Taft, WIRED.com]]>",
+      "category": "tech",
+      "source": "Ars Technica",
+      "hash": "2b80a42591e37c19",
+      "fetchedAt": "2026-01-11T15:33:13.155Z",
+      "feedUrl": "https://feeds.arstechnica.com/arstechnica/index",
+      "score": 43,
+      "signals": {
+        "factual": 0,
+        "original": 13,
+        "professional": 13,
+        "signal": 17
+      },
+      "reasoning": "limited factual content; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "arstechnica",
+      "processedAt": "2026-01-11T15:33:13.156Z"
+    }
+  ]
+}

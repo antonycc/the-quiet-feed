@@ -102,7 +102,7 @@ public class BackupStack extends Stack {
 
         @Value.Default
         default int complianceRetentionDays() {
-            return 2555; // 7 years for HMRC compliance
+            return 2555; // 7 years for long-term compliance
         }
 
         // Alert topic for notifications (optional - configured at application level)
@@ -232,7 +232,7 @@ public class BackupStack extends Stack {
                 .completionWindow(Duration.hours(3))
                 .build());
 
-        // Monthly backup (1st of month at 04:00 UTC) - HMRC compliance retention
+        // Monthly backup (1st of month at 04:00 UTC) - Long-term compliance retention
         backupRules.add(BackupPlanRule.Builder.create()
                 .ruleName("MonthlyCompliance")
                 .backupVault(this.primaryVault)

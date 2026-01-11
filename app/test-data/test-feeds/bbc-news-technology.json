@@ -1,0 +1,33 @@
+{
+  "id": "bbc-news-technology",
+  "name": "BBC Technology",
+  "category": "tech",
+  "generatedAt": "2026-01-11T15:33:13.348Z",
+  "itemCount": 1,
+  "items": [
+    {
+      "title": "Google employee made redundant after reporting manager who showed nude of wife, court hears",
+      "url": "https://www.bbc.com/news/articles/c62v51d1ry2o?at_medium=RSS&amp;at_campaign=rss",
+      "excerpt": "Victoria Woodall claims she was retaliated against after reporting a manager who told clients stories about his swinger lifestyle.",
+      "publishedAt": "2026-01-11T00:38:32.000Z",
+      "guid": "https://www.bbc.com/news/articles/c62v51d1ry2o#0",
+      "author": "",
+      "category": "tech",
+      "source": "BBC Technology",
+      "hash": "04c0d99605afd704",
+      "fetchedAt": "2026-01-11T15:33:13.340Z",
+      "feedUrl": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+      "score": 51,
+      "signals": {
+        "factual": 4,
+        "original": 17,
+        "professional": 13,
+        "signal": 17
+      },
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "bbc-news-technology",
+      "processedAt": "2026-01-11T15:33:13.345Z"
+    }
+  ]
+}

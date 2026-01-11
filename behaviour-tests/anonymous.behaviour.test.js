@@ -13,6 +13,7 @@ import {
   getEnvVarAndLog,
   runLocalHttpServer,
 } from "./helpers/behaviour-helpers.js";
+import { setupFeeds } from "./helpers/feed-setup.js";
 
 dotenvConfigIfNotBlank({ path: ".env" });
 
@@ -20,8 +21,10 @@ const screenshotPath = "target/behaviour-test-results/screenshots/anonymous-beha
 
 const envFilePath = getEnvVarAndLog("envFilePath", "DIY_SUBMIT_ENV_FILEPATH", null);
 const httpServerPort = getEnvVarAndLog("serverPort", "TEST_SERVER_HTTP_PORT", 3000);
+const httpsServerPort = getEnvVarAndLog("httpsServerPort", "TEST_SERVER_HTTPS_PORT", 3443);
 const runTestServer = getEnvVarAndLog("runTestServer", "TEST_SERVER_HTTP", null);
-// For anonymous test, always use local server - no need for ngrok/OAuth
+const useHttps = getEnvVarAndLog("useHttps", "USE_HTTPS", "false") === "true";
+// For anonymous test, use local server (HTTP or HTTPS based on env)
 
 let serverProcess;
 
@@ -44,8 +47,16 @@ test.beforeAll(async () => {
   // Ensure screenshot directory exists
   fs.mkdirSync(screenshotPath, { recursive: true });
 
-  // Run local HTTP server if configured
-  serverProcess = await runLocalHttpServer(runTestServer, httpServerPort);
+  // Optionally refresh feeds (set TEST_REFRESH_FEEDS=true to enable)
+  const feedResult = await setupFeeds({ verbose: true });
+  if (feedResult.success) {
+    console.log(`[Feed Setup] Refreshed ${feedResult.itemCount} items from ${feedResult.feedCount} feeds`);
+  } else if (feedResult.skipped) {
+    console.log("[Feed Setup] Using existing sample feeds");
+  }
+
+  // Run local HTTP/HTTPS server if configured
+  serverProcess = await runLocalHttpServer(runTestServer, httpServerPort, { useHttps, httpsPort: httpsServerPort });
 
   console.log("beforeAll hook completed successfully");
 });
@@ -57,8 +68,8 @@ test.afterAll(async () => {
 });
 
 test("Anonymous user: View default feed without login", async ({ page }, testInfo) => {
-  // For anonymous test, always use local HTTP server (no OAuth/ngrok needed)
-  const testUrl = `http://127.0.0.1:${httpServerPort}/`;
+  // For anonymous test, use local server (HTTP or HTTPS based on env)
+  const testUrl = useHttps ? `https://local.thequietfeed.com:${httpsServerPort}/` : `http://127.0.0.1:${httpServerPort}/`;
 
   // Add console logging to capture browser messages
   addOnPageLogging(page);

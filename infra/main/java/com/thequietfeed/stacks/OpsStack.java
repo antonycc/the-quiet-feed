@@ -159,7 +159,7 @@ public class OpsStack extends Stack {
                 .metric(Metric.Builder.create()
                         .namespace(apexDomain)
                         .metricName("behaviour-test")
-                        .dimensionsMap(Map.of("deployment-name", props.deploymentName(), "test", "submitVatBehaviour"))
+                        .dimensionsMap(Map.of("deployment-name", props.deploymentName(), "test", "anonymousBehaviour"))
                         .statistic("Minimum")
                         .period(Duration.hours(2))
                         .build())
@@ -381,22 +381,8 @@ public class OpsStack extends Stack {
             const apiCheck = async function () {
                 const baseUrl = '%s';
 
-                // Step 1: Check OpenAPI documentation is accessible
-                log.info('Step 1: Checking OpenAPI docs endpoint...');
-                try {
-                    const docsResponse = await makeRequest(baseUrl + 'docs/openapi.json');
-                    if (docsResponse.status !== 200) {
-                        throw new Error(`OpenAPI docs returned status ${docsResponse.status}`);
-                    }
-                    JSON.parse(docsResponse.data);
-                    log.info('OpenAPI docs accessible and valid');
-                } catch (error) {
-                    log.error('OpenAPI docs check failed: ' + error.message);
-                    throw error;
-                }
-
-                // Step 2: Check API returns 401 for unauthenticated request (proves API is up)
-                log.info('Step 2: Checking API auth enforcement...');
+                // Step 1: Check API returns 401 for unauthenticated request (proves API is up)
+                log.info('Step 1: Checking API auth enforcement...');
                 try {
                     const apiResponse = await makeRequest(baseUrl + 'api/v1/bundles');
                     if (apiResponse.status !== 401 && apiResponse.status !== 403) {

@@ -36,6 +36,14 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
+      name: "enhanceBehaviour",
+      testDir: "behaviour-tests",
+      testMatch: ["**/enhance.behaviour.test.js"],
+      workers: 1,
+      outputDir: "./target/behaviour-test-results/",
+      timeout: 300_000,
+    },
+    {
       name: "browser-tests",
       testDir: "web/browser-tests",
       workers: 1, // throttle concurrency to 1

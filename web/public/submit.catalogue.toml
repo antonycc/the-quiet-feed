@@ -1,93 +1,143 @@
-version = "1.1.0"
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2025-2026 Antony Cartwright
+#
+# The Quiet Feed - Bundle Catalog
+# Defines access tiers and activities
 
+version = "2.0.0"
+
+# ============================================================================
+# ACCESS TIERS (Bundles)
+# ============================================================================
+
+# ANONYMOUS - Default tier for unauthenticated users
 [[bundles]]
-id = "default"
-name = "Default"
+id = "anonymous"
+name = "Anonymous"
 allocation = "automatic"
+description = "Curated public feed with SCORE visible"
 
-# Access to Sandbox APIs for testing
+# ENHANCE - Granted on authentication
 [[bundles]]
-id = "test"
-name = "Test"
-allocation = "on-request"
-cap = 10
-timeout = "P1D"
+id = "enhance"
+name = "Enhance"
+allocation = "on-auth"
+description = "Personal feeds, all features enabled"
+cap = 1000
+features = ["score", "trace", "dedup", "mute", "wire-mode", "shield"]
 
-# Access to free authenticated activities including VAT submission for a limited time
+# HARD COPY - Paid subscription tier
 [[bundles]]
-id = "guest"
-name = "Guest"
-allocation = "on-request"
-cap = 10
-# TODO: 1x timeout for visiblility, then a grace period for apis of 1 day.
-timeout = "P1D"
-listedInEnvironments = ["local", "test", "proxy", "proxyRunning", "ci"]
-
-# TODO: Link active subscriptions to a bundle entitlement and continually re-set expiry to now+timeout if there is an active subscription
-# Access to business tier activities including VAT submission for subscribers
-[[bundles]]
-id = "business"
-name = "Business"
+id = "hard-copy"
+name = "Hard Copy"
 allocation = "subscription"
+description = "Unlimited platforms, export, API access"
 cap = 100
 timeout = "P1M"
-listedInEnvironments = ["local", "test", "proxy", "proxyRunning", "ci"]
-subscriptionTier = "business"
+listedInEnvironments = ["local", "test", "proxy", "proxyRunning", "ci", "prod"]
+subscriptionTier = "hard-copy"
+features = ["score", "trace", "dedup", "mute", "wire-mode", "shield", "demote", "cluster", "export", "api"]
 
-# TODO: Grant the DIY Legacy bundle upon supply of a PayPal Transaction ID for a payment to one of the email addresses in 2025 or earlier
-#[[bundles]]
-#id = "diylegacy"
-#name = "DIY Legacy (existing 2025 customers)"
-#allocation = "transaction-id"
-#cap = 10
-#timeout = "P1Y"
-#listedInEnvironments = ["ci"]
-#grantedWithTransactionIdFor = ["terrycartwright@hotmail.com", "admin@diyaccounting.co.uk"]
+# ============================================================================
+# ACTIVITIES
+# ============================================================================
 
 [[activities]]
-id = "bundle"
-name = "View and edit your bundles"
-bundles = ["default"]
-paths = ["account/bundles.html", "^/api/v1/catalog.*", "^/api/v1/bundle.*"]
+id = "view-feed"
+name = "View curated feed"
+bundles = ["anonymous", "enhance", "hard-copy"]
+paths = ["index.html", "^/$"]
 
 [[activities]]
-id = "submit-vat-sandbox"
-name = "Submit VAT (HMRC Sandbox)"
-bundles = ["test"]
-paths = ["hmrc/vat/submitVat.html?hmrcAccount=sandbox", "^/api/v1/hmrc/vat.*"]
+id = "view-about"
+name = "View about page"
+bundles = ["anonymous", "enhance", "hard-copy"]
+paths = ["index.html?feed=about"]
 
 [[activities]]
-id = "vat-obligations-sandbox"
-name = "VAT Obligations (HMRC Sandbox)"
-bundles = ["test"]
-paths = ["hmrc/vat/vatObligations.html?hmrcAccount=sandbox", "^/api/v1/hmrc/vat.*"]
+id = "view-settings"
+name = "View settings"
+bundles = ["anonymous", "enhance", "hard-copy"]
+paths = ["index.html?feed=settings"]
 
 [[activities]]
-id = "view-vat-return-sandbox"
-name = "View VAT Return (HMRC Sandbox)"
-bundles = ["test"]
-paths = ["hmrc/vat/viewVatReturn.html?hmrcAccount=sandbox", "^/api/v1/hmrc/vat.*"]
+id = "manage-bundles"
+name = "Manage subscriptions"
+bundles = ["enhance", "hard-copy"]
+paths = ["account/bundles.html", "^/api/v1/bundle.*"]
 
 [[activities]]
-id = "submit-vat"
-name = "Submit VAT (HMRC)"
-bundles = ["guest", "business", "diylegacy"]
-paths = ["hmrc/vat/submitVat.html", "^/api/v1/hmrc/vat.*"]
+id = "api-feed"
+name = "API access to feeds"
+bundles = ["hard-copy"]
+paths = ["^/api/v1/feed.*"]
 
 [[activities]]
-id = "vat-obligations"
-name = "VAT Obligations (HMRC)"
-bundles = ["guest", "business", "diylegacy"]
-paths = ["hmrc/vat/vatObligations.html", "^/api/v1/hmrc/vat.*"]
+id = "api-score"
+name = "API access to scoring"
+bundles = ["hard-copy"]
+paths = ["^/api/v1/score.*"]
 
-[[activities]]
-id = "view-vat-return"
-name = "View VAT Return (HMRC)"
-bundles = ["guest", "business", "diylegacy"]
-paths = ["hmrc/vat/viewVatReturn.html", "^/api/v1/hmrc/vat.*"]
+# ============================================================================
+# FEATURES
+# ============================================================================
 
-[[activities]]
-id = "my-receipts"
-name = "View previously submitted receipts"
-bundles = ["default"]
-paths = ["hmrc/receipt/receipts.html", "^/api/v1/hmrc/receipt.*"]
+[[features]]
+id = "score"
+name = "SCORE"
+description = "Quality rating 0-100 for each feed item"
+tier = "anonymous"
+
+[[features]]
+id = "trace"
+name = "TRACE"
+description = "Origin tracking and propagation path"
+tier = "enhance"
+
+[[features]]
+id = "dedup"
+name = "DEDUP"
+description = "Semantic deduplication of similar content"
+tier = "enhance"
+
+[[features]]
+id = "mute"
+name = "MUTE"
+description = "Complete exclusion of topics or sources"
+tier = "anonymous"
+
+[[features]]
+id = "wire-mode"
+name = "WIRE MODE"
+description = "Headline normalization - rewrites sensational headlines"
+tier = "enhance"
+
+[[features]]
+id = "shield"
+name = "SHIELD"
+description = "Dark pattern neutralization - no autoplay, no infinite scroll"
+tier = "anonymous"
+
+[[features]]
+id = "demote"
+name = "DEMOTE"
+description = "Promotional rebalancing - marks and downranks sponsored content"
+tier = "hard-copy"
+
+[[features]]
+id = "cluster"
+name = "CLUSTER"
+description = "Topic and geographic segmentation"
+tier = "hard-copy"
+
+[[features]]
+id = "export"
+name = "Export"
+description = "Export your feed data"
+tier = "hard-copy"
+
+[[features]]
+id = "api"
+name = "API Access"
+description = "Programmatic access to feeds and scoring"
+tier = "hard-copy"

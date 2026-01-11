@@ -1,0 +1,57 @@
+{
+  "id": "the-register",
+  "name": "The Register",
+  "category": "tech",
+  "generatedAt": "2026-01-11T15:33:13.347Z",
+  "itemCount": 2,
+  "items": [
+    {
+      "title": "AI industry insiders launch site to poison the data that feeds them",
+      "url": "https://go.theregister.com/feed/www.theregister.com/2026/01/11/industry_insiders_seek_to_poison/",
+      "excerpt": "Poison Fountain project seeks allies to fight the power Alarmed by what companies are building with artificial intelligence models, a handful of industry insiders are calling for those opposed to the current state of affairs to undertake a mass data poisoning effort to undermine the technology.…",
+      "publishedAt": "2026-01-11T14:30:12.000Z",
+      "guid": "tag:theregister.com,2005:story243894",
+      "author": "Thomas Claburn",
+      "category": "tech",
+      "source": "The Register",
+      "hash": "46b9b36280399f95",
+      "fetchedAt": "2026-01-11T15:33:13.075Z",
+      "feedUrl": "https://www.theregister.com/headlines.atom",
+      "score": 59,
+      "signals": {
+        "factual": 0,
+        "original": 17,
+        "professional": 21,
+        "signal": 21
+      },
+      "reasoning": "limited factual content; appears original; professionally relevant; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "the-register",
+      "processedAt": "2026-01-11T15:33:13.076Z"
+    },
+    {
+      "title": "Brussels plots open source push to pry Europe off Big Tech",
+      "url": "https://go.theregister.com/feed/www.theregister.com/2026/01/11/eu_open_source_consultation/",
+      "excerpt": "Call for Evidence casts FOSS as a way to break US dependence The European Commission has launched a fresh consultation into open source, setting out its ambitions for Europe's developer communities to go beyond propping up US tech giants' platforms.…",
+      "publishedAt": "2026-01-11T09:26:13.000Z",
+      "guid": "tag:theregister.com,2005:story243886",
+      "author": "Carly Page",
+      "category": "tech",
+      "source": "The Register",
+      "hash": "28ccce1dbe50b848",
+      "fetchedAt": "2026-01-11T15:33:13.075Z",
+      "feedUrl": "https://www.theregister.com/headlines.atom",
+      "score": 59,
+      "signals": {
+        "factual": 4,
+        "original": 17,
+        "professional": 17,
+        "signal": 21
+      },
+      "reasoning": "limited factual content; appears original; professionally relevant; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "the-register",
+      "processedAt": "2026-01-11T15:33:13.076Z"
+    }
+  ]
+}

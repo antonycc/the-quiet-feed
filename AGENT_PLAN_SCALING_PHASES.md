@@ -156,6 +156,7 @@ See: **AGENT_PLAN_PROTOTYPE.md**
 | **TRACE** | P1 | Origin tracking (original → reshares) |
 | **Preferences UI** | P1 | User settings persistence |
 
+
 ### Architecture Additions
 
 **New Lambda Functions:**
