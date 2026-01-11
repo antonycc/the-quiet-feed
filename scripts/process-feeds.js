@@ -41,9 +41,11 @@ function parseArgs() {
     depth: 10,
     hours: 24,
     category: null,
+    mixedCategories: false, // Include feeds from multiple categories (tech, news)
     score: false,
     provider: null, // auto-detect
     clear: false,
+    timeout: null, // Timeout in seconds for incremental mode
     output: "app/test-data/test-feeds",
     dryRun: false,
     verbose: false,
@@ -81,6 +83,16 @@ function parseArgs() {
       case "--verbose":
         options.verbose = true;
         break;
+      case "--timeout":
+        options.timeout = parseInt(args[++i], 10);
+        break;
+      case "--mixed-categories":
+        options.mixedCategories = true;
+        break;
+      case "--clear-only":
+        options.clearOnly = true;
+        options.clear = true;
+        break;
       case "--help":
         console.log(`
 Content Processing Script for The Quiet Feed
@@ -88,17 +100,20 @@ Content Processing Script for The Quiet Feed
 Usage: node scripts/process-feeds.js [options]
 
 Options:
-  --feeds <n>       Number of feeds to process (default: 5)
-  --depth <n>       Max items per feed (default: 10)
-  --hours <n>       Time window in hours (default: 24)
-  --category <cat>  Filter by category (e.g., tech, news, research)
-  --score           Enable LLM scoring (REQUIRED for meaningful content)
-  --provider <p>    LLM provider: 'ollama' or 'anthropic' (auto-detected)
-  --clear           Clear all processed content before starting (fresh start)
-  --output <dir>    Output directory (default: app/test-data/test-feeds)
-  --dry-run         Show what would be processed without writing
-  --verbose         Show detailed progress
-  --help            Show this help message
+  --feeds <n>         Number of feeds to process (default: 5)
+  --depth <n>         Max items per feed (default: 10)
+  --hours <n>         Time window in hours (default: 24)
+  --category <cat>    Filter by single category (e.g., tech, news, research)
+  --mixed-categories  Include feeds from tech AND news categories
+  --score             Enable LLM scoring (REQUIRED for meaningful content)
+  --provider <p>      LLM provider: 'ollama' or 'anthropic' (auto-detected)
+  --clear             Clear all processed content before starting (fresh start)
+  --clear-only        Clear output directory and exit (no processing)
+  --timeout <secs>    Stop processing after N seconds (for incremental mode)
+  --output <dir>      Output directory (default: app/test-data/test-feeds)
+  --dry-run           Show what would be processed without writing
+  --verbose           Show detailed progress
+  --help              Show this help message
 
 LLM Provider Setup:
   Ollama (recommended for local development):
@@ -110,16 +125,19 @@ LLM Provider Setup:
     export ANTHROPIC_API_KEY="sk-ant-..."
 
 Timing variants (via npm scripts):
-  feeds:process-quick      ~10s  (3 feeds, 5 items, rule-based)
-  feeds:process-balanced   ~60s  (8 feeds, 10 items, rule-based)
-  feeds:process-full       ~5m   (20 feeds, 15 items, with LLM scoring)
+  feeds:process-quick       ~30s  (4 items from 3 feeds with LLM scoring)
+  feeds:process-balanced    ~2m   (9 items from 3 feeds with LLM scoring)
+  feeds:process-incremental runs for --timeout seconds, skips duplicates
 
 Examples:
   # Process with LLM scoring (auto-detect provider)
   node scripts/process-feeds.js --feeds 10 --score
 
-  # Process with specific provider
-  ANTHROPIC_API_KEY=sk-ant-... node scripts/process-feeds.js --score --provider anthropic
+  # Process with mixed tech and news categories
+  node scripts/process-feeds.js --mixed-categories --feeds 6 --score
+
+  # Incremental processing with 10-minute timeout
+  node scripts/process-feeds.js --score --timeout 600 --verbose
 
   # Fresh start with LLM scoring
   node scripts/process-feeds.js --clear --feeds 10 --score --verbose
@@ -199,6 +217,29 @@ function saveProcessedHashes(outputDir, hashes) {
 // Filter sources by criteria
 function filterSources(sources, options) {
   let filtered = sources.filter((s) => s.enabled !== false);
+
+  if (options.mixedCategories) {
+    // Include feeds from both tech and news categories, distributed evenly
+    const techSources = filtered.filter((s) => s.category === "tech");
+    const newsSources = filtered.filter((s) => s.category === "news");
+    const halfFeeds = Math.ceil(options.feeds / 2);
+
+    // Take half from tech, half from news (or as many as available)
+    const selectedTech = techSources.slice(0, halfFeeds);
+    const selectedNews = newsSources.slice(0, options.feeds - selectedTech.length);
+
+    // If we don't have enough from one category, fill from the other
+    const remaining = options.feeds - selectedTech.length - selectedNews.length;
+    if (remaining > 0) {
+      const moreTech = techSources.slice(halfFeeds, halfFeeds + remaining);
+      const moreNews = newsSources.slice(options.feeds - selectedTech.length, options.feeds);
+      filtered = [...selectedTech, ...selectedNews, ...moreTech, ...moreNews];
+    } else {
+      filtered = [...selectedTech, ...selectedNews];
+    }
+
+    return filtered.slice(0, options.feeds);
+  }
 
   if (options.category) {
     filtered = filtered.filter((s) => s.category === options.category);
@@ -330,6 +371,12 @@ async function processFeeds(options) {
   // Clear output directory if requested
   if (options.clear && !options.dryRun) {
     clearOutputDirectory(outputDir, log);
+
+    // If --clear-only, exit after clearing
+    if (options.clearOnly) {
+      console.log("\nCleared output directory (--clear-only mode)");
+      return { processed: 0, skipped: 0, errors: 0, feeds: {} };
+    }
   }
 
   if (!options.dryRun && !existsSync(outputDir)) {
@@ -372,8 +419,23 @@ async function processFeeds(options) {
 
   const allItems = [];
 
+  // Timeout handling for incremental mode
+  const timeoutMs = options.timeout ? options.timeout * 1000 : null;
+  let timedOut = false;
+
+  const checkTimeout = () => {
+    if (timeoutMs && Date.now() - startTime > timeoutMs) {
+      log(`\nTimeout reached (${options.timeout}s), stopping processing...`);
+      timedOut = true;
+      return true;
+    }
+    return false;
+  };
+
   // Process each feed
   for (const source of sources) {
+    if (checkTimeout()) break;
+
     log(`\nFetching: ${source.name} (${source.url})`);
 
     try {
@@ -383,6 +445,8 @@ async function processFeeds(options) {
       const feedItems = [];
 
       for (const item of items.slice(0, options.depth)) {
+        if (checkTimeout()) break;
+
         // Check time window
         if (!isWithinTimeWindow(item, options.hours)) {
           log(`  Skipping (too old): ${item.title?.slice(0, 50)}...`);
@@ -527,6 +591,47 @@ async function processFeeds(options) {
     );
     log(`Wrote: ${defaultPath}`);
 
+    // Write category-specific files (tech.json, news.json)
+    const writeCategoryFeed = (categoryName, categoryFilter) => {
+      const categoryItems = sortedItems
+        .filter((item) => item.category === categoryFilter)
+        .slice(0, 50)
+        .map((item, index) => ({
+          id: item.hash || `item-${index + 1}`,
+          title: item.title,
+          url: item.url,
+          excerpt: item.excerpt,
+          score: item.score,
+          source: item.source,
+          category: item.category,
+          publishedAt: item.publishedAt,
+        }));
+
+      if (categoryItems.length > 0) {
+        const categoryPath = join(outputDir, `${categoryFilter}.json`);
+        writeFileSync(
+          categoryPath,
+          JSON.stringify(
+            {
+              name: `${categoryName} Feed`,
+              description: `Fresh ${categoryFilter} content`,
+              itemCount: categoryItems.length,
+              generatedAt: new Date().toISOString(),
+              items: categoryItems,
+            },
+            null,
+            2,
+          ),
+        );
+        log(`Wrote: ${categoryPath}`);
+      } else {
+        log(`No items for category: ${categoryFilter}`);
+      }
+    };
+
+    writeCategoryFeed("Tech", "tech");
+    writeCategoryFeed("News", "news");
+
     // Save processed hashes
     saveProcessedHashes(outputDir, newHashes);
   }
@@ -536,6 +641,9 @@ async function processFeeds(options) {
   // Print summary
   console.log("\n=== Processing Summary ===");
   console.log(`Duration:        ${elapsed}s`);
+  if (timedOut) {
+    console.log(`Status:          Stopped (timeout reached)`);
+  }
   console.log(`Feeds processed: ${sources.length}`);
   console.log(`Items processed: ${results.processed}`);
   console.log(`Items skipped:   ${results.skipped}`);

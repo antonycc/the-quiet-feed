@@ -129,4 +129,38 @@ describe("System: Feed Processing to Home Page Workflow", () => {
       expect(settings).toHaveProperty("name");
     });
   });
+
+  describe("Category-specific feeds exist", () => {
+    it("tech.json exists and has items", async () => {
+      const response = await fetch(`http://127.0.0.1:${port}/sample-feeds/tech.json`);
+      expect(response.status).toBe(200);
+
+      const feed = await response.json();
+      expect(feed).toHaveProperty("name");
+      expect(feed.name).toContain("Tech");
+      expect(feed).toHaveProperty("items");
+      expect(feed.items.length).toBeGreaterThan(0);
+
+      // All items should have tech category
+      for (const item of feed.items) {
+        expect(item.category).toBe("tech");
+      }
+    });
+
+    it("news.json exists and has items", async () => {
+      const response = await fetch(`http://127.0.0.1:${port}/sample-feeds/news.json`);
+      expect(response.status).toBe(200);
+
+      const feed = await response.json();
+      expect(feed).toHaveProperty("name");
+      expect(feed.name).toContain("News");
+      expect(feed).toHaveProperty("items");
+      expect(feed.items.length).toBeGreaterThan(0);
+
+      // All items should have news category
+      for (const item of feed.items) {
+        expect(item.category).toBe("news");
+      }
+    });
+  });
 });

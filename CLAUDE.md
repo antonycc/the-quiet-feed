@@ -51,6 +51,22 @@ npm test                           # Unit + system tests (~4s)
 npm run test:anonymousBehaviour-proxy  # Anonymous feed behaviour tests
 ```
 
+**Running npm scripts**: You can run any script defined in package.json:
+```bash
+npm test                           # Run all tests
+npm run test:unit                  # Run unit tests only
+npm run test:system                # Run system tests only
+npm run feeds:process-quick        # Process feeds (quick mode)
+npm run feeds:clear                # Clear processed feeds
+```
+
+**Running individual tests with vitest**: You can run any vitest-defined test directly:
+```bash
+npx vitest --run app/unit-tests/scoringService.test.js
+npx vitest --run app/system-tests/feedToHomePage.system.test.js
+npx vitest --run web/unit-tests/someTest.test.js
+```
+
 Capture output for analysis:
 ```bash
 npm test > target/test.txt 2>&1

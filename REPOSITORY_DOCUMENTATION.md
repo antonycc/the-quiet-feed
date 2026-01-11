@@ -123,7 +123,6 @@ npm run test:anonymousBehaviour-proxy
 **Output Artifacts**:
 - `target/quietfeed-application.jar` - CDK entry point for application stacks
 - `target/quietfeed-environment.jar` - CDK entry point for environment stacks
-- `web/public/docs/openapi.yaml` - Generated API documentation
 
 **Read `pom.xml` for complete Maven configuration.**
 
@@ -282,7 +281,6 @@ npm run server  # Express server
 | `public/auth/` | Authentication pages |
 | `public/account/` | User account pages (bundles/feed config) |
 | `public/widgets/` | Reusable Web Components |
-| `public/docs/` | OpenAPI documentation (generated) |
 | `unit-tests/` | Vitest frontend unit tests |
 | `browser-tests/` | Playwright browser tests |
 
@@ -293,7 +291,6 @@ npm run server  # Express server
 | `main/java/.../stacks/` | CDK stack definitions |
 | `main/java/.../constructs/` | Reusable CDK constructs (ApiLambda, AsyncApiLambda) |
 | `main/java/.../utils/` | Utility classes |
-| `main/java/.../swagger/` | OpenAPI generator |
 | `test/` | JUnit tests for CDK code |
 
 **Use your IDE or `ls -la` to explore the full directory structure.**
@@ -362,7 +359,6 @@ For specific topics, see:
 | AWS account topology | `_developers/AWS_ACCOUNT_TOPOLOGY.md` |
 | Salted hash implementation | `_developers/SALTED_HASH_IMPLEMENTATION.md` |
 | Salt secret recovery | `_developers/SALT_SECRET_RECOVERY.md` |
-| API documentation | `web/public/docs/openapi.yaml` |
 
 ## Local-First Development
 
