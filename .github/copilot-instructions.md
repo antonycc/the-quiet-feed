@@ -163,7 +163,7 @@ The repository supports **four environments** via `.env` files:
 | Environment | File | Purpose |
 |------------|------|---------|
 | **test** | `.env.test` | Unit/system tests with mocked services |
-| **proxy** | `.env.proxy` | Local development with ngrok, mock OAuth2, local DynamoDB |
+| **proxy** | `.env.proxy` | Local development with mkcert HTTPS, mock OAuth2, local DynamoDB |
 | **ci** | `.env.ci` | Continuous integration with real AWS resources |
 | **prod** | `.env.prod` | Production deployment |
 
@@ -223,7 +223,7 @@ See REPOSITORY_DOCUMENTATION.md for the complete reference of all npm scripts. K
 - `npm run linting-fix` - Auto-fix ESLint issues (only run if asked)
 
 **Local Development**:
-- `npm run proxy` - Start ngrok proxy
+- `npm run server:https` - Start HTTPS server (local.thequietfeed.com:3443)
 - `npm run auth` - Start mock OAuth2 server (Docker)
 - `npm run data` - Start local DynamoDB (dynalite)
 
@@ -285,7 +285,8 @@ When reviewing changes, consider impact across **all four environments**:
 
 2. **Proxy environment** (`.env.proxy`):
    - Local development setup
-   - Requires ngrok, Docker for OAuth2/DynamoDB
+   - Uses mkcert for browser-trusted HTTPS on local.thequietfeed.com:3443
+   - Requires Docker for OAuth2/DynamoDB
    - Changes should work locally for developers
 
 3. **CI environment** (`.env.ci`):

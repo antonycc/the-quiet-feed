@@ -414,28 +414,32 @@ const buildWireModePrompt = (item) => {
   const title = item.title || "";
   const content = item.content || item.excerpt || "";
 
-  return `Transform this news headline and content into wire service style.
+  return `Transform this specific headline into wire service style. CRITICAL: Preserve the original meaning and subject matter exactly.
 
-Wire service style (Reuters/AP/telex) characteristics:
-- Factual, neutral language
-- Remove sensationalism, clickbait, and emotional manipulation
-- Strip personality-driven framing and dramatic language
-- Focus on what actually happened, not what to feel about it
-- Brief, information-dense summaries
+Wire service style rules:
+1. Keep the SAME TOPIC and SAME MEANING as the original
+2. Remove only: sensationalism, clickbait phrases, emotional manipulation
+3. If the headline is already neutral, make minimal or no changes
+4. Never invent new information or change the subject
 
-Example transformations:
-- "You won't BELIEVE what Biden just did to fight poverty!" → "US executive directs agencies to draft living standards policy proposal"
-- "BREAKING: Tech Giant's Shocking Move Could Change Everything" → "Apple announces revised EU app store pricing structure"
-- "Everyone's talking about this INSANE new AI" → "OpenAI releases updated language model with expanded context window"
+Examples of transformation patterns (DO NOT use these topics, only the pattern):
+- "You won't BELIEVE what [X] did!" → "[X] takes action on [specific thing]"
+- "BREAKING: Shocking development in [topic]" → "[topic]: [factual summary]"
+- "This INSANE [thing] changes everything" → "[thing] released with [specific feature]"
 
-Original headline: ${title}
-Original content: ${content.slice(0, 800)}
+---
+CONTENT TO TRANSFORM:
+Headline: ${title}
+Content: ${content.slice(0, 800)}
 Source: ${item.source || "unknown"}
+---
 
-Generate a wire-style version. Respond with JSON only:
+IMPORTANT: Your response must be about "${title}" - the SAME subject as the input.
+
+Respond with JSON only:
 {
-  "wireTitle": "<factual headline, max 100 chars, no clickbait>",
-  "wireSummary": "<telex-style summary, 1-2 sentences, facts only, no opinion>"
+  "wireTitle": "<factual version of the SAME headline topic, max 100 chars>",
+  "wireSummary": "<1-2 sentence summary of the SAME content, facts only>"
 }`;
 };
 
@@ -530,11 +534,11 @@ export const generateWireWithLLMClient = async (item, options = {}) => {
         {
           role: "system",
           content:
-            "You are a Reuters/AP wire service editor. Transform headlines and content into neutral, factual wire service style. Respond with valid JSON only, no markdown.",
+            "You are a Reuters/AP wire service editor. Your job is to remove sensationalism from headlines while PRESERVING THE EXACT SAME TOPIC AND MEANING. Never change what the article is about. If a headline is already neutral, return it with minimal changes. Respond with valid JSON only, no markdown.",
         },
         { role: "user", content: prompt },
       ],
-      { maxTokens: 256, temperature: 0.3 },
+      { maxTokens: 256, temperature: 0.2 },
     );
 
     const result = parseWireModeResponse(response.content);

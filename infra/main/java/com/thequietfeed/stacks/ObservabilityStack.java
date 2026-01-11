@@ -258,8 +258,7 @@ public class ObservabilityStack extends Stack {
                 : props.sharedNames().hostedZoneName;
 
         // Lambda function search pattern for this environment
-        // Pattern matches: {env}-*-submit-*-app-{function-name}
-        // Example: prod-abc123-submit-diyaccounting-co-uk-app-hmrc-vat-return-post-ingest-handler
+        // Pattern matches: {env}-*-app-{function-name}
         String lambdaSearchPrefix = props.envName() + "-";
 
         // Row 1: Real User Traffic (RUM) and Web Vitals
@@ -323,24 +322,24 @@ public class ObservabilityStack extends Stack {
         // Using SEARCH to aggregate across deployment-specific function names
         dashboardRows.add(List.of(
                 GraphWidget.Builder.create()
-                        .title("VAT Submissions (all deployments)")
+                        .title("Auth Token Exchange (all deployments)")
                         .left(List.of(MathExpression.Builder.create()
                                 .expression(String.format(
-                                        "SEARCH('{AWS/Lambda,FunctionName} FunctionName=~\"%s.*hmrc-vat-return-post-ingest.*\" MetricName=\"Invocations\"', 'Sum', 3600)",
+                                        "SEARCH('{AWS/Lambda,FunctionName} FunctionName=~\"%s.*cognito-token-post-ingest.*\" MetricName=\"Invocations\"', 'Sum', 3600)",
                                         lambdaSearchPrefix))
-                                .label("hmrcVatReturnPost")
+                                .label("cognitoTokenPost")
                                 .period(Duration.hours(1))
                                 .build()))
                         .width(12)
                         .height(6)
                         .build(),
                 GraphWidget.Builder.create()
-                        .title("HMRC Authentications (all deployments)")
+                        .title("Custom Authorizer (all deployments)")
                         .left(List.of(MathExpression.Builder.create()
                                 .expression(String.format(
-                                        "SEARCH('{AWS/Lambda,FunctionName} FunctionName=~\"%s.*hmrc-token-post-ingest.*\" MetricName=\"Invocations\"', 'Sum', 3600)",
+                                        "SEARCH('{AWS/Lambda,FunctionName} FunctionName=~\"%s.*custom-authorizer-ingest.*\" MetricName=\"Invocations\"', 'Sum', 3600)",
                                         lambdaSearchPrefix))
-                                .label("hmrcTokenPost")
+                                .label("customAuthorizer")
                                 .period(Duration.hours(1))
                                 .build()))
                         .width(12)

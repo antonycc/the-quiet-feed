@@ -2,32 +2,35 @@
   "id": "hackernews-frontpage",
   "name": "Hacker News",
   "category": "tech",
-  "generatedAt": "2026-01-11T16:27:29.589Z",
+  "generatedAt": "2026-01-11T17:14:41.987Z",
   "itemCount": 1,
   "items": [
     {
-      "title": "Instagram data breach reportedly exposed the personal info of 17.5M users",
-      "url": "https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html",
-      "excerpt": "Article URL: https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html Comments URL: https://news.ycombinator.com/item?id=46576337 Points: 57 # Comments: 20",
-      "publishedAt": "2026-01-11T15:07:12.000Z",
-      "guid": "https://news.ycombinator.com/item?id=46576337",
-      "author": "IvanAchlaqullah",
+      "title": "Replace the Retiring Windows XP with Linux",
+      "url": "https://www.linux.com/training-tutorials/replace-retiring-windows-xp-linux/",
+      "excerpt": "Article URL: https://www.linux.com/training-tutorials/replace-retiring-windows-xp-linux/ Comments URL: https://news.ycombinator.com/item?id=46577019 Points: 13 # Comments: 3",
+      "publishedAt": "2026-01-11T16:20:47.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46577019",
+      "author": "righthand",
       "category": "tech",
       "source": "Hacker News",
-      "hash": "b6c24732bbb24818",
-      "fetchedAt": "2026-01-11T16:26:05.415Z",
+      "hash": "2589132635926868",
+      "fetchedAt": "2026-01-11T17:09:53.429Z",
       "feedUrl": "https://hnrss.org/frontpage",
-      "score": 68,
+      "score": 78,
       "signals": {
-        "factual": 13,
-        "original": 17,
-        "professional": 17,
-        "signal": 21
+        "factual": 15,
+        "original": 20,
+        "professional": 30,
+        "signal": 45
       },
-      "reasoning": "appears original; professionally relevant; high information density",
-      "modelId": "rule-based-v1",
+      "reasoning": "The post provides factual information about the transition from Windows XP to Linux and offers original insights with professional relevance.",
+      "modelId": "phi3:mini",
       "sourceId": "hackernews-frontpage",
-      "processedAt": "2026-01-11T16:26:37.258Z"
+      "processedAt": "2026-01-11T17:11:21.081Z",
+      "wireTitle": "US executive directs agencies to draft living standards policy proposal",
+      "wireSummary": "A US official has tasked federal departments with creating a comprehensive plan for improving the standard of living, as part of an initiative that includes replacing outdated operating systems like Windows XP.",
+      "wireModelId": "phi3:mini"
     }
   ]
 }

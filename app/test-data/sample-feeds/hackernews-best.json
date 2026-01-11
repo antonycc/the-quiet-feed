@@ -2,7 +2,7 @@
   "id": "hackernews-best",
   "name": "Hacker News Best",
   "category": "tech",
-  "generatedAt": "2026-01-11T16:27:29.589Z",
+  "generatedAt": "2026-01-11T17:14:41.988Z",
   "itemCount": 1,
   "items": [
     {
@@ -15,19 +15,22 @@
       "category": "tech",
       "source": "Hacker News Best",
       "hash": "c64644c155963e8f",
-      "fetchedAt": "2026-01-11T16:26:37.694Z",
+      "fetchedAt": "2026-01-11T17:11:21.546Z",
       "feedUrl": "https://hnrss.org/best",
-      "score": 48,
+      "score": 51,
       "signals": {
-        "factual": 10,
-        "original": 20,
-        "professional": 5,
-        "signal": 3
+        "factual": 4,
+        "original": 17,
+        "professional": 13,
+        "signal": 17
       },
-      "reasoning": "The post contains some factual information about operating systems but is mostly opinion-based and lacks professional depth.",
-      "modelId": "phi3:mini",
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
       "sourceId": "hackernews-best",
-      "processedAt": "2026-01-11T16:27:00.248Z"
+      "processedAt": "2026-01-11T17:13:06.642Z",
+      "wireTitle": "User switches from Windows to Linux operating system",
+      "wireSummary": "A user has transitioned their computing experience from the Microsoft Windows 11 OS to a variant of Unix-like systems known as Linux, according to an article on NotebookCheck.",
+      "wireModelId": "phi3:mini"
     }
   ]
 }

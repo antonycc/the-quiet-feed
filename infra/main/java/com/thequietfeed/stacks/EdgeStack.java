@@ -342,18 +342,16 @@ public class EdgeStack extends Stack {
                 .compress(true)
                 .build();
 
-        // Create a custom OriginRequestPolicy for API Gateway that forwards HMRC fraud prevention headers
-        // These Gov-Client-* headers are sent by the browser and must reach the Lambda functions
+        // Create a custom OriginRequestPolicy for API Gateway that forwards all viewer headers
+        // This enables Authorization headers and any custom headers to reach Lambda functions
         // Note: CloudFront limits custom OriginRequestPolicy to 10 headers maximum
         OriginRequestPolicy fraudPreventionHeadersPolicy = OriginRequestPolicy.Builder.create(
                         this, props.resourceNamePrefix() + "-FraudPreventionORP")
                 .originRequestPolicyName(props.resourceNamePrefix() + "-fraud-prevention-orp")
-                .comment(
-                        "Origin request policy that forwards HMRC fraud prevention headers (Gov-Client-*) to API Gateway")
+                .comment("Origin request policy that forwards viewer headers to API Gateway")
                 // Use denyList("Host") to forward ALL viewer headers EXCEPT Host:
                 // - Authorization (required for API authentication)
-                // - Gov-Client-* headers (HMRC fraud prevention)
-                // - x-device-id, Gov-Test-Scenario, etc.
+                // - Custom headers (x-device-id, etc.)
                 // Host header must be excluded so CloudFront sets it to the origin's domain
                 // Note: all() includes Host which causes 403 errors from API Gateway
                 .headerBehavior(OriginRequestHeaderBehavior.denyList("Host"))

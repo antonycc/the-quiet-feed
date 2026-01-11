@@ -159,7 +159,7 @@ public class OpsStack extends Stack {
                 .metric(Metric.Builder.create()
                         .namespace(apexDomain)
                         .metricName("behaviour-test")
-                        .dimensionsMap(Map.of("deployment-name", props.deploymentName(), "test", "submitVatBehaviour"))
+                        .dimensionsMap(Map.of("deployment-name", props.deploymentName(), "test", "anonymousBehaviour"))
                         .statistic("Minimum")
                         .period(Duration.hours(2))
                         .build())

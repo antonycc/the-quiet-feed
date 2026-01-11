@@ -1,6 +1,6 @@
 # Entitlement & Subscription Specialist
 
-Purpose: Manage the complex logic of user bundles, entitlements, and subscriptions. This agent ensures that users have the correct access to HMRC activities based on their subscription tier and bundle allocations.
+Purpose: Manage the complex logic of user bundles, entitlements, and subscriptions. This agent ensures that users have the correct access to feed features based on their subscription tier and bundle allocations.
 
 ## Scope and Inputs
 
@@ -20,11 +20,11 @@ Purpose: Manage the complex logic of user bundles, entitlements, and subscriptio
 
 2. **Entitlement Logic**
    - Assist in implementing and debugging the logic that grants bundles to users.
-   - Ensure that active subscriptions correctly translate to business tier entitlements.
+   - Ensure that active subscriptions correctly translate to appropriate tier entitlements.
    - Handle edge cases like bundle timeouts and caps.
 
 3. **Subscription Integration**
-   - Integrate with subscription payment data (e.g., PayPal transaction IDs) to grant legacy bundles.
+   - Integrate with subscription payment data to grant appropriate bundles.
    - Ensure a smooth transition between different subscription states.
 
 ## Process

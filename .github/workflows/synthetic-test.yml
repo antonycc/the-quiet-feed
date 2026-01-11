@@ -28,16 +28,12 @@ on:
         description: 'Behaviour test to run'
         required: false
         options:
-          - 'bundleBehaviour'
-          - 'postVatReturnBehaviour'
-          - 'getVatObligationsBehaviour'
-          - 'getVatReturnBehaviour'
-          - 'postVatReturnFraudPreventionHeadersBehaviour'
-          - 'submitVatBehaviour'
+          - 'anonymousBehaviour'
           - 'authBehaviour'
-          - 'complianceBehaviour'
+          - 'bundleBehaviour'
+          - 'enhanceBehaviour'
           - 'allBehaviour'
-        default: 'submitVatBehaviour'
+        default: 'anonymousBehaviour'
       generate-test-reports:
         type: boolean
         description: 'Generate test reports, e.g. true (default) or false'
@@ -109,7 +105,7 @@ jobs:
         id: normalise
         shell: bash
         run: |
-          X='${{ inputs.behaviour-test-suite }}' ; echo "behaviour-test-suite=${X:-submitVatBehaviour}" | tee -a "$GITHUB_OUTPUT"
+          X='${{ inputs.behaviour-test-suite }}' ; echo "behaviour-test-suite=${X:-anonymousBehaviour}" | tee -a "$GITHUB_OUTPUT"
           X='${{ inputs.generate-test-reports }}' ; echo "generate-test-reports=${X:-true}" | tee -a "$GITHUB_OUTPUT"
           echo 'environment-name=${{ inputs.environment-name }}' | tee -a "$GITHUB_OUTPUT"
           echo 'deployment-name=${{ inputs.deployment-name }}' | tee -a "$GITHUB_OUTPUT"

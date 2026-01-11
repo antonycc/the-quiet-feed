@@ -229,6 +229,24 @@ jobs:
           npm install
           npx playwright install chromium --with-deps
 
+      - name: Install mkcert
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+      - name: Setup mkcert CA and certificates
+        run: |
+          mkcert -install
+          mkdir -p .certs
+          mkcert -cert-file .certs/server.crt -key-file .certs/server.key local.thequietfeed.com localhost 127.0.0.1
+
+      - name: Add local.thequietfeed.com to /etc/hosts
+        run: |
+          echo "127.0.0.1 local.thequietfeed.com" | sudo tee -a /etc/hosts
+
       - name: Run behaviour tests - bundles
         run: |
           npm run test:bundleBehaviour-proxy || exit_code=$? \
@@ -236,7 +254,8 @@ jobs:
           ; exit ${exit_code:-0} \
           ;
         env:
-          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          USE_HTTPS: 'true'
+          CI: 'true'
 
       - name: Upload artifacts (results)
         if: ${{ !cancelled() }}

@@ -311,7 +311,7 @@ public class QuietFeedSharedNames {
                 "Exchanges an authorization code for a Cognito access token",
                 "exchangeCognitoToken"));
 
-        // Custom authorizer for HMRC VAT endpoints
+        // Custom authorizer for authenticated API endpoints
         var customAuthorizerHandlerName = "customAuthorizer.ingestHandler";
         var customAuthorizerHandlerDashed =
                 ResourceNameUtils.convertCamelCaseToDashSeparated(customAuthorizerHandlerName);

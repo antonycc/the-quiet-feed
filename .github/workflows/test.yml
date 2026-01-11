@@ -349,3 +349,332 @@ jobs:
           # Set by deploy-environment.yml after the environment's AuthStack is deployed
           COGNITO_USER_POOL_ARN: ${{ vars.COGNITO_USER_POOL_ARN }}
           COGNITO_CLIENT_ID: ${{ vars.COGNITO_CLIENT_ID }}
+
+  # ========================================
+  # Behaviour Tests (using mkcert + local HTTPS)
+  # ========================================
+
+  behaviour-test-anonymous:
+    name: 'Behaviour: Anonymous'
+    runs-on: ubuntu-latest
+    needs:
+      - npm-test
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install mkcert
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+      - name: Setup mkcert CA and certificates
+        run: |
+          mkcert -install
+          mkdir -p .certs
+          mkcert -cert-file .certs/server.crt -key-file .certs/server.key local.thequietfeed.com localhost 127.0.0.1
+
+      - name: Add local.thequietfeed.com to /etc/hosts
+        run: |
+          echo "127.0.0.1 local.thequietfeed.com" | sudo tee -a /etc/hosts
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run anonymous behaviour tests
+        run: npm run test:anonymousBehaviour-proxy
+        env:
+          USE_HTTPS: 'true'
+          CI: 'true'
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behaviour-anonymous-results
+          path: |
+            target/behaviour-test-results/
+            test-results/
+          retention-days: 7
+
+  behaviour-test-auth:
+    name: 'Behaviour: Auth'
+    runs-on: ubuntu-latest
+    needs:
+      - npm-test
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install mkcert
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+      - name: Setup mkcert CA and certificates
+        run: |
+          mkcert -install
+          mkdir -p .certs
+          mkcert -cert-file .certs/server.crt -key-file .certs/server.key local.thequietfeed.com localhost 127.0.0.1
+
+      - name: Add local.thequietfeed.com to /etc/hosts
+        run: |
+          echo "127.0.0.1 local.thequietfeed.com" | sudo tee -a /etc/hosts
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run auth behaviour tests
+        run: npm run test:authBehaviour-proxy
+        env:
+          USE_HTTPS: 'true'
+          CI: 'true'
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behaviour-auth-results
+          path: |
+            target/behaviour-test-results/
+            test-results/
+          retention-days: 7
+
+  behaviour-test-bundles:
+    name: 'Behaviour: Bundles'
+    runs-on: ubuntu-latest
+    needs:
+      - npm-test
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install mkcert
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+      - name: Setup mkcert CA and certificates
+        run: |
+          mkcert -install
+          mkdir -p .certs
+          mkcert -cert-file .certs/server.crt -key-file .certs/server.key local.thequietfeed.com localhost 127.0.0.1
+
+      - name: Add local.thequietfeed.com to /etc/hosts
+        run: |
+          echo "127.0.0.1 local.thequietfeed.com" | sudo tee -a /etc/hosts
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run bundles behaviour tests
+        run: npm run test:bundleBehaviour-proxy
+        env:
+          USE_HTTPS: 'true'
+          CI: 'true'
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behaviour-bundles-results
+          path: |
+            target/behaviour-test-results/
+            test-results/
+          retention-days: 7
+
+  behaviour-test-enhance:
+    name: 'Behaviour: Enhance'
+    runs-on: ubuntu-latest
+    needs:
+      - npm-test
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install mkcert
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+      - name: Setup mkcert CA and certificates
+        run: |
+          mkcert -install
+          mkdir -p .certs
+          mkcert -cert-file .certs/server.crt -key-file .certs/server.key local.thequietfeed.com localhost 127.0.0.1
+
+      - name: Add local.thequietfeed.com to /etc/hosts
+        run: |
+          echo "127.0.0.1 local.thequietfeed.com" | sudo tee -a /etc/hosts
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run enhance behaviour tests
+        run: npm run test:enhanceBehaviour-proxy
+        env:
+          USE_HTTPS: 'true'
+          CI: 'true'
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behaviour-enhance-results
+          path: |
+            target/behaviour-test-results/
+            test-results/
+          retention-days: 7
+
+  behaviour-test-all:
+    name: 'Behaviour: All Combined'
+    runs-on: ubuntu-latest
+    needs:
+      - npm-test
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install mkcert
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+      - name: Setup mkcert CA and certificates
+        run: |
+          mkcert -install
+          mkdir -p .certs
+          mkcert -cert-file .certs/server.crt -key-file .certs/server.key local.thequietfeed.com localhost 127.0.0.1
+
+      - name: Add local.thequietfeed.com to /etc/hosts
+        run: |
+          echo "127.0.0.1 local.thequietfeed.com" | sudo tee -a /etc/hosts
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Run all behaviour tests
+        run: npm run test:allBehaviour-proxy
+        env:
+          USE_HTTPS: 'true'
+          CI: 'true'
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behaviour-all-results
+          path: |
+            target/behaviour-test-results/
+            test-results/
+          retention-days: 7
+
+  # ========================================
+  # Feed Processing Test (LLM validation)
+  # ========================================
+
+  feed-processing-test:
+    name: 'Feed Processing (LLM)'
+    runs-on: ubuntu-latest
+    needs:
+      - npm-test
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run quick feed processing with LLM
+        run: |
+          # Run quick feed processing (4 feeds, 1 item each)
+          # This validates LLM scoring works but doesn't commit results
+          node scripts/process-feeds.js --output target/test-feeds --feeds 4 --depth 1 --score --wire --verbose
+
+      - name: Verify feed output
+        run: |
+          echo "Checking generated feed files..."
+          ls -la target/test-feeds/ || echo "No output directory"
+          find target/test-feeds -name "*.json" -exec echo "Found: {}" \; || echo "No JSON files generated"
+
+      - name: Upload processed feeds
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: feed-processing-results
+          path: target/test-feeds/
+          retention-days: 7
