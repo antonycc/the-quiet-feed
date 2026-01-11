@@ -440,6 +440,12 @@ header {
   color: #9d174d;
 }
 
+/* Wire mode title styling */
+.feed-item-title.wire-mode-title a {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
 /* Feed Actions */
 .feed-item-actions {
   display: flex;

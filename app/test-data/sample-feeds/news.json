@@ -2,14 +2,14 @@
   "name": "News Feed",
   "description": "Fresh news content",
   "itemCount": 1,
-  "generatedAt": "2026-01-11T16:09:43.188Z",
+  "generatedAt": "2026-01-11T16:27:29.591Z",
   "items": [
     {
       "id": "e5053249a7dbb81d",
       "title": "Iran warns it will retaliate if US attacks as protesters defy crackdown",
       "url": "https://www.bbc.com/news/articles/cm2jek15m8no?at_medium=RSS&amp;at_campaign=rss",
       "excerpt": "Medics at two hospitals tell the BBC more than 100 bodies have been brought in over a two day period.",
-      "score": 30,
+      "score": 55,
       "source": "BBC News World",
       "category": "news",
       "publishedAt": "2026-01-11T16:04:02.000Z"

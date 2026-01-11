@@ -43,6 +43,7 @@ function parseArgs() {
     category: null,
     mixedCategories: false, // Include feeds from multiple categories (tech, news)
     score: false,
+    wire: false, // Generate wire mode content (de-sensationalized titles/summaries)
     provider: null, // auto-detect
     clear: false,
     timeout: null, // Timeout in seconds for incremental mode
@@ -67,6 +68,9 @@ function parseArgs() {
         break;
       case "--score":
         options.score = true;
+        break;
+      case "--wire":
+        options.wire = true;
         break;
       case "--provider":
         options.provider = args[++i];
@@ -106,6 +110,7 @@ Options:
   --category <cat>    Filter by single category (e.g., tech, news, research)
   --mixed-categories  Include feeds from tech AND news categories
   --score             Enable LLM scoring (REQUIRED for meaningful content)
+  --wire              Generate wire mode content (de-sensationalized titles/summaries)
   --provider <p>      LLM provider: 'ollama' or 'anthropic' (auto-detected)
   --clear             Clear all processed content before starting (fresh start)
   --clear-only        Clear output directory and exit (no processing)
@@ -407,7 +412,7 @@ async function processFeeds(options) {
 
   // Import services
   const { fetchAndParseFeed } = await import("../app/services/rssFeedService.js");
-  const { scoreContent } = await import("../app/services/scoringService.js");
+  const { scoreContent, generateWireContent } = await import("../app/services/scoringService.js");
   const { computeContentHash } = await import("../app/lib/contentHash.js");
 
   const results = {
@@ -475,6 +480,20 @@ async function processFeeds(options) {
           scoreResult = await scoreContent(item, { preferRules: true });
         }
 
+        // Generate wire mode content (de-sensationalized titles/summaries)
+        let wireResult = null;
+        if (options.wire) {
+          log(`  Generating wire content: ${item.title?.slice(0, 50)}...`);
+          if (llmProvider) {
+            wireResult = await generateWireContent(item, {
+              useLocalLLM: llmProvider === "ollama",
+              provider: llmProvider,
+            });
+          } else {
+            wireResult = await generateWireContent(item, { preferRules: true });
+          }
+        }
+
         const processedItem = {
           ...item,
           hash,
@@ -486,6 +505,12 @@ async function processFeeds(options) {
           sourceId: source.id,
           category: source.category,
           processedAt: new Date().toISOString(),
+          // Wire mode content (if generated)
+          ...(wireResult && {
+            wireTitle: wireResult.wireTitle,
+            wireSummary: wireResult.wireSummary,
+            wireModelId: wireResult.modelId,
+          }),
         };
 
         feedItems.push(processedItem);
@@ -574,6 +599,9 @@ async function processFeeds(options) {
       source: item.source,
       category: item.category,
       publishedAt: item.publishedAt,
+      // Wire mode content (if available)
+      ...(item.wireTitle && { wireTitle: item.wireTitle }),
+      ...(item.wireSummary && { wireSummary: item.wireSummary }),
     }));
     writeFileSync(
       defaultPath,
@@ -605,6 +633,9 @@ async function processFeeds(options) {
           source: item.source,
           category: item.category,
           publishedAt: item.publishedAt,
+          // Wire mode content (if available)
+          ...(item.wireTitle && { wireTitle: item.wireTitle }),
+          ...(item.wireSummary && { wireSummary: item.wireSummary }),
         }));
 
       if (categoryItems.length > 0) {

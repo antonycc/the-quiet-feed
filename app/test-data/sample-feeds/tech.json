@@ -2,27 +2,27 @@
   "name": "Tech Feed",
   "description": "Fresh tech content",
   "itemCount": 2,
-  "generatedAt": "2026-01-11T16:09:43.188Z",
+  "generatedAt": "2026-01-11T16:27:29.591Z",
   "items": [
     {
-      "id": "e1d93a8fb66a9503",
-      "title": "Don't fall into the anti-AI hype",
-      "url": "https://antirez.com/news/158",
-      "excerpt": "Article URL: https://antirez.com/news/158 Comments URL: https://news.ycombinator.com/item?id=46574276 Points: 237 # Comments: 355",
-      "score": 78,
-      "source": "Hacker News Best",
-      "category": "tech",
-      "publishedAt": "2026-01-11T10:26:18.000Z"
-    },
-    {
-      "id": "f4702b9a1cee4555",
-      "title": "Minneapolis Is Not Even a Close Call –A Lawsplainer on Officer-Involved",
-      "url": "https://shipwreckedcrew.substack.com/p/minneapolis-is-not-even-a-close-call",
-      "excerpt": "Article URL: https://shipwreckedcrew.substack.com/p/minneapolis-is-not-even-a-close-call Comments URL: https://news.ycombinator.com/item?id=46576784 Points: 3 # Comments: 1",
-      "score": 55,
+      "id": "b6c24732bbb24818",
+      "title": "Instagram data breach reportedly exposed the personal info of 17.5M users",
+      "url": "https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html",
+      "excerpt": "Article URL: https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html Comments URL: https://news.ycombinator.com/item?id=46576337 Points: 57 # Comments: 20",
+      "score": 68,
       "source": "Hacker News",
       "category": "tech",
-      "publishedAt": "2026-01-11T15:54:37.000Z"
+      "publishedAt": "2026-01-11T15:07:12.000Z"
+    },
+    {
+      "id": "c64644c155963e8f",
+      "title": "I dumped Windows 11 for Linux, and you should too",
+      "url": "https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html",
+      "excerpt": "Article URL: https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html Comments URL: https://news.ycombinator.com/item?id=46574707 Points: 278 # Comments: 273",
+      "score": 48,
+      "source": "Hacker News Best",
+      "category": "tech",
+      "publishedAt": "2026-01-11T11:31:22.000Z"
     }
   ]
 }

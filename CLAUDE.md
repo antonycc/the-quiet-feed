@@ -101,13 +101,19 @@ Favor approaches that work locally AND faithfully remotely:
 
 ```
 Developer Machine
-├── Express Server (localhost:3000) → Lambda handlers
-├── ngrok (tunnel) → Public HTTPS for OAuth
+├── Express Server (https://local.thequietfeed.com:3443) → Lambda handlers
+├── mkcert certificates (.certs/) → Browser-trusted HTTPS
 ├── Mock OAuth2 (localhost:8080) → Simulates Cognito
 └── Dynalite (dynamic port) → Local DynamoDB
 ```
 
-Start all services: `npm start`
+**Setup** (one-time):
+```bash
+npm run https:setup   # Install mkcert, generate certificates
+# Add to /etc/hosts: 127.0.0.1 local.thequietfeed.com
+```
+
+**Start all services**: `npm start`
 
 ## Deployment & Infrastructure Workflow
 
@@ -181,7 +187,7 @@ When implementing features that require infrastructure validation:
 | Environment | File | Purpose |
 |-------------|------|---------|
 | test | `.env.test` | Unit/system tests (mocked) |
-| proxy | `.env.proxy` | Local dev (ngrok, Docker OAuth2, dynalite) |
+| proxy | `.env.proxy` | Local dev (HTTPS on local.thequietfeed.com, mock OAuth2, dynalite) |
 | ci | `.env.ci` | CI with real AWS |
 | prod | `.env.prod` | Production |
 

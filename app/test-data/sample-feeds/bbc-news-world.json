@@ -2,7 +2,7 @@
   "id": "bbc-news-world",
   "name": "BBC News World",
   "category": "news",
-  "generatedAt": "2026-01-11T16:09:43.183Z",
+  "generatedAt": "2026-01-11T16:27:29.589Z",
   "itemCount": 1,
   "items": [
     {
@@ -15,19 +15,19 @@
       "category": "news",
       "source": "BBC News World",
       "hash": "e5053249a7dbb81d",
-      "fetchedAt": "2026-01-11T16:09:25.810Z",
+      "fetchedAt": "2026-01-11T16:27:00.338Z",
       "feedUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
-      "score": 30,
+      "score": 55,
       "signals": {
-        "factual": 15,
-        "original": 5,
-        "professional": 7,
-        "signal": 8
+        "factual": 4,
+        "original": 17,
+        "professional": 13,
+        "signal": 21
       },
-      "reasoning": "The post provides factual information but lacks original insight and professional relevance.",
-      "modelId": "phi3:mini",
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
       "sourceId": "bbc-news-world",
-      "processedAt": "2026-01-11T16:09:43.101Z"
+      "processedAt": "2026-01-11T16:27:29.500Z"
     }
   ]
 }

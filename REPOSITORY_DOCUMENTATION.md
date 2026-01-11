@@ -27,8 +27,8 @@ This document provides a high-level overview of The Quiet Feed repository. For d
 | **Testing** | Vitest (unit/system), Playwright (browser/behaviour) |
 | **Authentication** | AWS Cognito + OAuth providers (production), Mock OAuth2 (local) |
 | **Storage** | DynamoDB (bundles/feed configurations) |
-| **Quality Scoring** | Claude API (planned) |
-| **Local Dev Proxy** | ngrok (exposes localhost for OAuth callbacks) |
+| **Quality Scoring** | LLM-based scoring (Ollama local, Claude API production) |
+| **Local HTTPS** | mkcert certificates for browser-trusted local.thequietfeed.com |
 
 ### Key Features
 
@@ -58,7 +58,7 @@ The repository uses multiple environment files. See the actual files for complet
 | Environment | File | Purpose |
 |-------------|------|---------|
 | **test** | `.env.test` | Unit/system tests with mocked services |
-| **proxy** | `.env.proxy` | Local dev with ngrok, Docker OAuth2, dynalite |
+| **proxy** | `.env.proxy` | Local dev with HTTPS (local.thequietfeed.com), mock OAuth2, dynalite |
 | **proxyRunning** | `.env.proxyRunning` | Connect to already-running local services |
 | **ci** | `.env.ci` | CI with real AWS |
 | **prod** | `.env.prod` | Production (`thequietfeed.com`) |
@@ -211,9 +211,9 @@ Created per deployment by `deploy.yml`:
 ```
 Developer Machine
     │
-    ├── Express Server (localhost:3000) ──► Lambda handlers
+    ├── Express Server (https://local.thequietfeed.com:3443) ──► Lambda handlers
     │       │
-    ├── ngrok (tunnel) ──► Public HTTPS URL for OAuth
+    ├── mkcert certificates (.certs/) ──► Browser-trusted HTTPS
     │
     ├── Mock OAuth2 (localhost:8080) ──► Simulates Cognito
     │
@@ -223,14 +223,17 @@ Developer Machine
 ### Starting Local Services
 
 ```bash
+# One-time setup
+npm run https:setup   # Install mkcert, generate certificates
+# Add to /etc/hosts: 127.0.0.1 local.thequietfeed.com
+
 # Start all services
 npm start
 
 # Or individually:
 npm run data    # Local DynamoDB
 npm run auth    # Mock OAuth2
-npm run proxy   # ngrok tunnel
-npm run server  # Express server
+npm run server:https  # Express HTTPS server
 ```
 
 ### Local vs AWS Comparison
@@ -265,7 +268,7 @@ npm run server  # Express server
 
 | Path | Purpose |
 |------|---------|
-| `bin/` | Entry point scripts (server.js, ngrok.js, dynamodb.js) |
+| `bin/` | Entry point scripts (server.js, dynamodb.js) |
 | `data/` | DynamoDB repository implementations |
 | `functions/` | Lambda function handlers (auth/, account/) |
 | `lib/` | Shared libraries (logger, JWT, HTTP helpers) |

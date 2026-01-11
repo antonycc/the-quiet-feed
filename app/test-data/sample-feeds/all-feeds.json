@@ -1,55 +1,31 @@
 {
-  "generatedAt": "2026-01-11T16:09:43.183Z",
+  "generatedAt": "2026-01-11T16:27:29.590Z",
   "sourceCount": 4,
   "itemCount": 3,
   "items": [
     {
-      "title": "Don't fall into the anti-AI hype",
-      "url": "https://antirez.com/news/158",
-      "excerpt": "Article URL: https://antirez.com/news/158 Comments URL: https://news.ycombinator.com/item?id=46574276 Points: 237 # Comments: 355",
-      "publishedAt": "2026-01-11T10:26:18.000Z",
-      "guid": "https://news.ycombinator.com/item?id=46574276",
-      "author": "todsacerdoti",
-      "category": "tech",
-      "source": "Hacker News Best",
-      "hash": "e1d93a8fb66a9503",
-      "fetchedAt": "2026-01-11T16:09:06.638Z",
-      "feedUrl": "https://hnrss.org/best",
-      "score": 78,
-      "signals": {
-        "factual": 15,
-        "original": 20,
-        "professional": 30,
-        "signal": 45
-      },
-      "reasoning": "The post provides a fact-based argument against anti-AI hype with original insights and professional relevance.",
-      "modelId": "phi3:mini",
-      "sourceId": "hackernews-best",
-      "processedAt": "2026-01-11T16:09:25.731Z"
-    },
-    {
-      "title": "Minneapolis Is Not Even a Close Call –A Lawsplainer on Officer-Involved",
-      "url": "https://shipwreckedcrew.substack.com/p/minneapolis-is-not-even-a-close-call",
-      "excerpt": "Article URL: https://shipwreckedcrew.substack.com/p/minneapolis-is-not-even-a-close-call Comments URL: https://news.ycombinator.com/item?id=46576784 Points: 3 # Comments: 1",
-      "publishedAt": "2026-01-11T15:54:37.000Z",
-      "guid": "https://news.ycombinator.com/item?id=46576784",
-      "author": "PhaedrusV",
+      "title": "Instagram data breach reportedly exposed the personal info of 17.5M users",
+      "url": "https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html",
+      "excerpt": "Article URL: https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html Comments URL: https://news.ycombinator.com/item?id=46576337 Points: 57 # Comments: 20",
+      "publishedAt": "2026-01-11T15:07:12.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46576337",
+      "author": "IvanAchlaqullah",
       "category": "tech",
       "source": "Hacker News",
-      "hash": "f4702b9a1cee4555",
-      "fetchedAt": "2026-01-11T16:08:46.267Z",
+      "hash": "b6c24732bbb24818",
+      "fetchedAt": "2026-01-11T16:26:05.415Z",
       "feedUrl": "https://hnrss.org/frontpage",
-      "score": 55,
+      "score": 68,
       "signals": {
-        "factual": 4,
+        "factual": 13,
         "original": 17,
-        "professional": 13,
+        "professional": 17,
         "signal": 21
       },
-      "reasoning": "limited factual content; appears original; high information density",
+      "reasoning": "appears original; professionally relevant; high information density",
       "modelId": "rule-based-v1",
       "sourceId": "hackernews-frontpage",
-      "processedAt": "2026-01-11T16:09:06.167Z"
+      "processedAt": "2026-01-11T16:26:37.258Z"
     },
     {
       "title": "Iran warns it will retaliate if US attacks as protesters defy crackdown",
@@ -61,19 +37,43 @@
       "category": "news",
       "source": "BBC News World",
       "hash": "e5053249a7dbb81d",
-      "fetchedAt": "2026-01-11T16:09:25.810Z",
+      "fetchedAt": "2026-01-11T16:27:00.338Z",
       "feedUrl": "https://feeds.bbci.co.uk/news/world/rss.xml",
-      "score": 30,
+      "score": 55,
       "signals": {
-        "factual": 15,
-        "original": 5,
-        "professional": 7,
-        "signal": 8
+        "factual": 4,
+        "original": 17,
+        "professional": 13,
+        "signal": 21
       },
-      "reasoning": "The post provides factual information but lacks original insight and professional relevance.",
-      "modelId": "phi3:mini",
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
       "sourceId": "bbc-news-world",
-      "processedAt": "2026-01-11T16:09:43.101Z"
+      "processedAt": "2026-01-11T16:27:29.500Z"
+    },
+    {
+      "title": "I dumped Windows 11 for Linux, and you should too",
+      "url": "https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html",
+      "excerpt": "Article URL: https://www.notebookcheck.net/I-dumped-Windows-11-for-Linux-and-you-should-too.1190961.0.html Comments URL: https://news.ycombinator.com/item?id=46574707 Points: 278 # Comments: 273",
+      "publishedAt": "2026-01-11T11:31:22.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46574707",
+      "author": "smurda",
+      "category": "tech",
+      "source": "Hacker News Best",
+      "hash": "c64644c155963e8f",
+      "fetchedAt": "2026-01-11T16:26:37.694Z",
+      "feedUrl": "https://hnrss.org/best",
+      "score": 48,
+      "signals": {
+        "factual": 10,
+        "original": 20,
+        "professional": 5,
+        "signal": 3
+      },
+      "reasoning": "The post contains some factual information about operating systems but is mostly opinion-based and lacks professional depth.",
+      "modelId": "phi3:mini",
+      "sourceId": "hackernews-best",
+      "processedAt": "2026-01-11T16:27:00.248Z"
     }
   ]
 }

@@ -13,7 +13,6 @@ import {
   runLocalDynamoDb,
   runLocalHttpServer,
   runLocalOAuth2Server,
-  runLocalSslProxy,
 } from "./helpers/behaviour-helpers.js";
 import { consentToDataCollection, goToHomePage, goToHomePageExpectNotLoggedIn } from "./steps/behaviour-steps.js";
 import {
@@ -49,8 +48,9 @@ const originalEnv = { ...process.env };
 const envFilePath = getEnvVarAndLog("envFilePath", "DIY_SUBMIT_ENV_FILEPATH", null);
 const envName = getEnvVarAndLog("envName", "ENVIRONMENT_NAME", "local");
 const httpServerPort = getEnvVarAndLog("serverPort", "TEST_SERVER_HTTP_PORT", 3500);
+const httpsServerPort = getEnvVarAndLog("httpsServerPort", "TEST_SERVER_HTTPS_PORT", 3443);
 const runTestServer = getEnvVarAndLog("runTestServer", "TEST_SERVER_HTTP", null);
-const runProxy = getEnvVarAndLog("runProxy", "TEST_PROXY", null);
+const useHttps = getEnvVarAndLog("useHttps", "USE_HTTPS", "false") === "true";
 const runMockOAuth2 = getEnvVarAndLog("runMockOAuth2", "TEST_MOCK_OAUTH2", null);
 const testAuthProvider = getEnvVarAndLog("testAuthProvider", "TEST_AUTH_PROVIDER", null);
 const testAuthUsername = getEnvVarAndLog("testAuthUsername", "TEST_AUTH_USERNAME", null);
@@ -63,7 +63,6 @@ const wiremockOutputDir = getEnvVarAndLog("wiremockOutputDir", "WIREMOCK_RECORD_
 
 let mockOAuth2Process;
 let serverProcess;
-let ngrokProcess;
 let dynamoControl;
 let userSub = null;
 let observedTraceparent = null;
@@ -103,8 +102,7 @@ test.beforeAll(async ({ page }, testInfo) => {
   // Run local servers after env overrides
   dynamoControl = await runLocalDynamoDb(runDynamoDb, bundleTableName);
   mockOAuth2Process = await runLocalOAuth2Server(runMockOAuth2);
-  serverProcess = await runLocalHttpServer(runTestServer, httpServerPort);
-  ngrokProcess = await runLocalSslProxy(runProxy, httpServerPort, baseUrl);
+  serverProcess = await runLocalHttpServer(runTestServer, httpServerPort, { useHttps, httpsPort: httpsServerPort });
 
   // Clean up any existing artefacts from previous test runs
   const outputDir = testInfo.outputPath("");
@@ -118,9 +116,6 @@ test.beforeAll(async ({ page }, testInfo) => {
 
 test.afterAll(async () => {
   // Shutdown local servers at end of test
-  if (ngrokProcess) {
-    ngrokProcess.kill();
-  }
   if (serverProcess) {
     serverProcess.kill();
   }
@@ -145,11 +140,9 @@ test.afterEach(async ({ page }, testInfo) => {
 });
 
 test("Click through: Adding and removing bundles", async ({ page }, testInfo) => {
-  // Compute test URL based on which servers are running§
-  const testUrl =
-    (runTestServer === "run" || runTestServer === "useExisting") && runProxy !== "run" && runProxy !== "useExisting"
-      ? `http://127.0.0.1:${httpServerPort}/`
-      : baseUrl;
+  // Use baseUrl (which should be https://local.thequietfeed.com:3443/ for local HTTPS)
+  // Or fall back to the local server URL if baseUrl is not set
+  const testUrl = baseUrl || (useHttps ? `https://local.thequietfeed.com:${httpsServerPort}/` : `http://127.0.0.1:${httpServerPort}/`);
 
   // Add console logging to capture browser messages
   addOnPageLogging(page);
@@ -233,8 +226,9 @@ test("Click through: Adding and removing bundles", async ({ page }, testInfo) =>
       envName,
       baseUrl,
       serverPort: httpServerPort,
+      httpsServerPort,
       runTestServer,
-      runProxy,
+      useHttps,
       runMockOAuth2,
       testAuthProvider,
       testAuthUsername,

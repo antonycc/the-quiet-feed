@@ -193,9 +193,8 @@
         let items = feedData.items;
         if (currentFilter === 'high') {
           items = items.filter(item => item.score >= 75);
-        } else if (currentFilter === 'wire') {
-          items = items.filter(item => item.wireMode);
         }
+        // Note: 'wire' mode doesn't filter - it transforms display in createFeedItem
 
         // Get items to display
         const endIndex = Math.min(displayedItems + ITEMS_PER_PAGE, items.length);
@@ -220,6 +219,18 @@
         article.setAttribute('data-score', item.score || 0);
         article.setAttribute('data-id', item.id);
         if (item.type) article.setAttribute('data-type', item.type);
+
+        // Apply WIRE MODE transformation when filter is active
+        // Prefer server-generated wire content (from LLM), fallback to client-side transformation
+        const isWireMode = currentFilter === 'wire';
+        const displayTitle = isWireMode
+          ? (item.wireTitle || toWireMode(item.title))
+          : item.title;
+        const displayExcerpt = isWireMode
+          ? (item.wireSummary || toWireMode(item.excerpt))
+          : item.excerpt;
+        const showOriginalTitle = isWireMode && displayTitle !== item.title;
+        const hasServerWireContent = item.wireTitle || item.wireSummary;
 
         // Score display - handle info/action types differently
         let scoreHtml;
@@ -256,9 +267,11 @@
           `<span class="feed-tag">${tag}</span>`
         ).join('') : '';
 
-        // Wire mode indicator
-        const wireModeHtml = item.wireMode ?
-          `<span class="feed-tag tag-wire">WIRE MODE</span>` : '';
+        // Wire mode indicator (show when filter is active or item has wire content)
+        // Show "WIRE" for server-generated, "WIRE*" for client-side transformation
+        const wireModeHtml = isWireMode
+          ? `<span class="feed-tag tag-wire">${hasServerWireContent ? 'WIRE' : 'WIRE*'}</span>`
+          : (item.wireTitle ? '<span class="feed-tag tag-wire">WIRE</span>' : '');
 
         // Dedup indicator
         const dedupHtml = item.dedup ?
@@ -275,17 +288,17 @@
             <span style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; font-family: var(--font-mono);">${item.duration}</span>
           </div>` : '';
 
-        // Original title for wire mode
-        const originalTitleHtml = item.originalTitle ?
+        // Original title for wire mode (show when transformed or when item has originalTitle)
+        const originalTitleHtml = (showOriginalTitle || item.originalTitle) ?
           `<p style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.25rem;">
-            Original: "${item.originalTitle}"
+            Original: "${item.originalTitle || item.title}"
           </p>` : '';
 
         article.innerHTML = `
           <div class="feed-item-header">
             <div class="feed-item-content">
-              <h3 class="feed-item-title">
-                <a href="${item.url}" target="_blank" rel="noopener">${item.title}</a>
+              <h3 class="feed-item-title${isWireMode ? ' wire-mode-title' : ''}">
+                <a href="${item.url}" target="_blank" rel="noopener">${displayTitle}</a>
               </h3>
               ${originalTitleHtml}
               <div class="feed-item-meta">
@@ -296,7 +309,7 @@
             </div>
             ${scoreHtml}
           </div>
-          <p class="feed-item-excerpt">${item.excerpt}</p>
+          <p class="feed-item-excerpt">${displayExcerpt || ''}</p>
           ${mediaHtml}
           <div class="feed-item-tags">
             ${tagsHtml}
@@ -312,6 +325,52 @@
         `;
 
         return article;
+      }
+
+      // WIRE MODE: Normalize sensational headlines to factual substance
+      function toWireMode(text) {
+        if (!text) return text;
+
+        let wire = text;
+
+        // Remove clickbait openers
+        wire = wire.replace(/^(You won't believe|BREAKING|SHOCKING|WATCH|JUST IN|EXCLUSIVE|WOW|OMG|URGENT|ALERT)[:!\s]*/gi, '');
+        wire = wire.replace(/^(Here's why|This is why|The reason|What you need to know about)[:!\s]*/gi, '');
+        wire = wire.replace(/^(Everyone is talking about|People are saying|Sources say)[:!\s]*/gi, '');
+
+        // Remove sensational suffixes
+        wire = wire.replace(/[.!?]*\s*(and (you won't believe|it's not what you think|here's why).*)$/gi, '');
+        wire = wire.replace(/[.!?]*\s*(\(and it's (amazing|shocking|wild)\))$/gi, '');
+
+        // Normalize excessive punctuation
+        wire = wire.replace(/!{2,}/g, '.');
+        wire = wire.replace(/\?{2,}/g, '?');
+        wire = wire.replace(/!+\?+|\?+!+/g, '?');
+        wire = wire.replace(/!!!$/g, '.');
+        wire = wire.replace(/!!$/g, '.');
+        wire = wire.replace(/!$/g, '.');
+
+        // Remove ALL CAPS words (likely sensationalism) - but keep acronyms
+        wire = wire.replace(/\b([A-Z]{5,})\b/g, (match) => {
+          // Keep common acronyms
+          const acronyms = ['COVID', 'NASA', 'HTTPS', 'HTML', 'GDPR', 'ADHD', 'LGBTQ'];
+          if (acronyms.includes(match)) return match;
+          return match.charAt(0) + match.slice(1).toLowerCase();
+        });
+
+        // Simplify hyperbolic language
+        wire = wire.replace(/\b(absolutely|totally|completely|utterly|incredibly|insanely|literally|actually)\b/gi, '');
+        wire = wire.replace(/\b(game-?changing|mind-?blowing|jaw-?dropping|earth-?shattering)\b/gi, 'significant');
+        wire = wire.replace(/\b(destroys|slams|blasts|rips|obliterates)\b/gi, 'criticizes');
+        wire = wire.replace(/\b(epic|massive|huge|enormous)\s+(fail|success|win|loss)\b/gi, '$2');
+
+        // Clean up whitespace
+        wire = wire.replace(/\s{2,}/g, ' ').trim();
+
+        // Ensure first letter is capitalized
+        wire = wire.charAt(0).toUpperCase() + wire.slice(1);
+
+        return wire;
       }
 
       // Time ago helper

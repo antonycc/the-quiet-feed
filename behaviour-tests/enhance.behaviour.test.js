@@ -14,7 +14,6 @@ import {
   runLocalDynamoDb,
   runLocalHttpServer,
   runLocalOAuth2Server,
-  runLocalSslProxy,
 } from "./helpers/behaviour-helpers.js";
 import { consentToDataCollection, goToHomePageExpectNotLoggedIn } from "./steps/behaviour-steps.js";
 import {
@@ -32,8 +31,9 @@ const originalEnv = { ...process.env };
 
 const envFilePath = getEnvVarAndLog("envFilePath", "DIY_SUBMIT_ENV_FILEPATH", null);
 const httpServerPort = getEnvVarAndLog("serverPort", "TEST_SERVER_HTTP_PORT", 3000);
+const httpsServerPort = getEnvVarAndLog("httpsServerPort", "TEST_SERVER_HTTPS_PORT", 3443);
 const runTestServer = getEnvVarAndLog("runTestServer", "TEST_SERVER_HTTP", null);
-const runProxy = getEnvVarAndLog("runProxy", "TEST_PROXY", null);
+const useHttps = getEnvVarAndLog("useHttps", "USE_HTTPS", "false") === "true";
 const runMockOAuth2 = getEnvVarAndLog("runMockOAuth2", "TEST_MOCK_OAUTH2", null);
 const testAuthProvider = getEnvVarAndLog("testAuthProvider", "TEST_AUTH_PROVIDER", null);
 const testAuthUsername = getEnvVarAndLog("testAuthUsername", "TEST_AUTH_USERNAME", null);
@@ -43,7 +43,6 @@ const bundleTableName = getEnvVarAndLog("bundleTableName", "BUNDLE_DYNAMODB_TABL
 
 let mockOAuth2Process;
 let serverProcess;
-let ngrokProcess;
 let dynamoControl;
 
 // Timestamp helper for unique screenshot names
@@ -70,14 +69,12 @@ test.beforeAll(async () => {
   // Run servers needed for the test
   dynamoControl = await runLocalDynamoDb(runDynamoDb, bundleTableName);
   mockOAuth2Process = await runLocalOAuth2Server(runMockOAuth2);
-  serverProcess = await runLocalHttpServer(runTestServer, httpServerPort);
-  ngrokProcess = await runLocalSslProxy(runProxy, httpServerPort, baseUrl);
+  serverProcess = await runLocalHttpServer(runTestServer, httpServerPort, { useHttps, httpsPort: httpsServerPort });
 
   console.log("beforeAll hook completed successfully");
 });
 
 test.afterAll(async () => {
-  if (ngrokProcess) ngrokProcess.kill();
   if (serverProcess) serverProcess.kill();
   if (mockOAuth2Process) mockOAuth2Process.kill();
   try {
@@ -86,11 +83,9 @@ test.afterAll(async () => {
 });
 
 test("Enhanced user: Login, view feeds, and use enhanced features", async ({ page }, testInfo) => {
-  // Compute test URL based on which servers are running
-  const testUrl =
-    (runTestServer === "run" || runTestServer === "useExisting") && runProxy !== "run" && runProxy !== "useExisting"
-      ? `http://127.0.0.1:${httpServerPort}/`
-      : baseUrl;
+  // Use baseUrl (which should be https://local.thequietfeed.com:3443/ for local HTTPS)
+  // Or fall back to the local server URL if baseUrl is not set
+  const testUrl = baseUrl || (useHttps ? `https://local.thequietfeed.com:${httpsServerPort}/` : `http://127.0.0.1:${httpServerPort}/`);
 
   // Add console logging to capture browser messages
   addOnPageLogging(page);

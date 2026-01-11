@@ -5,6 +5,8 @@
 // app/bin/server.js
 
 import path from "path";
+import fs from "fs";
+import https from "https";
 import express from "express";
 import { fileURLToPath } from "url";
 import { apiEndpoint as mockAuthUrlGetApiEndpoint } from "../functions/non-lambda-mocks/mockAuthUrlGet.js";
@@ -99,6 +101,14 @@ app.get(/.*/, (req, res) => {
 });
 
 const TEST_SERVER_HTTP_PORT = process.env.TEST_SERVER_HTTP_PORT || 3000;
+const TEST_SERVER_HTTPS_PORT = process.env.TEST_SERVER_HTTPS_PORT || 3443;
+const USE_HTTPS = process.env.USE_HTTPS === "true";
+
+// Check for mkcert certificates
+const certsDir = path.join(__dirname, "../../.certs");
+const certPath = path.join(certsDir, "server.crt");
+const keyPath = path.join(certsDir, "server.key");
+const certsExist = fs.existsSync(certPath) && fs.existsSync(keyPath);
 
 // Only start the server if this file is being run directly (compare absolute paths) or under test harness
 const __thisFile = fileURLToPath(import.meta.url);
@@ -123,9 +133,32 @@ if (__runDirect) {
       logger.warn(`Non-strict env validation warning: ${e}`);
     }
   }
-  app.listen(TEST_SERVER_HTTP_PORT, () => {
-    const message = `Listening at http://127.0.0.1:${TEST_SERVER_HTTP_PORT}`;
-    console.log(message);
-    logger.info(message);
-  });
+
+  // Start HTTPS server if enabled and certificates exist
+  if (USE_HTTPS) {
+    if (!certsExist) {
+      console.error("HTTPS requested but certificates not found.");
+      console.error("Run: npm run https:setup");
+      console.error(`Expected certificates at: ${certsDir}/`);
+      process.exit(1);
+    }
+
+    const httpsOptions = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    };
+
+    https.createServer(httpsOptions, app).listen(TEST_SERVER_HTTPS_PORT, () => {
+      const message = `Listening at https://127.0.0.1:${TEST_SERVER_HTTPS_PORT}`;
+      console.log(message);
+      logger.info(message);
+    });
+  } else {
+    // Start HTTP server
+    app.listen(TEST_SERVER_HTTP_PORT, () => {
+      const message = `Listening at http://127.0.0.1:${TEST_SERVER_HTTP_PORT}`;
+      console.log(message);
+      logger.info(message);
+    });
+  }
 }
