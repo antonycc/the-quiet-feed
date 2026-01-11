@@ -43,6 +43,116 @@ All feature names follow Deckard's rhythm—terse, imperative, system-command st
 | **SHIELD** | Dark pattern neutralization. No autoplay. No infinite scroll. Chronological always available. |
 | **DEMOTE** | Promotional rebalancing. Marks and downranks sponsored content. |
 | **CLUSTER** | Topic and geographic segmentation. Auto-categorization with override. |
+| **TERM** | Terminal interface. Full functionality via CLI. Browser handoff for OAuth only. |
+
+---
+
+## TERM: Terminal Interface
+
+> *"INTERFACE 2037 READY FOR INQUIRY"*
+> — MOTHER (MU-TH-UR 6000), Alien
+
+TERM is The Quiet Feed as a command-line application. Same features, rendered in text.
+
+### Design Lineage
+
+TERM draws from two sources:
+
+**Alien's MOTHER** — The Nostromo's shipboard computer communicated through amber CRT terminals. Terse. All-caps. No pleasantries. When Ripley queried "What is Special Order 937?", MOTHER replied with brutal clarity. That economy of language—system commands that do exactly what they say—is the template.
+
+**Claude Code** — Anthropic's terminal-based assistant operates on the same principle: text-first interaction, streaming responses, and browser handoff only when necessary (OAuth, complex visualizations). The interface stays in the terminal; the browser is a tool, not the home. Claude Code proves that sophisticated AI interaction doesn't require a GUI—it can feel more direct without one.
+
+TERM inherits both: the aesthetic discipline of 1979 sci-fi and the practical architecture of 2025 AI tooling.
+
+### Interface
+
+```
+$ quiet-feed
+
+THE QUIET FEED v0.1.0
+INTERFACE READY
+
+> FEED
+[SCORE 87] Original research on LLM reasoning chains
+           @researcher · 2h · arxiv.org/abs/2025.1234
+[SCORE 72] Thread: What I learned building a startup for 3 years
+           @founder · 4h · 12 reshares
+[SCORE 31] 🚨 YOU WON'T BELIEVE what happened next...
+           @clickbait · 1h · DEMOTED: promotional
+
+> MUTE crypto
+FILTER APPLIED: "crypto" - 0 items currently visible
+
+> WIRE MODE ON
+HEADLINE NORMALIZATION ENABLED
+
+> TRACE 2
+ORIGIN: @researcher (2025-01-10 14:23 UTC)
+  └─ reshare: @commenter (2025-01-10 15:01 UTC)
+  └─ reshare: @founder (2025-01-10 16:45 UTC)
+  └─ quote: @critic (2025-01-10 17:12 UTC)
+
+> ENHANCE
+OPENING BROWSER FOR LINKEDIN OAUTH...
+[Browser opens, user authenticates, returns token]
+AUTHENTICATED AS: user@example.com
+FEED SOURCE: LinkedIn (20 items)
+
+> EXPORT json
+WRITING: feed-2025-01-10.json (20 items)
+DONE
+```
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    TERM (CLI)                           │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Command Parser                                  │   │
+│  │  FEED | MUTE | TRACE | WIRE | ENHANCE | EXPORT  │   │
+│  └─────────────────────────────────────────────────┘   │
+│                         │                               │
+│                         ▼                               │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  API Client (same as web)                        │   │
+│  │  → /api/v1/feed                                  │   │
+│  │  → /api/v1/score                                 │   │
+│  │  → /api/v1/auth/*                                │   │
+│  └─────────────────────────────────────────────────┘   │
+│                         │                               │
+│            ┌────────────┴────────────┐                 │
+│            ▼                         ▼                 │
+│    ┌──────────────┐         ┌──────────────┐          │
+│    │ Text Renderer │         │ Browser Open │          │
+│    │ (stdout)      │         │ (OAuth only) │          │
+│    └──────────────┘         └──────────────┘          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Why Terminal?
+
+1. **Accessibility** — Screen readers work better with text
+2. **Scriptability** — Pipe output, cron jobs, automation
+3. **Focus** — No visual distractions, no infinite scroll by accident
+4. **Speed** — Text renders instantly
+5. **Offline-first** — Cached feeds readable without network
+6. **SSH-friendly** — Check your feed from any server
+
+### Browser Handoff
+
+TERM opens your default browser only for OAuth flows. This is the Claude Code pattern: stay in terminal, hand off to browser for auth, return with token. The browser is a tool for authentication, not the primary interface.
+
+```
+> ENHANCE
+OPENING BROWSER FOR LINKEDIN OAUTH...
+[System browser opens to LinkedIn consent screen]
+[User authorizes]
+[Browser redirects to localhost callback]
+[CLI captures token]
+TOKEN RECEIVED. BROWSER CAN BE CLOSED.
+AUTHENTICATED.
+```
 
 ---
 
@@ -180,6 +290,33 @@ Feature: Authenticated Feed Access
     And reshares are shown in chronological order
 ```
 
+### TERM (CLI)
+
+```gherkin
+Feature: Terminal Interface
+
+  Scenario: View feed in terminal
+    Given I have the quiet-feed CLI installed
+    When I run "quiet-feed" and type "FEED"
+    Then I see a text-formatted list of feed items
+    And each item shows SCORE, title, author, and age
+    And items are rendered without any GUI elements
+
+  Scenario: Authenticate via browser handoff
+    Given I am running quiet-feed in terminal
+    When I type "ENHANCE"
+    Then my default browser opens to LinkedIn OAuth
+    When I complete authentication in the browser
+    Then the CLI displays "AUTHENTICATED"
+    And subsequent FEED commands show my LinkedIn feed
+
+  Scenario: Export feed to file
+    Given I am viewing my feed in terminal
+    When I type "EXPORT json"
+    Then a JSON file is written to current directory
+    And the CLI confirms the filename and item count
+```
+
 ### SHIELD (All Tiers)
 
 ```gherkin
@@ -307,11 +444,13 @@ See `LEGAL.md` for full analysis of hiQ v. LinkedIn, Meta v. Bright Data, and cu
 - [ ] DEDUP and TRACE
 
 ### V1 (Post-validation)
+- [ ] TERM CLI (npm package, installable globally)
 - [ ] Instagram, Twitter/X OAuth
 - [ ] HARD COPY tier with Stripe
 - [ ] Newsletter ingestion via email
 
 ### V2 (If traction)
+- [ ] TERM as standalone binary (compiled with pkg or similar)
 - [ ] Mobile app (PWA first)
 - [ ] Team features
 - [ ] API for third-party integrations

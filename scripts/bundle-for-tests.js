@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: AGPL-3.0-only
-// Copyright (C) 2025-2026 DIY Accounting Ltd
+// Copyright (C) 2025-2026 Antony Cartwright
 
 /**
  * Bundle frontend ES modules for testing
@@ -31,7 +31,6 @@ const moduleFiles = [
   // Services layer
   "lib/services/auth-service.js",
   "lib/services/api-client.js",
-  "lib/services/hmrc-service.js",
   "lib/services/catalog-service.js",
   // Main entry point
   "submit.js",

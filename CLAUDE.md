@@ -1,8 +1,8 @@
-# Claude Code Memory - DIY Accounting Submit
+# Claude Code Memory - The Quiet Feed
 
 ## Quick Reference
 
-**Primary documentation**: See `REPOSITORY_DOCUMENTATION.md` for complete architecture, npm scripts, AWS stacks, and directory structure.
+**Primary documentation**: See `README.md` for project vision and architecture.
 
 **Other AI assistants in this repo**:
 - `.junie/guidelines.md` - Junie (testing & iteration focus)
@@ -20,16 +20,16 @@
 
 Run in sequence to verify code works:
 ```bash
-npm test                              # Unit + system tests (~4s)
-./mvnw clean verify                   # Java CDK build
-npm run test:submitVatBehaviour-proxy # E2E behaviour tests
+npm test                       # Unit + system tests (~4s)
+./mvnw clean verify            # Java CDK build
+npm run test:behaviour-proxy   # E2E behaviour tests
 ```
 
 Capture output for analysis:
 ```bash
 npm test > target/test.txt 2>&1
 ./mvnw clean verify > target/mvnw.txt 2>&1
-npm run test:submitVatBehaviour-proxy > target/behaviour.txt 2>&1
+npm run test:behaviour-proxy > target/behaviour.txt 2>&1
 ```
 
 Find failures:
@@ -49,19 +49,19 @@ At the start of each session where deployment work is needed, request permission
 - Commit and push to feature branches (following Git Workflow rules above)
 - Monitor GitHub Actions workflows until completion
 
-### Deployment Cycle (Steps 3.1-3.4)
+### Deployment Cycle
 
 When implementing features that require infrastructure validation:
 
-1. **Local validation first** (3.1):
+1. **Local validation first**:
    ```bash
    npm test
    ./mvnw clean verify
-   npm run test:submitVatBehaviour-proxy
+   npm run test:behaviour-proxy
    ```
    Ensure all tests pass locally before pushing.
 
-2. **Commit and push** (3.2):
+2. **Commit and push**:
    ```bash
    git add [files]
    git commit -m "descriptive message"
@@ -69,7 +69,7 @@ When implementing features that require infrastructure validation:
    ```
    This triggers feature branch deployment via GitHub Actions.
 
-3. **Monitor deployment** (3.3):
+3. **Monitor deployment**:
    ```bash
    # Watch workflow status
    gh run list --branch claude/<branch-name> --limit 5
@@ -94,29 +94,16 @@ When implementing features that require infrastructure validation:
 
    If deployment fails, diagnose from logs and iterate back to step 1.
 
-4. **Validate against AWS deployment** (3.4):
+4. **Validate against AWS deployment**:
    ```bash
    # Run Playwright tests against deployed environment
-   npm run test:submitVatBehaviour-aws-<branch>
+   npm run test:behaviour-ci
    ```
 
    If tests fail against AWS but passed locally, investigate environment-specific issues:
    - Check AWS-specific configuration in GitHub Actions logs
    - Compare `.env.proxy` vs `.env.ci` settings
    - Look for infrastructure state issues in deployment logs
-
-### Iteration Strategy
-
-- **Success path**: Local tests pass → Push → Deployment succeeds → AWS tests pass → Done
-- **Failure at deployment**: Analyze logs → Fix infrastructure code → Back to step 1
-- **Failure at AWS tests**: Compare local vs AWS behavior → Fix environment-specific issues → Back to step 1
-
-### Key Principles
-
-- All deployment validation is available through GitHub Actions - no direct AWS console access needed
-- Deployment feedback loop is slower than local testing - expect 2-5 minute wait times
-- Always capture and analyze full logs when debugging infrastructure issues
-- Infrastructure errors are often in CloudFormation events or Lambda initialization logs
 
 ## Code Quality Rules
 
@@ -134,7 +121,7 @@ When implementing features that require infrastructure validation:
 | Unit | `app/unit-tests/`, `web/unit-tests/` | `npm run test:unit` | Business logic |
 | System | `app/system-tests/` | `npm run test:system` | Docker integration |
 | Browser | `web/browser-tests/` | `npm run test:browser` | UI components |
-| Behaviour | `behaviour-tests/` | `npm run test:submitVatBehaviour-proxy` | E2E journeys |
+| Behaviour | `behaviour-tests/` | `npm run test:behaviour-proxy` | E2E journeys |
 
 ## Environments
 
@@ -147,9 +134,9 @@ When implementing features that require infrastructure validation:
 
 ## Naming Conventions
 
-- Lambda files: `{feature}{Method}.js` (e.g., `hmrcVatReturnPost.js`)
-- CDK stacks: `{Purpose}Stack` (e.g., `AuthStack`)
-- DynamoDB tables: `{env}-submit-{purpose}`
+- Lambda files: `{feature}{Method}.js` (e.g., `bundlePost.js`)
+- CDK stacks: `{Purpose}Stack` (e.g., `AuthStack`, `AccountStack`)
+- DynamoDB tables: `{env}-quietfeed-{purpose}`
 - npm scripts: colon separator for variants (e.g., `test:unit`)
 
 ## Security Checklist
@@ -159,3 +146,21 @@ When implementing features that require infrastructure validation:
 - Validate all user input in Lambda functions
 - Verify OAuth state parameter validation
 - Check JWT validation in `app/functions/auth/customAuthorizer.js`
+
+## Project Overview
+
+The Quiet Feed is a read-only feed aggregator with Blade Runner-inspired aesthetics:
+- **SCORE**: Transparent relevance scoring
+- **TRACE**: Full provenance chain
+- **DEDUP**: Smart duplicate detection
+- **MUTE**: Powerful filtering
+
+## AWS Account Topology (Planned)
+
+- **Polycode Limited root (541134664601)**: Seeds the master account
+- **The Quiet Feed master**: Controls thequietfeed.com domain and sub-accounts
+- **Backup account**: Resilient backups
+- **CI account**: GitHub Actions deployments
+- **Prod account**: Production workloads
+
+Authentication: OIDC trust between GitHub repo and AWS master account.

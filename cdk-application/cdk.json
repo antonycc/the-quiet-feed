@@ -1,6 +1,6 @@
 {
-  "app": "java -jar ../target/submit-application.jar",
-  "output": "../cdk-submit-application.out",
+  "app": "java -jar ../target/quietfeed-application.jar",
+  "output": "../cdk-quietfeed-application.out",
   "context": {
     "@aws-cdk/customresources:installLatestAwsSdkDefault": false,
     "@aws-cdk/core:newStyleStackSynthesis": true,
