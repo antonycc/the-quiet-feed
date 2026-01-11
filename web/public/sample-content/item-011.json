@@ -1,0 +1,55 @@
+{
+  "id": "item-011",
+  "format": "linkedin",
+  "rawSource": {
+    "platform": "linkedin",
+    "postType": "article",
+    "visibility": "public"
+  },
+  "content": {
+    "authorProfile": {
+      "name": "Emma Roberts",
+      "headline": "CTO at TechCorp | Building scalable systems",
+      "connectionDegree": 2,
+      "followerCount": 45000
+    },
+    "postText": "After 18 months of scaling our platform from 10K to 1M users, here are the 7 lessons I wish I'd known from day one.\n\nThread on architecture decisions, team structure, and what we got wrong.\n\n1/ Start with observability, not monitoring. We spent months debugging issues that would have been obvious with proper tracing. Invest in OpenTelemetry from day one.\n\n2/ Your database will be the bottleneck. Always. We moved to read replicas too late. Plan for this early.\n\n3/ Team topology matters more than tech stack. Conway's Law is real. Organize teams around business capabilities, not technical layers.\n\n4/ Don't pre-optimize for scale you don't have. We over-engineered early and paid the complexity tax for years.\n\n5/ Feature flags are essential, not optional. They saved us countless times during incidents.\n\n6/ On-call rotations need structure. Without proper runbooks and escalation paths, people burn out.\n\n7/ Communication scales harder than code. Invest in async communication patterns and documentation.\n\nWhat lessons would you add?",
+    "hashtags": ["#scaling", "#startup", "#engineering", "#leadership"],
+    "engagement": {
+      "likes": 2847,
+      "comments": 312,
+      "reposts": 189
+    },
+    "publishedAt": "2026-01-10T12:00:00Z"
+  },
+  "analysis": {
+    "scoreBreakdown": {
+      "factual": {
+        "value": 19,
+        "reason": "Experience-based claims, specific examples"
+      },
+      "original": {
+        "value": 21,
+        "reason": "First-person account with unique insights"
+      },
+      "professional": {
+        "value": 19,
+        "reason": "Directly relevant to engineering leaders"
+      },
+      "signal": {
+        "value": 19,
+        "reason": "Actionable advice, structured format"
+      }
+    },
+    "deduplication": {
+      "clusterId": "scaling-lessons-cluster-42",
+      "similarPosts": [
+        { "platform": "twitter", "author": "@emmaroberts_cto", "url": "https://twitter.com/thread/123" },
+        { "platform": "threads", "author": "emma.roberts", "url": "https://threads.net/post/456" }
+      ],
+      "selectedAsCanonical": true,
+      "canonicalReason": "Highest engagement and most complete version"
+    },
+    "contentHash": "b8d4e5f6a7c8b9d0e1f2a3b4c5"
+  }
+}

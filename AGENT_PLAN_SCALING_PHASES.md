@@ -22,7 +22,7 @@ This document defines the scaling phases for The Quiet Feed, mapping functional 
 | **0** | Skeleton | 0 | ~$5 | Infrastructure only | Complete |
 | **1** | Prototype | 100 ENHANCE + 100K ANONYMOUS | ~$19 | SCORE, SHIELD, basic feed | MVP launch |
 | **2** | Early Traction | 1,000 DAU | ~$270 | + DEDUP, MUTE, TRACE | First paying users |
-| **3** | Growing | 10,000 DAU | ~$905 | + WIRE MODE, CLUSTER | $100 Club viable |
+| **3** | Growing | 10,000 DAU | ~$905 | + WIRE MODE, CLUSTER | $20 Club viable |
 | **4** | War Chest | 25,000 DAU | ~$1,500 | + Multi-platform OAuth | Trigger fires |
 | **5** | Sustainable | 100,000 DAU | ~$2,280 | + TERM CLI, Export | 10% margin pricing |
 | **6** | Scale | 1,000,000 DAU | ~$10,570 | + Advanced DEMOTE | Content ceiling |
@@ -212,7 +212,7 @@ At 1,000 users with ~500 interest clusters:
 |---------|----------|-------------|
 | **WIRE MODE** | P0 | Headline normalization via LLM |
 | **CLUSTER** | P1 | Topic/geographic segmentation |
-| **$100 Club** | P0 | Stripe integration for believers |
+| **$20 Club** | P0 | Stripe integration for believers |
 | **Usage Analytics** | P1 | CloudWatch RUM + custom metrics |
 
 ### Architecture Additions
@@ -228,9 +228,9 @@ app/functions/wire/
 PaymentStack.java        # Stripe webhook handling
 ```
 
-### $100 Club Implementation
+### $20 Club Implementation
 
-- Stripe subscription at $100/month
+- Stripe subscription at $20/month
 - Full HARD COPY access immediately
 - Track towards war chest trigger
 - Membership status in bundlesTable
@@ -246,33 +246,33 @@ At 10,000 users with ~3,000 interest clusters:
 
 - [ ] WIRE MODE rewrites sensational headlines
 - [ ] CLUSTER auto-categorizes by topic
-- [ ] $100 Club subscription functional
+- [ ] $20 Club subscription functional
 - [ ] War chest tracking dashboard
-- [ ] ~80 $100 Club members (2% of 4,000 ENHANCE)
+- [ ] ~80 $20 Club members (2% of 4,000 ENHANCE)
 
 ---
 
 ## Phase 4: War Chest Trigger
 
-**Target:** 25,000 DAU (~500 $100 Club members)
-**Monthly Cost:** ~$1,500
+**Target:** 400,000 DAU (~8,000 $20 Club members)
+**Monthly Cost:** ~$4,800
 **Trigger Condition:** Monthly profit ≥ 24× monthly costs
 
 ### The Math
 
 ```
-500 members × $100/month = $50,000 revenue
-$50,000 - $1,500 cost = $48,500 profit
-$48,500 profit vs $36,000 trigger (24 × $1,500)
+8,000 members × $20/month = $160,000 revenue (£128,000)
+£128,000 - £4,800 cost = £123,200 profit
+£123,200 profit vs £115,200 trigger (24 × £4,800)
 TRIGGER FIRES
 ```
 
 ### What Happens
 
-1. All $100 Club members go FREE (lifetime HARD COPY)
-2. War chest banked (~$48,500)
-3. Price floats to 10% margin (~$3.33/month)
-4. $2/month floor established
+1. All $20 Club founders go FREE (lifetime HARD COPY)
+2. War chest banked (~£123,000 — covers 2+ years of costs)
+3. Price drops to $2/month floor (already below 10% margin target)
+4. 8,000 evangelists with "I believed early" story
 
 ### Features to Implement
 
@@ -515,7 +515,7 @@ Phase 4:
 The Quiet Feed scales through **caching economics** and the **content ceiling**:
 
 1. **Phase 1-2:** LLM scoring dominates cost (70-87%)
-2. **Phase 3-4:** Caching reduces per-item cost, $100 Club funds growth
+2. **Phase 3-4:** Caching reduces per-item cost, $20 Club founders fund growth
 3. **Phase 5-6:** Distribution dominates, scoring is negligible (20% → 4%)
 4. **Phase 7+:** Content ceiling reached, pure distribution economics
 

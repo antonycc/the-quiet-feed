@@ -1,0 +1,45 @@
+{
+  "id": "item-001",
+  "format": "rss",
+  "rawSource": {
+    "feedUrl": "https://techcrunch.com/feed/",
+    "feedTitle": "TechCrunch",
+    "feedLanguage": "en-US"
+  },
+  "content": {
+    "title": "Anthropic Releases Claude 3.5 Sonnet: What Developers Need to Know",
+    "link": "https://example.com/claude-35-sonnet",
+    "pubDate": "Sat, 11 Jan 2026 09:15:00 GMT",
+    "author": "Sarah Chen",
+    "category": ["AI", "Machine Learning", "Developer Tools"],
+    "description": "Anthropic's latest model brings significant improvements in coding tasks, with benchmarks showing 40% better performance on complex debugging scenarios. The model also introduces new safety features for enterprise deployments.",
+    "content:encoded": "<p>Anthropic announced today the release of Claude 3.5 Sonnet, the latest iteration of their flagship AI assistant. The new model represents a significant leap in coding capabilities, with the company claiming a 40% improvement on complex debugging tasks.</p><p>Key improvements include:</p><ul><li>Enhanced code generation with better context awareness</li><li>Improved error detection and explanation</li><li>New enterprise safety features including content filtering and audit logging</li><li>Support for longer context windows up to 200K tokens</li></ul><p>\"We've focused on making Claude not just smarter, but more reliable for production use cases,\" said Dario Amodei, CEO of Anthropic. \"The new safety features address key concerns we've heard from enterprise customers.\"</p><p>The model is available immediately through Anthropic's API and will be rolling out to Claude Pro subscribers over the next week.</p>",
+    "guid": "https://example.com/claude-35-sonnet",
+    "enclosure": null
+  },
+  "analysis": {
+    "scoreBreakdown": {
+      "factual": {
+        "value": 23,
+        "reason": "Specific claims with attributable sources, named executives, concrete metrics"
+      },
+      "original": {
+        "value": 22,
+        "reason": "First-party announcement coverage with unique quotes"
+      },
+      "professional": {
+        "value": 21,
+        "reason": "Relevant to software developers and AI practitioners"
+      },
+      "signal": {
+        "value": 21,
+        "reason": "High information density, minimal filler content"
+      }
+    },
+    "aiDetection": {
+      "probability": 0.12,
+      "confidence": "high"
+    },
+    "contentHash": "a7f3b2c1d8e9f0a1b2c3d4e5f6"
+  }
+}

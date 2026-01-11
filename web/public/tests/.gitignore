@@ -1,2 +1,4 @@
 test-reports/web-test-local/html-report/data/
 test-reports/web-test-local/html-report/trace/
+/test-reports/web-test-anonymous/html-report/data/
+/test-reports/web-test-anonymous/html-report/trace/
