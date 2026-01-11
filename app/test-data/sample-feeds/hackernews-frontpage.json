@@ -1,0 +1,81 @@
+{
+  "id": "hackernews-frontpage",
+  "name": "Hacker News",
+  "category": "tech",
+  "generatedAt": "2026-01-11T15:49:44.842Z",
+  "itemCount": 3,
+  "items": [
+    {
+      "title": "Instagram data breach reportedly exposed the personal info of 17.5M users",
+      "url": "https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html",
+      "excerpt": "Article URL: https://www.engadget.com/cybersecurity/an-instagram-data-breach-reportedly-exposed-the-personal-info-of-175-million-users-192105616.html Comments URL: https://news.ycombinator.com/item?id=46576337 Points: 16 # Comments: 0",
+      "publishedAt": "2026-01-11T15:07:12.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46576337",
+      "author": "IvanAchlaqullah",
+      "category": "tech",
+      "source": "Hacker News",
+      "hash": "b6c24732bbb24818",
+      "fetchedAt": "2026-01-11T15:46:00.218Z",
+      "feedUrl": "https://hnrss.org/frontpage",
+      "score": 68,
+      "signals": {
+        "factual": 13,
+        "original": 17,
+        "professional": 17,
+        "signal": 21
+      },
+      "reasoning": "appears original; professionally relevant; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "hackernews-frontpage",
+      "processedAt": "2026-01-11T15:46:34.596Z"
+    },
+    {
+      "title": "Happy 50th Birthday KIM-1",
+      "url": "https://github.com/netzherpes/KIM1-Demo",
+      "excerpt": "Article URL: https://github.com/netzherpes/KIM1-Demo Comments URL: https://news.ycombinator.com/item?id=46575804 Points: 15 # Comments: 2",
+      "publishedAt": "2026-01-11T13:55:40.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46575804",
+      "author": "JKCalhoun",
+      "category": "tech",
+      "source": "Hacker News",
+      "hash": "a8c6edf8b5248467",
+      "fetchedAt": "2026-01-11T15:46:00.218Z",
+      "feedUrl": "https://hnrss.org/frontpage",
+      "score": 10,
+      "signals": {
+        "factual": 0,
+        "original": 0,
+        "professional": 5,
+        "signal": 20
+      },
+      "reasoning": "The post lacks factual substance and original insight but has a professional angle due to the source being Hacker News.",
+      "modelId": "phi3:mini",
+      "sourceId": "hackernews-frontpage",
+      "processedAt": "2026-01-11T15:46:53.832Z"
+    },
+    {
+      "title": "Iran Shuts Down Starlink Internet for First Time",
+      "url": "https://www.forbes.com/sites/zakdoffman/2026/01/11/kill-switch-iran-shuts-down-starlink-internet-for-first-time/",
+      "excerpt": "Article URL: https://www.forbes.com/sites/zakdoffman/2026/01/11/kill-switch-iran-shuts-down-starlink-internet-for-first-time/ Comments URL: https://news.ycombinator.com/item?id=46575224 Points: 137 # Comments: 72",
+      "publishedAt": "2026-01-11T12:37:37.000Z",
+      "guid": "https://news.ycombinator.com/item?id=46575224",
+      "author": "neom",
+      "category": "tech",
+      "source": "Hacker News",
+      "hash": "1807cfa991156ac6",
+      "fetchedAt": "2026-01-11T15:46:00.218Z",
+      "feedUrl": "https://hnrss.org/frontpage",
+      "score": 59,
+      "signals": {
+        "factual": 8,
+        "original": 17,
+        "professional": 13,
+        "signal": 21
+      },
+      "reasoning": "limited factual content; appears original; high information density",
+      "modelId": "rule-based-v1",
+      "sourceId": "hackernews-frontpage",
+      "processedAt": "2026-01-11T15:47:17.127Z"
+    }
+  ]
+}

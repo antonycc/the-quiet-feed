@@ -138,7 +138,10 @@ function loadCatalogue() {
   return toml.parse(content);
 }
 
-// Clear output directory
+// Files to preserve during clear (house content)
+const PRESERVE_FILES = ["about.json", "settings.json"];
+
+// Clear output directory (preserving house content)
 function clearOutputDirectory(outputDir, log) {
   if (!existsSync(outputDir)) {
     log(`Output directory doesn't exist, nothing to clear: ${outputDir}`);
@@ -146,16 +149,23 @@ function clearOutputDirectory(outputDir, log) {
   }
 
   log(`Clearing output directory: ${outputDir}`);
+  log(`Preserving house content: ${PRESERVE_FILES.join(", ")}`);
   const files = readdirSync(outputDir);
   let cleared = 0;
+  let preserved = 0;
 
   for (const file of files) {
+    if (PRESERVE_FILES.includes(file)) {
+      log(`  Preserving: ${file}`);
+      preserved++;
+      continue;
+    }
     const filePath = join(outputDir, file);
     rmSync(filePath, { recursive: true, force: true });
     cleared++;
   }
 
-  log(`Cleared ${cleared} files/directories`);
+  log(`Cleared ${cleared} files, preserved ${preserved} house content files`);
 }
 
 // Load existing processed hashes for deduplication
