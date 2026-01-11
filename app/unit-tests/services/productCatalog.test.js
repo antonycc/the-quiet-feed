@@ -23,25 +23,19 @@ describe("productCatalogHelper", () => {
 
   it("loadCatalogFromRoot should load and parse file from root", () => {
     const catalog = loadCatalogFromRoot();
-    expect(catalog.version).toBe("1.1.0");
+    expect(catalog.version).toBe("2.0.0");
   });
 
   it("bundlesForActivity should return expected bundles", () => {
     const catalog = parseCatalog(tomlText);
-    expect(bundlesForActivity(catalog, "submit-vat")).toEqual(["guest", "business", "diylegacy"]);
-    // expect(bundlesForActivity(catalog, "vat-obligations")).toEqual(["default"]);
+    expect(bundlesForActivity(catalog, "view-feed")).toEqual(["anonymous", "enhance", "hard-copy"]);
+    expect(bundlesForActivity(catalog, "api-feed")).toEqual(["hard-copy"]);
   });
-
-  // it("activitiesForBundle should return expected activity ids", () => {
-  //  const catalog = parseCatalog(tomlText);
-  //  const legacyActivities = activitiesForBundle(catalog, "legacy");
-  //  expect(legacyActivities).toContain("submit-vat");
-  //  expect(legacyActivities).toContain("diy-limited-company-upload");
-  // });
 
   it("isActivityAvailable should work for positive and negative cases", () => {
     const catalog = parseCatalog(tomlText);
-    expect(isActivityAvailable(catalog, "submit-vat", "guest")).toBe(true);
-    expect(isActivityAvailable(catalog, "submit-vat", "default")).toBe(false);
+    expect(isActivityAvailable(catalog, "view-feed", "anonymous")).toBe(true);
+    expect(isActivityAvailable(catalog, "api-feed", "anonymous")).toBe(false);
+    expect(isActivityAvailable(catalog, "api-feed", "hard-copy")).toBe(true);
   });
 });

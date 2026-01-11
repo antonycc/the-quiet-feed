@@ -61,10 +61,11 @@ Every feature should work in this order:
 
 ### In Progress
 
-- [ ] LLM scoring from local workstation
-- [ ] Content hash computation
+- [x] LLM scoring from local workstation
+- [x] Content hash computation
+- [x] RSS feed ingestion
 - [ ] Score caching system
-- [ ] RSS feed ingestion
+- [ ] Local LLM (Ollama) integration for system tests
 
 ### Planned (Not Started)
 
@@ -116,6 +117,145 @@ npm run test:anonymousBehaviour-proxy
 
 # Generate test report
 npm run test:anonymousBehaviour-proxy-report
+```
+
+---
+
+## LLM Testing Strategy
+
+### Three-Tier Approach
+
+| Tier | Context | LLM Method | Purpose |
+|------|---------|------------|---------|
+| **Unit Tests** | `npm run test:unit` | Rule-based (mock) | Fast, deterministic, no external deps |
+| **System Tests** | `npm run test:system` | Ollama (local) | Real LLM scoring, test data generation |
+| **Behaviour Tests** | `npm run test:*Behaviour-*` | Ollama (local) | E2E flows with realistic scored content |
+| **Production** | AWS Lambda | Anthropic Claude | Real-world scoring at scale |
+
+### Unit Tests (Mocked)
+
+Unit tests use the rule-based scorer (`scoreWithRules`) which requires no external dependencies:
+
+```javascript
+// In unit tests, use preferRules: true
+const result = await scoreContent(item, { preferRules: true });
+expect(result.modelId).toBe('rule-based-v1');
+```
+
+### System & Behaviour Tests (Local LLM)
+
+For system tests and behaviour test data generation, use Ollama with the `useLocalLLM` option:
+
+```javascript
+// In system tests, use local LLM if available
+const result = await scoreContent(item, { useLocalLLM: true });
+// Falls back to rule-based if Ollama unavailable
+```
+
+**Setup Ollama:**
+
+```bash
+# Install Ollama (macOS)
+brew install ollama
+
+# Start Ollama server
+ollama serve &
+
+# Pull a small, fast model
+ollama pull phi3:mini
+
+# Verify it's running
+curl http://localhost:11434/api/tags
+```
+
+### Production (Cloud API)
+
+Production uses Anthropic Claude via environment variable:
+
+```bash
+# Set in .env.prod or AWS Secrets Manager
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Environment Variables
+
+```bash
+# .env.test - Unit tests (no LLM needed)
+# (no LLM variables required, uses rule-based)
+
+# .env.proxy - Local development with Ollama
+LLM_PROVIDER=ollama
+LLM_MODEL=phi3:mini
+LLM_BASE_URL=http://localhost:11434/v1
+
+# .env.prod - Production with Claude
+LLM_PROVIDER=anthropic
+LLM_MODEL=claude-3-haiku-20240307
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### Scoring Service API
+
+```javascript
+import { scoreContent, scoreBatch } from './services/scoringService.js';
+
+// Rule-based (unit tests)
+await scoreContent(item, { preferRules: true });
+
+// Local LLM via Ollama (system tests)
+await scoreContent(item, { useLocalLLM: true });
+
+// Cloud LLM via Anthropic (production)
+await scoreContent(item); // Uses ANTHROPIC_API_KEY
+
+// Custom LLM client
+const { LLMClient } = await import('./lib/llmClient.js');
+const llm = new LLMClient({ provider: 'ollama', model: 'mistral:7b' });
+await scoreContent(item, { llmClient: llm });
+```
+
+### LLM Client (`app/lib/llmClient.js`)
+
+Unified client supporting multiple providers:
+
+```javascript
+import { LLMClient, createLLMClient, isOllamaAvailable } from './lib/llmClient.js';
+
+// Factory function - auto-selects based on NODE_ENV
+const llm = createLLMClient();
+
+// Check if Ollama is available
+if (await isOllamaAvailable()) {
+  const result = await llm.chat([
+    { role: 'system', content: 'You are a content scorer...' },
+    { role: 'user', content: 'Score this content...' }
+  ], { maxTokens: 256 });
+}
+```
+
+### CI/CD with Ollama
+
+For GitHub Actions, Ollama runs as a service container:
+
+```yaml
+# In .github/workflows/test.yml
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+
+steps:
+  - name: Pull test model
+    run: |
+      curl -X POST http://localhost:11434/api/pull \
+        -d '{"name": "phi3:mini"}'
+
+  - name: Run system tests with Ollama
+    run: npm run test:system
+    env:
+      LLM_PROVIDER: ollama
+      LLM_MODEL: phi3:mini
 ```
 
 ---

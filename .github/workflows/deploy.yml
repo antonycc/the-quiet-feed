@@ -204,12 +204,11 @@ jobs:
     outputs:
       self-destruct-start-datetime: ${{ steps.self-destruct-start.outputs.SELF_DESTRUCT_START_DATETIME }}
 
-  behaviour-test-submit-vat:
+  behaviour-test-bundle:
     if: ${{ !cancelled() }}
-    name: 'behaviour test - submit vat (proxy)'
+    name: 'behaviour test - bundle (proxy)'
     needs:
       - names
-      #- behaviour-test-bundle
     runs-on: ubuntu-24.04
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'ci' }}
     steps:
@@ -230,22 +229,20 @@ jobs:
           npm install
           npx playwright install chromium --with-deps
 
-      - name: Run behaviour tests - submit vat
+      - name: Run behaviour tests - bundles
         run: |
-          npm run test:submitVatBehaviour-proxy || exit_code=$? \
+          npm run test:bundleBehaviour-proxy || exit_code=$? \
           ; cp ./target/submit*.log ./target/behaviour-test-results/ || true \
           ; exit ${exit_code:-0} \
           ;
         env:
-          HMRC_ACCOUNT: sandbox
-          HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 
       - name: Upload artifacts (results)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
         with:
-          name: behaviour-test-artifacts-submit-vat
+          name: behaviour-test-artifacts-bundle
           retention-days: 7
           path: |
             target/behaviour-test-results/
@@ -254,19 +251,10 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
         with:
-          name: behaviour-test-reports-submit-vat
+          name: behaviour-test-reports-bundle
           retention-days: 7
           path: |
             target/test-reports/
-
-      - name: Upload artifacts (dynamodb exports)
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
-        with:
-          name: behaviour-test-dynamodb-submit-vat
-          retention-days: 7
-          path: |
-            target/behaviour-test-results/**/*.jsonl
 
   test-aws-credentials:
     name: 'test aws credentials'
@@ -465,8 +453,6 @@ jobs:
           SECRETS=(
             "$ENV_NAME/submit/user-sub-hash-salt"
             "$ENV_NAME/submit/google/client_secret"
-            "$ENV_NAME/submit/hmrc/client_secret"
-            "$ENV_NAME/submit/hmrc/sandbox_client_secret"
           )
 
           for SECRET in "${SECRETS[@]}"; do
@@ -861,32 +847,6 @@ jobs:
       # http-api-url: Downstream of the API use ${{ needs.deploy-api.outputs.httpApiUrl }}
       # website-hash: Downstream of the web publish use ${{ steps.publish-hash.outputs.WEBSITE_HASH }}
 
-  deploy-hmrc:
-    name: 'deploy HmrcStack via deploy-cdk-stack.yml'
-    needs:
-      - names
-      - skip-deploy-check
-      - deploy-dev
-      - push-images
-      - validate-secrets
-    uses: ./.github/workflows/deploy-cdk-stack.yml
-    permissions:
-      contents: read
-      packages: read
-      id-token: write
-      pages: write
-      pull-requests: read
-    with:
-      stackName: ${{ needs.names.outputs.deployment-name }}-app-HmrcStack
-      force-stack-deployment: 'true'
-      environment-name: ${{ needs.names.outputs.environment-name }}
-      deployment-name: ${{ needs.names.outputs.deployment-name }}
-      cdk-application: 'application'
-      #self-destruct-start-datetime: ${{ needs.mvn-package.outputs.self-destruct-start-datetime }}
-      base-image-tag: ${{ needs.push-images.outputs.base-image-tag }}
-      # http-api-url: Downstream of the API use ${{ needs.deploy-api.outputs.httpApiUrl }}
-      # website-hash: Downstream of the web publish use ${{ steps.publish-hash.outputs.WEBSITE_HASH }}
-
   deploy-account:
     name: 'deploy AccountStack via deploy-cdk-stack.yml'
     needs:
@@ -919,7 +879,6 @@ jobs:
       - names
       - skip-deploy-check
       - deploy-auth
-      - deploy-hmrc
       - deploy-account
     runs-on: ubuntu-24.04
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'ci' }}
@@ -1009,7 +968,6 @@ jobs:
       - mvn-package
       - push-images
       - deploy-auth
-      - deploy-hmrc
       - deploy-account
       - deploy-api
     uses: ./.github/workflows/deploy-cdk-stack.yml
@@ -1158,13 +1116,7 @@ jobs:
           # Load variables from the environment-specific .env file and write to web/public/submit.env
           npx dotenv -e .env.${{ needs.names.outputs.environment-name }} -- bash -c 'cat > web/public/submit.env <<EOF
           COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID:-${{ vars.COGNITO_CLIENT_ID }}}
-          COGNITO_BASE_URI=https://${{ needs.names.outputs.environment-name }}-auth.submit.diyaccounting.co.uk
-
-          HMRC_CLIENT_ID=${HMRC_CLIENT_ID}
-          HMRC_BASE_URI=${HMRC_BASE_URI}
-
-          HMRC_SANDBOX_CLIENT_ID=${HMRC_SANDBOX_CLIENT_ID}
-          HMRC_SANDBOX_BASE_URI=${HMRC_SANDBOX_BASE_URI}
+          COGNITO_BASE_URI=https://${{ needs.names.outputs.environment-name }}-auth.thequietfeed.com
 
           DIY_SUBMIT_BASE_URL=${DIY_SUBMIT_BASE_URL}
           EOF'
@@ -1277,7 +1229,6 @@ jobs:
       - names
       - skip-deploy-check
       - deploy-auth
-      - deploy-hmrc
       - deploy-account
       - deploy-edge
       - deploy-publish
@@ -1338,7 +1289,7 @@ jobs:
 
   web-test:
     if: ${{ !cancelled() }}
-    name: 'submitVatBehaviour-proxy via synthetic test'
+    name: 'bundleBehaviour via synthetic test'
     needs:
       - names
       - set-origins
@@ -1351,110 +1302,8 @@ jobs:
     with:
       environment-name: ${{ needs.names.outputs.environment-name }}
       deployment-name: ${{ needs.names.outputs.deployment-name }}
-      behaviour-test-suite: 'submitVatBehaviour'
+      behaviour-test-suite: 'bundleBehaviour'
       generate-test-reports: 'true'
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
-
-  web-test-post-vat-return-sandbox:
-    if: ${{ !cancelled() && inputs.skipTestScenarios != null && inputs.skipTestScenarios != 'true' }}
-    name: 'postVatReturnBehaviour-proxy via synthetic test'
-    needs:
-      - names
-      - set-origins
-      - web-test
-    uses: ./.github/workflows/synthetic-test.yml
-    permissions:
-      contents: read
-      packages: read
-      id-token: write
-    with:
-      environment-name: ${{ needs.names.outputs.environment-name }}
-      deployment-name: ${{ needs.names.outputs.deployment-name }}
-      behaviour-test-suite: 'postVatReturnBehaviour'
-      generate-test-reports: 'false'
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
-
-  web-test-get-vat-return-sandbox:
-    if: ${{ !cancelled() && inputs.skipTestScenarios != null && inputs.skipTestScenarios != 'true' }}
-    name: 'getVatReturnBehaviour-proxy via synthetic test'
-    needs:
-      - names
-      - set-origins
-      - web-test
-    uses: ./.github/workflows/synthetic-test.yml
-    permissions:
-      contents: read
-      packages: read
-      id-token: write
-    with:
-      environment-name: ${{ needs.names.outputs.environment-name }}
-      deployment-name: ${{ needs.names.outputs.deployment-name }}
-      behaviour-test-suite: 'getVatReturnBehaviour'
-      generate-test-reports: 'false'
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
-
-  web-test-obligation-sandbox:
-    if: ${{ !cancelled() && inputs.skipTestScenarios != null && inputs.skipTestScenarios != 'true' }}
-    name: 'getVatObligationsBehaviour-proxy via synthetic test'
-    needs:
-      - names
-      - set-origins
-      - web-test
-    uses: ./.github/workflows/synthetic-test.yml
-    permissions:
-      contents: read
-      packages: read
-      id-token: write
-    with:
-      environment-name: ${{ needs.names.outputs.environment-name }}
-      deployment-name: ${{ needs.names.outputs.deployment-name }}
-      behaviour-test-suite: 'getVatObligationsBehaviour'
-      generate-test-reports: 'false'
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
-
-  web-test-fraud-prevention-headers-vat-sandbox:
-    if: ${{ !cancelled() && inputs.skipTestScenarios != null && inputs.skipTestScenarios != 'true' }}
-    name: 'postVatReturnFraudPreventionHeadersBehaviour-proxy via synthetic test'
-    needs:
-      - names
-      - set-origins
-      - web-test
-    uses: ./.github/workflows/synthetic-test.yml
-    permissions:
-      contents: read
-      packages: read
-      id-token: write
-    with:
-      environment-name: ${{ needs.names.outputs.environment-name }}
-      deployment-name: ${{ needs.names.outputs.deployment-name }}
-      behaviour-test-suite: 'postVatReturnFraudPreventionHeadersBehaviour'
-      generate-test-reports: 'false'
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
-
-  web-test-compliance-sandbox:
-    if: ${{ !cancelled() && inputs.skipTestScenarios != null && inputs.skipTestScenarios != 'true' }}
-    name: 'complianceBehaviour-proxy via synthetic test'
-    needs:
-      - names
-      - set-origins
-      - web-test
-    uses: ./.github/workflows/synthetic-test.yml
-    permissions:
-      contents: read
-      packages: read
-      id-token: write
-    with:
-      environment-name: ${{ needs.names.outputs.environment-name }}
-      deployment-name: ${{ needs.names.outputs.deployment-name }}
-      behaviour-test-suite: 'complianceBehaviour'
-      generate-test-reports: 'false'
-    secrets:
-      HMRC_SANDBOX_CLIENT_SECRET: ${{ secrets.HMRC_SANDBOX_CLIENT_SECRET }}
 
   # Set the deployment name as the last known good deployment for this environment in a parameter store parameter
   set-last-known-good-deployment:

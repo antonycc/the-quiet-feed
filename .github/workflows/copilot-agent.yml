@@ -18,8 +18,6 @@ on:
           - security-compliance-hardening
           - sumarise-repository
           - create-new-prompt
-          - what-next-for-mtd-vat-submission
-          - hmrc-api-expert
           - aws-cdk-java-specialist
           - behavior-test-master
           - clean-code-guardian

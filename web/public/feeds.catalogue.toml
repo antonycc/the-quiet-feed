@@ -1,0 +1,231 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2025-2026 Antony Cartwright
+#
+# The Quiet Feed - Feed Sources Catalog
+# This catalog defines available RSS/Atom feeds for ingestion
+
+version = "1.0.0"
+
+# ============================================================================
+# CURATED PUBLIC FEEDS
+# These feeds are available to ANONYMOUS users in the DEFAULT tier
+# ============================================================================
+
+[[sources]]
+id = "hackernews-frontpage"
+name = "Hacker News"
+url = "https://hnrss.org/frontpage"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 15
+enabled = true
+notes = "Top stories from Hacker News"
+terms_url = "https://news.ycombinator.com/newsguidelines.html"
+permission = "public-rss"
+
+[[sources]]
+id = "hackernews-best"
+name = "Hacker News Best"
+url = "https://hnrss.org/best"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Best stories from Hacker News (higher quality threshold)"
+terms_url = "https://news.ycombinator.com/newsguidelines.html"
+permission = "public-rss"
+
+[[sources]]
+id = "bbc-news-world"
+name = "BBC News World"
+url = "https://feeds.bbci.co.uk/news/world/rss.xml"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 15
+enabled = true
+notes = "BBC World News headlines"
+terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
+permission = "public-rss"
+
+[[sources]]
+id = "bbc-news-technology"
+name = "BBC Technology"
+url = "https://feeds.bbci.co.uk/news/technology/rss.xml"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "BBC Technology news"
+terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
+permission = "public-rss"
+
+[[sources]]
+id = "reuters-world"
+name = "Reuters World News"
+url = "https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best"
+category = "news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 15
+enabled = false
+notes = "Reuters top world news - verify feed availability"
+terms_url = "https://www.reuters.com/info/disclaimer/"
+permission = "public-rss"
+
+[[sources]]
+id = "arxiv-cs-ai"
+name = "arXiv CS.AI"
+url = "https://export.arxiv.org/rss/cs.AI"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Artificial Intelligence papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+
+[[sources]]
+id = "arxiv-cs-lg"
+name = "arXiv CS.LG"
+url = "https://export.arxiv.org/rss/cs.LG"
+category = "research"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 60
+enabled = true
+notes = "Machine Learning papers from arXiv"
+terms_url = "https://arxiv.org/help/license"
+permission = "public-rss"
+
+[[sources]]
+id = "lobsters"
+name = "Lobsters"
+url = "https://lobste.rs/rss"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Computing-focused link aggregator"
+terms_url = "https://lobste.rs/about"
+permission = "public-rss"
+
+[[sources]]
+id = "the-register"
+name = "The Register"
+url = "https://www.theregister.com/headlines.atom"
+category = "tech"
+format = "atom"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Tech news with a British perspective"
+terms_url = "https://www.theregister.com/about/company/terms_conditions/"
+permission = "public-rss"
+
+[[sources]]
+id = "arstechnica"
+name = "Ars Technica"
+url = "https://feeds.arstechnica.com/arstechnica/index"
+category = "tech"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "In-depth technology journalism"
+terms_url = "https://www.condenast.com/user-agreement"
+permission = "public-rss"
+
+# ============================================================================
+# UK NEWS FEEDS
+# ============================================================================
+
+[[sources]]
+id = "bbc-uk"
+name = "BBC UK News"
+url = "https://feeds.bbci.co.uk/news/uk/rss.xml"
+category = "uk-news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 15
+enabled = true
+notes = "BBC UK domestic news"
+terms_url = "https://www.bbc.co.uk/usingthebbc/terms/"
+permission = "public-rss"
+
+[[sources]]
+id = "guardian-uk"
+name = "The Guardian UK"
+url = "https://www.theguardian.com/uk-news/rss"
+category = "uk-news"
+format = "rss"
+tier = "anonymous"
+refresh_minutes = 30
+enabled = true
+notes = "Guardian UK news coverage"
+terms_url = "https://www.theguardian.com/help/terms-of-service"
+permission = "public-rss"
+
+# ============================================================================
+# FINANCE & BUSINESS
+# ============================================================================
+
+[[sources]]
+id = "ft-markets"
+name = "Financial Times Markets"
+url = "https://www.ft.com/markets?format=rss"
+category = "finance"
+format = "rss"
+tier = "enhance"
+refresh_minutes = 15
+enabled = false
+notes = "FT Markets - may require subscription, verify availability"
+terms_url = "https://www.ft.com/servicestools/help/terms"
+permission = "check-terms"
+
+# ============================================================================
+# CATEGORIES METADATA
+# ============================================================================
+
+[[categories]]
+id = "tech"
+name = "Technology"
+description = "Software, hardware, and technology news"
+default_score_threshold = 50
+
+[[categories]]
+id = "news"
+name = "World News"
+description = "International news and current affairs"
+default_score_threshold = 60
+
+[[categories]]
+id = "uk-news"
+name = "UK News"
+description = "United Kingdom domestic news"
+default_score_threshold = 60
+
+[[categories]]
+id = "research"
+name = "Research"
+description = "Academic papers and research publications"
+default_score_threshold = 70
+
+[[categories]]
+id = "finance"
+name = "Finance"
+description = "Financial markets and business news"
+default_score_threshold = 55
+
+# ============================================================================
+# PERMISSION TYPES
+# ============================================================================
+# public-rss     - Publicly available RSS/Atom feed, no authentication required
+# check-terms    - Need to verify terms of service before enabling
+# oauth-required - Requires OAuth authentication from user
+# api-key        - Requires API key (stored in Secrets Manager)

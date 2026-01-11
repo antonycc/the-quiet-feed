@@ -49,14 +49,25 @@ export async function putBundle(userId, bundle) {
     };
 
     // Add expiry with millisecond precision timestamp (ISO format)
-    const expiryDate = new Date(bundle.expiry);
-    item.expiry = expiryDate.toISOString();
+    // Handle null, undefined, or empty string expiry values
+    if (bundle.expiry && bundle.expiry !== "") {
+      const expiryDate = new Date(bundle.expiry);
+      if (!isNaN(expiryDate.getTime())) {
+        item.expiry = expiryDate.toISOString();
 
-    // Calculate TTL as 1 month after expiry
-    const ttlDate = new Date(expiryDate.getTime());
-    ttlDate.setMonth(ttlDate.getMonth() + 1);
-    item.ttl = Math.floor(ttlDate.getTime() / 1000);
-    item.ttl_datestamp = ttlDate.toISOString();
+        // Calculate TTL as 1 month after expiry
+        const ttlDate = new Date(expiryDate.getTime());
+        ttlDate.setMonth(ttlDate.getMonth() + 1);
+        item.ttl = Math.floor(ttlDate.getTime() / 1000);
+        item.ttl_datestamp = ttlDate.toISOString();
+      } else {
+        // Invalid date format - store without expiry
+        item.expiry = null;
+      }
+    } else {
+      // No expiry - bundle doesn't expire
+      item.expiry = null;
+    }
 
     logger.info({
       message: "Storing bundle in DynamoDB as item",

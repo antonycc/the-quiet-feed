@@ -47,7 +47,7 @@ describe("System: account bundle ingestHandlers", () => {
     // Seed bundles: grant 'guest' to test-sub
     const { updateUserBundles } = await import("@app/services/bundleManagement.js");
     const expiry = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-    await updateUserBundles("test-sub", [{ bundleId: "guest", expiry }]);
+    await updateUserBundles("test-sub", [{ bundleId: "anonymous", expiry }]);
   });
 
   it("GET /bundle returns user bundles (authorized)", async () => {
@@ -89,7 +89,7 @@ describe("System: account bundle ingestHandlers", () => {
       method: "DELETE",
       path: "/api/v1/bundle",
       headers: { Authorization: `Bearer ${token}` },
-      queryStringParameters: { bundleId: "guest" },
+      queryStringParameters: { bundleId: "anonymous" },
     });
     const res = await ingestHandler(event);
     expect([204, 404]).toContain(res.statusCode);

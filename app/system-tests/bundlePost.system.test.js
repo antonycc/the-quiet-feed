@@ -41,7 +41,7 @@ describe("System: account/bundlePost high-level behaviours", () => {
 
   it("returns 401 when Authorization header is missing", async () => {
     const { ingestHandler } = await import("@app/functions/account/bundlePost.js");
-    const event = buildLambdaEvent({ method: "POST", path: "/api/v1/bundle", body: { bundleId: "guest" } });
+    const event = buildLambdaEvent({ method: "POST", path: "/api/v1/bundle", body: { bundleId: "anonymous" } });
     // Remove Authorization header entirely
     delete event.headers.Authorization;
     delete event.headers.authorization;
@@ -76,12 +76,12 @@ describe("System: account/bundlePost high-level behaviours", () => {
     const { updateUserBundles } = await import("@app/services/bundleManagement.js");
     const token = makeIdToken("test-sub");
     const expiry = new Date(Date.now() + 3600_000).toISOString();
-    await updateUserBundles("test-sub", [{ bundleId: "guest", expiry }]);
+    await updateUserBundles("test-sub", [{ bundleId: "anonymous", expiry }]);
     const event = buildLambdaEvent({
       method: "POST",
       path: "/api/v1/bundle",
       headers: { Authorization: `Bearer ${token}` },
-      body: { bundleId: "guest" },
+      body: { bundleId: "anonymous" },
     });
     const res = await ingestHandler(event);
     expect(res.statusCode).toBe(201);
@@ -97,7 +97,7 @@ describe("System: account/bundlePost high-level behaviours", () => {
       method: "POST",
       path: "/api/v1/bundle",
       headers: { Authorization: `Bearer ${token}` },
-      body: { bundleId: "guest", qualifiers: { foo: "bar" } },
+      body: { bundleId: "anonymous", qualifiers: { foo: "bar" } },
     });
     const res = await ingestHandler(event);
     expect(res.statusCode).toBe(400);
@@ -112,7 +112,7 @@ describe("System: account/bundlePost high-level behaviours", () => {
       method: "POST",
       path: "/api/v1/bundle",
       headers: { Authorization: `Bearer ${token}` },
-      body: { bundleId: "guest" },
+      body: { bundleId: "anonymous" },
     });
     const res = await ingestHandler(event);
     expect(res.statusCode).toBe(201);

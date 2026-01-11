@@ -71,7 +71,6 @@ describe("bundleEnforcement.js", () => {
     process.env = {
       ...originalEnv,
       DIY_SUBMIT_ENFORCE_BUNDLES: "true",
-      HMRC_BASE_URI: "https://test-api.service.hmrc.gov.uk",
       // Ensure we do NOT use mock bundle store for enforceBundles tests by default
       TEST_BUNDLE_MOCK: "false",
     };
@@ -91,15 +90,14 @@ describe("bundleEnforcement.js", () => {
       await expect(enforceBundles(event)).rejects.toThrow(BundleAuthorizationError);
     });
 
-    test("should allow sandbox access with test bundle", async () => {
-      process.env.HMRC_BASE_URI = "https://test-api.service.hmrc.gov.uk";
-      const token = makeJWT("user-with-test-bundle");
+    test("should allow access with enhance bundle", async () => {
+      const token = makeJWT("user-with-enhance-bundle");
       const authorizerContext = {
         jwt: {
           claims: {
-            "sub": "user-with-test-bundle",
+            "sub": "user-with-enhance-bundle",
             "cognito:username": "test",
-            "email": "test@test.submit.diyaccunting.co.uk",
+            "email": "test@thequietfeed.com",
             "scope": "read write",
           },
         },
@@ -107,136 +105,130 @@ describe("bundleEnforcement.js", () => {
       const event = buildEvent(token, authorizerContext);
 
       // Dynamo returns objects; enforceBundles maps to bundleId
-      getUserBundles.mockResolvedValue([{ bundleId: "test", expiry: new Date().toISOString() }]);
+      getUserBundles.mockResolvedValue([{ bundleId: "enhance", expiry: new Date().toISOString() }]);
 
       // Should not throw
       await enforceBundles(event);
 
-      expect(getUserBundles).toHaveBeenCalledWith("user-with-test-bundle");
+      expect(getUserBundles).toHaveBeenCalledWith("user-with-enhance-bundle");
     });
 
-    test("should allow sandbox access with test bundle with expiry", async () => {
-      process.env.HMRC_BASE_URI = "https://test-api.service.hmrc.gov.uk";
-      const token = makeJWT("user-with-test-bundle-expiry");
+    test("should allow access with enhance bundle with expiry", async () => {
+      const token = makeJWT("user-with-enhance-bundle-expiry");
       const authorizerContext = {
         jwt: {
           claims: {
-            "sub": "user-with-test-bundle-expiry",
+            "sub": "user-with-enhance-bundle-expiry",
             "cognito:username": "test",
-            "email": "test@test.submit.diyaccunting.co.uk",
+            "email": "test@thequietfeed.com",
             "scope": "read write",
           },
         },
       };
       const event = buildEvent(token, authorizerContext);
 
-      getUserBundles.mockResolvedValue([{ bundleId: "test", expiry: new Date().toISOString() }]);
+      getUserBundles.mockResolvedValue([{ bundleId: "enhance", expiry: new Date().toISOString() }]);
 
       // Should not throw
       await enforceBundles(event);
 
-      expect(getUserBundles).toHaveBeenCalledWith("user-with-test-bundle-expiry");
+      expect(getUserBundles).toHaveBeenCalledWith("user-with-enhance-bundle-expiry");
     });
 
-    test("should deny vat return access without test or guest bundle", async () => {
-      process.env.HMRC_BASE_URI = "https://test-api.service.hmrc.gov.uk";
+    test("should deny API access without hard-copy bundle", async () => {
       const token = makeJWT("user-without-bundle");
       const authorizerContext = {
         jwt: {
           claims: {
             "sub": "user-without-bundle",
             "cognito:username": "test",
-            "email": "test@test.submit.diyaccunting.co.uk",
+            "email": "test@thequietfeed.com",
             "scope": "read write",
           },
         },
       };
-      const hmrcVatReturnGetUrlPath = "/api/v1/hmrc/vat/return";
-      const event = buildEvent(token, authorizerContext, hmrcVatReturnGetUrlPath);
+      const apiFeedUrlPath = "/api/v1/feed";
+      const event = buildEvent(token, authorizerContext, apiFeedUrlPath);
 
       getUserBundles.mockResolvedValue([]);
 
       await expect(enforceBundles(event)).rejects.toThrow(BundleEntitlementError);
     });
 
-    test("should allow production access with guest bundle", async () => {
-      process.env.HMRC_BASE_URI = "https://api.service.hmrc.gov.uk";
-      const token = makeJWT("user-with-prod-bundle");
+    test("should allow access with anonymous bundle", async () => {
+      const token = makeJWT("user-with-anonymous-bundle");
       const authorizerContext = {
         jwt: {
           claims: {
-            "sub": "user-with-prod-bundle",
+            "sub": "user-with-anonymous-bundle",
             "cognito:username": "test",
-            "email": "test@test.submit.diyaccunting.co.uk",
+            "email": "test@thequietfeed.com",
             "scope": "read write",
           },
         },
       };
       const event = buildEvent(token, authorizerContext);
 
-      getUserBundles.mockResolvedValue([{ bundleId: "guest", expiry: new Date().toISOString() }]);
+      getUserBundles.mockResolvedValue([{ bundleId: "anonymous", expiry: new Date().toISOString() }]);
 
       // Should not throw
       await enforceBundles(event);
 
-      expect(getUserBundles).toHaveBeenCalledWith("user-with-prod-bundle");
+      expect(getUserBundles).toHaveBeenCalledWith("user-with-anonymous-bundle");
     });
 
-    test("should allow production access with business bundle", async () => {
-      process.env.HMRC_BASE_URI = "https://api.service.hmrc.gov.uk";
-      const token = makeJWT("user-with-legacy-bundle");
+    test("should allow access with hard-copy bundle", async () => {
+      const token = makeJWT("user-with-hardcopy-bundle");
       const authorizerContext = {
         jwt: {
           claims: {
-            "sub": "user-with-legacy-bundle",
+            "sub": "user-with-hardcopy-bundle",
             "cognito:username": "test",
-            "email": "test@test.submit.diyaccunting.co.uk",
+            "email": "test@thequietfeed.com",
             "scope": "read write",
           },
         },
       };
       const event = buildEvent(token, authorizerContext);
 
-      getUserBundles.mockResolvedValue([{ bundleId: "business", expiry: new Date().toISOString() }]);
+      getUserBundles.mockResolvedValue([{ bundleId: "hard-copy", expiry: new Date().toISOString() }]);
 
       // Should not throw
       await enforceBundles(event);
 
-      expect(getUserBundles).toHaveBeenCalledWith("user-with-legacy-bundle");
+      expect(getUserBundles).toHaveBeenCalledWith("user-with-hardcopy-bundle");
     });
 
-    test("should allow production access with guest bundle with expiry", async () => {
-      process.env.HMRC_BASE_URI = "https://api.service.hmrc.gov.uk";
-      const token = makeJWT("user-with-prod-bundle-expiry");
+    test("should allow access with enhance bundle with expiry for feed viewing", async () => {
+      const token = makeJWT("user-with-enhance-bundle-expiry");
       const authorizerContext = {
         jwt: {
           claims: {
-            "sub": "user-with-prod-bundle-expiry",
+            "sub": "user-with-enhance-bundle-expiry",
             "cognito:username": "test",
-            "email": "test@test.submit.diyaccunting.co.uk",
+            "email": "test@thequietfeed.com",
             "scope": "read write",
           },
         },
       };
       const event = buildEvent(token, authorizerContext);
 
-      getUserBundles.mockResolvedValue([{ bundleId: "guest", expiry: new Date().toISOString() }]);
+      getUserBundles.mockResolvedValue([{ bundleId: "enhance", expiry: new Date().toISOString() }]);
 
       // Should not throw
       await enforceBundles(event);
 
-      expect(getUserBundles).toHaveBeenCalledWith("user-with-prod-bundle-expiry");
+      expect(getUserBundles).toHaveBeenCalledWith("user-with-enhance-bundle-expiry");
     });
 
     test("should extract user info from authorizer context", async () => {
-      process.env.HMRC_BASE_URI = "https://test-api.service.hmrc.gov.uk";
       const authorizerContext = {
         sub: "user-from-authorizer",
         username: "testuser",
       };
       const event = buildEvent(null, authorizerContext);
 
-      getUserBundles.mockResolvedValue([{ bundleId: "test", expiry: new Date().toISOString() }]);
+      getUserBundles.mockResolvedValue([{ bundleId: "enhance", expiry: new Date().toISOString() }]);
 
       // Should not throw
       await enforceBundles(event);
