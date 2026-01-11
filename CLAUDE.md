@@ -2,11 +2,37 @@
 
 ## Quick Reference
 
-**Primary documentation**: See `README.md` for project vision and architecture.
+**Primary documentation**: See `README.md` for project vision, `REPOSITORY_DOCUMENTATION.md` for architecture, and `_developers/STATIC_FIRST_ARCHITECTURE.md` for data flow patterns.
 
 **Other AI assistants in this repo**:
 - `.junie/guidelines.md` - Junie (testing & iteration focus)
 - `.github/copilot-instructions.md` - GitHub Copilot (code review focus)
+
+## Project Overview
+
+The Quiet Feed is a read-only feed aggregator with Blade Runner-inspired aesthetics:
+- **SCORE**: Transparent relevance scoring (0-100)
+- **TRACE**: Full provenance chain
+- **DEDUP**: Smart duplicate detection
+- **MUTE**: Powerful filtering
+- **WIRE MODE**: Headline normalization
+- **SHIELD**: Dark pattern neutralization (no autoplay, explicit pagination)
+
+### Access Tiers
+
+| Tier | Access | Features |
+|------|--------|----------|
+| **ANONYMOUS** | No login | Curated public feed with SCORE visible |
+| **ENHANCE** | OAuth login | Personal feeds, all features enabled |
+| **HARD COPY** | Paid subscription | Unlimited platforms, export, API access |
+
+### Feed-Based Architecture
+
+Everything is a feed. Navigation uses query params:
+- `/index.html` - Default curated feed
+- `/index.html?feed=tech` - Tech feed
+- `/index.html?feed=about` - About content as feed items
+- `/index.html?feed=settings` - Settings/tiers as feed items
 
 ## Git Workflow
 
@@ -20,16 +46,16 @@
 
 Run in sequence to verify code works:
 ```bash
-npm test                       # Unit + system tests (~4s)
-./mvnw clean verify            # Java CDK build
-npm run test:behaviour-proxy   # E2E behaviour tests
+npm test                           # Unit + system tests (~4s)
+./mvnw clean verify                # Java CDK build
+npm run test:anonymousBehaviour-proxy  # Anonymous feed behaviour tests
 ```
 
 Capture output for analysis:
 ```bash
 npm test > target/test.txt 2>&1
 ./mvnw clean verify > target/mvnw.txt 2>&1
-npm run test:behaviour-proxy > target/behaviour.txt 2>&1
+npm run test:anonymousBehaviour-proxy > target/behaviour.txt 2>&1
 ```
 
 Find failures:
@@ -38,6 +64,34 @@ grep -i -n -A 20 -E 'fail|error' target/test.txt
 ```
 
 **Important**: Behaviour tests generate too much output to read directly - always pipe to file.
+
+## Local-First Development
+
+Favor approaches that work locally AND faithfully remotely:
+
+### Good (Local-First)
+- Node.js scripts in `scripts/`
+- Bash scripts for orchestration
+- Docker Lambda containers (same as AWS)
+- Dynalite for local DynamoDB
+- Mock OAuth2 server for auth testing
+
+### Avoid (Hard to Test Locally)
+- Step Functions (use SQS + Lambda instead)
+- Glue scripts (use Node.js ETL scripts)
+- Complex GitHub Actions workflows
+
+### Local Development Stack
+
+```
+Developer Machine
+├── Express Server (localhost:3000) → Lambda handlers
+├── ngrok (tunnel) → Public HTTPS for OAuth
+├── Mock OAuth2 (localhost:8080) → Simulates Cognito
+└── Dynalite (dynamic port) → Local DynamoDB
+```
+
+Start all services: `npm start`
 
 ## Deployment & Infrastructure Workflow
 
@@ -57,7 +111,7 @@ When implementing features that require infrastructure validation:
    ```bash
    npm test
    ./mvnw clean verify
-   npm run test:behaviour-proxy
+   npm run test:anonymousBehaviour-proxy
    ```
    Ensure all tests pass locally before pushing.
 
@@ -71,39 +125,16 @@ When implementing features that require infrastructure validation:
 
 3. **Monitor deployment**:
    ```bash
-   # Watch workflow status
    gh run list --branch claude/<branch-name> --limit 5
-
-   # Get specific workflow run details
    gh run view <run-id>
-
-   # Stream logs for active run
    gh run watch <run-id>
-
-   # Download logs for completed run if needed
    gh run view <run-id> --log
    ```
 
-   **Wait for deployment completion**: Poll every 30-60 seconds until workflow completes.
-
-   **Interpret failures**: Analyze GitHub Actions logs for:
-   - CloudFormation stack errors (stuck/failed states)
-   - Lambda deployment issues
-   - Resource creation timeouts
-   - IAM permission problems
-
-   If deployment fails, diagnose from logs and iterate back to step 1.
-
 4. **Validate against AWS deployment**:
    ```bash
-   # Run Playwright tests against deployed environment
    npm run test:behaviour-ci
    ```
-
-   If tests fail against AWS but passed locally, investigate environment-specific issues:
-   - Check AWS-specific configuration in GitHub Actions logs
-   - Compare `.env.proxy` vs `.env.ci` settings
-   - Look for infrastructure state issues in deployment logs
 
 ## Code Quality Rules
 
@@ -121,7 +152,13 @@ When implementing features that require infrastructure validation:
 | Unit | `app/unit-tests/`, `web/unit-tests/` | `npm run test:unit` | Business logic |
 | System | `app/system-tests/` | `npm run test:system` | Docker integration |
 | Browser | `web/browser-tests/` | `npm run test:browser` | UI components |
-| Behaviour | `behaviour-tests/` | `npm run test:behaviour-proxy` | E2E journeys |
+| Behaviour | `behaviour-tests/` | `npm run test:anonymousBehaviour-proxy` | E2E journeys |
+
+### Test Content Strategy
+
+- **Sample content**: Static JSON in `web/public/sample-feeds/` (checked in)
+- **Generated test content**: Created by system tests, checked in but not regenerated on every test run
+- **Test reports**: Generated by Playwright, stored in `web/public/tests/`
 
 ## Environments
 
@@ -134,8 +171,8 @@ When implementing features that require infrastructure validation:
 
 ## Naming Conventions
 
-- Lambda files: `{feature}{Method}.js` (e.g., `bundlePost.js`)
-- CDK stacks: `{Purpose}Stack` (e.g., `AuthStack`, `AccountStack`)
+- Lambda files: `{feature}{Method}.js` (e.g., `bundlePost.js`, `feedGet.js`)
+- CDK stacks: `{Purpose}Stack` (e.g., `AuthStack`, `AccountStack`, `FeedStack`)
 - DynamoDB tables: `{env}-quietfeed-{purpose}`
 - npm scripts: colon separator for variants (e.g., `test:unit`)
 
@@ -147,13 +184,13 @@ When implementing features that require infrastructure validation:
 - Verify OAuth state parameter validation
 - Check JWT validation in `app/functions/auth/customAuthorizer.js`
 
-## Project Overview
+## Key Architecture Documents
 
-The Quiet Feed is a read-only feed aggregator with Blade Runner-inspired aesthetics:
-- **SCORE**: Transparent relevance scoring
-- **TRACE**: Full provenance chain
-- **DEDUP**: Smart duplicate detection
-- **MUTE**: Powerful filtering
+| Document | Purpose |
+|----------|---------|
+| `_developers/STATIC_FIRST_ARCHITECTURE.md` | Static-first data flow design |
+| `AGENT_PLAN_PROTOTYPE.md` | Phase 1 prototype implementation plan |
+| `AGENT_PLAN_SCALING_PHASES.md` | Multi-phase scaling strategy |
 
 ## AWS Account Topology (Planned)
 

@@ -1,6 +1,6 @@
-# DIY Accounting Submit - GitHub Copilot Code Review Instructions
+# The Quiet Feed - GitHub Copilot Code Review Instructions
 
-**Last Updated:** 2026-01-05
+**Last Updated:** 2026-01-11
 
 ## About This File
 
@@ -13,6 +13,23 @@ Each assistant has complementary strengths - GitHub Copilot is optimized for cod
 ## Purpose
 
 These instructions guide GitHub Copilot's code review agent to provide specialized, high-quality reviews for this repository. The focus is on **analysis and understanding** rather than test execution.
+
+## Project Overview
+
+**The Quiet Feed** is a read-only feed aggregator that surfaces signal from your social connections while filtering noise. It does not post, comment, or interact with source platforms—it exists to give you back your attention.
+
+### Key Features
+- **SCORE**: Quality rating 0-100 for each feed item
+- **TRACE**: Origin tracking and propagation path
+- **DEDUP**: Semantic deduplication of similar content
+- **MUTE**: Complete exclusion of topics or sources
+- **WIRE MODE**: Headline normalization
+- **SHIELD**: Dark pattern neutralization (no autoplay, explicit pagination)
+
+### Access Tiers
+- **ANONYMOUS**: No login, curated public feed
+- **ENHANCE**: OAuth login, personal feeds, all features
+- **HARD COPY**: Paid subscription, unlimited platforms, API access
 
 ## Repository Documentation
 
@@ -41,9 +58,7 @@ As a code review agent, prioritize **static analysis and code comprehension** ov
 4. **Check references** against documented scripts and configuration
 5. **Suggest tests** when appropriate, but let developers/CI run them
 
-**Note**: The `.junie/guidelines.md` file describes behavior for the Junie custom agent, which emphasizes continuous
-testing and iteration. As a code review agent, your role is complementary - you provide thoughtful analysis while Junie
-handles execution and testing.
+**Note**: The `.junie/guidelines.md` file describes behavior for the Junie custom agent, which emphasizes continuous testing and iteration. As a code review agent, your role is complementary - you provide thoughtful analysis while Junie handles execution and testing.
 
 ### Analysis Workflow
 
@@ -76,7 +91,7 @@ When reviewing code changes be as low friction as possible, maintaining current 
    - Match local style over enforcing global style rules
    - Do not raise issues where new possibly problematic code has been introduced but this pattern is already established
    - Do not raise issues about unused imports or variables or formatting
-   - Do do raise concerns about performance where the suggested optimisation is unlikely to be a measurable signal above the noise.
+   - Do not raise concerns about performance where the suggested optimisation is unlikely to be a measurable signal above the noise
 
 ## Repository Patterns and Conventions
 
@@ -85,39 +100,36 @@ When reviewing code changes be as low friction as possible, maintaining current 
 **JavaScript/TypeScript** (ES Modules):
 - **Linter**: ESLint with flat config (`eslint.config.js`)
 - **Formatter**: Prettier (`.prettierrc`)
-- **Scripts**: Only run if specifically asked to fix formatting and linting errors: `npm run linting`, `npm run linting-fix`, `npm run formatting`, `npm run formatting-fix`
-- **Convention**: Only run if specifically asked to fix formatting and linting errors: `npm run linting-fix && npm run formatting-fix`
+- **Scripts**: Only run if specifically asked: `npm run linting`, `npm run linting-fix`, `npm run formatting`, `npm run formatting-fix`
 
 **Java** (AWS CDK Infrastructure):
 - **Formatter**: Spotless with Palantir Java Format (100-column width)
-- **Scripts**: Only run if specifically asked to fix formatting and linting errors: `./mvnw spotless:check`, `./mvnw spotless:apply`
+- **Scripts**: Only run if specifically asked: `./mvnw spotless:check`, `./mvnw spotless:apply`
 - **Convention**: Runs during Maven `install` phase, fails build if not formatted
 
 **General Style Rule**: Match existing local style rather than forcing global rules when it would be disruptive. Only change style in code you're already modifying.
 
-Avoid unnecessary formatting changes when editing code.
-For the lines that you change, be compliant with the formatting rules.
-Do not run formatting tools on the whole repository or whole files unless the whole file is new.
+Avoid unnecessary formatting changes when editing code. For the lines that you change, be compliant with the formatting rules. Do not run formatting tools on the whole repository or whole files unless the whole file is new.
 
 ### Testing Strategy
 
-**Test**: Run the following test commands in sequence to check that the code works:
+**Test Commands**: Run the following test commands in sequence to check that the code works:
+```bash
+npm test                              # Unit + system tests (~4s)
+./mvnw clean verify                   # Java CDK build
+npm run test:anonymousBehaviour-proxy # Anonymous feed behaviour tests
 ```
-npm test
-./mvnw clean verify
-npm run test:submitVatBehaviour-proxy
-```
+
 If you need to capture the output of a test do it like this:
-```
+```bash
 npm test > target/test.txt 2>&1
 ./mvnw clean verify > target/mvnw.txt 2>&1
-npm run test:submitVatBehaviour-proxy > target/behaviour.txt 2>&1
+npm run test:anonymousBehaviour-proxy > target/behaviour.txt 2>&1
 ```
-And query for a subset of things that might be of interest fail|error with:
-```
+
+And query for failures with:
+```bash
 grep -i -n -A 20 -E 'fail|error' target/test.txt
-grep -i -n -A 20 -E 'fail|error' target/mvnw.txt
-grep -i -n -A 20 -E 'fail|error' target/behaviour.txt
 ```
 
 This repository uses a **four-tier testing pyramid**:
@@ -139,10 +151,10 @@ This repository uses a **four-tier testing pyramid**:
 
 4. **Behaviour Tests** (Playwright): End-to-end user journey tests
    - Location: `behaviour-tests/`
-   - Run: `npm run test:allBehaviour` (with environment variants: `-proxy`, `-ci`, `-prod`)
-   - Focus: Complete flows (auth, VAT submission, bundles, receipts)
+   - Run: `npm run test:anonymousBehaviour-proxy` (with environment variants)
+   - Focus: Complete flows (auth, feed display, bundles)
 
-**Default test command**: `npm test` runs unit + system tests (~4 seconds, 108 tests)
+**Default test command**: `npm test` runs unit + system tests (~4 seconds)
 
 ### Environment Configuration
 
@@ -159,7 +171,6 @@ The repository supports **four environments** via `.env` files:
 - `ENVIRONMENT_NAME`: `test`, `ci`, or `prod`
 - `DEPLOYMENT_NAME`: Unique deployment identifier
 - `DIY_SUBMIT_BASE_URL`: Application base URL
-- `HMRC_BASE_URI`: HMRC API endpoint (test or prod)
 - `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID`: AWS Cognito configuration
 - `*_DYNAMODB_TABLE_NAME`: DynamoDB table names
 - `*_CLIENT_SECRET_ARN`: AWS Secrets Manager ARNs (never plain secrets in env files)
@@ -177,7 +188,7 @@ The infrastructure is divided into **two CDK applications**:
 
 2. **Application Stacks** (`cdk-application/`): Per-deployment resources
    - DevStack (S3, CloudFront, ECR)
-   - AuthStack, HmrcStack, AccountStack (Lambda functions)
+   - AuthStack, AccountStack (Lambda functions)
    - ApiStack (HTTP API Gateway)
    - EdgeStack (CloudFront distribution)
    - PublishStack (static file deployment)
@@ -186,12 +197,12 @@ The infrastructure is divided into **two CDK applications**:
    - Deployed by: `deploy.yml` workflow
 
 **Entry points**:
-- `infra/main/java/co/uk/diyaccounting/submit/SubmitEnvironment.java`
-- `infra/main/java/co/uk/diyaccounting/submit/SubmitApplication.java`
+- `infra/main/java/com/thequietfeed/QuietFeedEnvironment.java`
+- `infra/main/java/com/thequietfeed/QuietFeedApplication.java`
 
 ### Available npm Scripts
 
-See REPOSITORY_DOCUMENTATION.md Section "Package.json Operations" for the complete reference of all npm scripts. Key scripts include:
+See REPOSITORY_DOCUMENTATION.md for the complete reference of all npm scripts. Key scripts include:
 
 **Build & Deploy**:
 - `npm run build` - Full Maven build + restore deployment markers
@@ -203,13 +214,13 @@ See REPOSITORY_DOCUMENTATION.md Section "Package.json Operations" for the comple
 - `npm run test:unit` - Unit tests only
 - `npm run test:system` - System tests only
 - `npm run test:browser` - Playwright browser tests
-- `npm run test:allBehaviour` - End-to-end behaviour tests
+- `npm run test:anonymousBehaviour-proxy` - Anonymous feed behaviour tests
 
 **Code Quality**:
 - `npm run formatting` - Check JS/Java formatting
-- `npm run formatting-fix` - Auto-fix JS/Java formatting - Only run if specifically asked to fix formatting and linting errors:
+- `npm run formatting-fix` - Auto-fix JS/Java formatting (only run if asked)
 - `npm run linting` - Check ESLint rules
-- `npm run linting-fix` - Auto-fix ESLint issues - Only run if specifically asked to fix formatting and linting errors:
+- `npm run linting-fix` - Auto-fix ESLint issues (only run if asked)
 
 **Local Development**:
 - `npm run proxy` - Start ngrok proxy
@@ -223,9 +234,9 @@ See REPOSITORY_DOCUMENTATION.md Section "Package.json Operations" for the comple
 **Critical**: Always check for security issues in code changes:
 
 1. **Secrets Management**
-   - ❌ Never commit secrets to code or environment files
-   - ✅ Use AWS Secrets Manager ARNs in `.env.ci` and `.env.prod`
-   - ✅ Export secrets in shell for local development
+   - Never commit secrets to code or environment files
+   - Use AWS Secrets Manager ARNs in `.env.ci` and `.env.prod`
+   - Export secrets in shell for local development
    - Check: Search for patterns like `client_secret`, `password`, API keys
 
 2. **IAM Permissions**
@@ -246,11 +257,11 @@ See REPOSITORY_DOCUMENTATION.md Section "Package.json Operations" for the comple
 ### Consistency with Patterns
 
 **Naming Conventions**:
-- Lambda function files: `{feature}{Method}.js` (e.g., `hmrcVatReturnPost.js`)
-- CDK stacks: `{Purpose}Stack` (e.g., `AuthStack`, `HmrcStack`)
-- DynamoDB tables: `{env}-submit-{purpose}` (e.g., `ci-submit-bundles`)
+- Lambda function files: `{feature}{Method}.js` (e.g., `bundlePost.js`, `feedGet.js`)
+- CDK stacks: `{Purpose}Stack` (e.g., `AuthStack`, `AccountStack`)
+- DynamoDB tables: `{env}-quietfeed-{purpose}` (e.g., `ci-quietfeed-bundles`)
 - Environment variables: `{SERVICE}_{RESOURCE}_ARN` format
-- npm scripts: Use `:` separator for variants (e.g., `test:unit`, `test:submitVatBehaviour-proxy`)
+- npm scripts: Use `:` separator for variants (e.g., `test:unit`, `test:anonymousBehaviour-proxy`)
 
 **Error Handling**:
 - Lambda functions should catch errors and return appropriate HTTP status codes
@@ -321,7 +332,7 @@ When reviewing code changes, check:
 **AWS Lambda**:
 - Cold start times (Node.js 22 runtime, Docker images from ECR)
 - Memory allocation (default: check CDK stack definitions)
-- Execution duration (DynamoDB queries, HMRC API calls)
+- Execution duration (DynamoDB queries, external API calls)
 
 **DynamoDB**:
 - On-demand billing (no provisioned capacity)
@@ -394,9 +405,9 @@ const tableName = process.env.BUNDLE_DYNAMODB_TABLE_NAME || 'default-table';
 const region = process.env.AWS_REGION || 'eu-west-2';
 
 // For secrets, use AWS Secrets Manager
-const secretArn = process.env.HMRC_CLIENT_SECRET_ARN;
+const secretArn = process.env.GOOGLE_CLIENT_SECRET_ARN;
 if (!secretArn) {
-  throw new Error('HMRC_CLIENT_SECRET_ARN is required');
+  throw new Error('GOOGLE_CLIENT_SECRET_ARN is required');
 }
 ```
 
