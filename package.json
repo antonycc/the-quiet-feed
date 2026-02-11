@@ -95,10 +95,10 @@
   "keywords": [],
   "license": "AGPL-3.0",
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.965.0",
-    "@aws-sdk/client-s3": "^3.965.0",
-    "@aws-sdk/client-secrets-manager": "^3.965.0",
-    "@aws-sdk/client-sqs": "^3.965.0",
+    "@aws-sdk/client-cloudformation": "^3.987.0",
+    "@aws-sdk/client-s3": "^3.987.0",
+    "@aws-sdk/client-secrets-manager": "^3.987.0",
+    "@aws-sdk/client-sqs": "^3.987.0",
     "@aws-sdk/util-dynamodb": "^3.965.0",
     "@iarna/toml": "^3.0.0",
     "aws-jwt-verify": "^5.1.1",
@@ -107,9 +107,9 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-cloudfront": "^3.965.0",
-    "@aws-sdk/client-dynamodb": "^3.965.0",
-    "@aws-sdk/lib-dynamodb": "^3.965.0",
+    "@aws-sdk/client-cloudfront": "^3.987.0",
+    "@aws-sdk/client-dynamodb": "^3.987.0",
+    "@aws-sdk/lib-dynamodb": "^3.987.0",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
     "@playwright/test": "^1.57.0",
     "@vitest/coverage-v8": "3.2.4",
